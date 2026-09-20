@@ -21,6 +21,16 @@ Targets iOS, Android, macOS, Windows, Linux, Steam. Desktop is a paid premium bu
 - Grid coordinates are logical: `row` grows down, `col` grows LEFTWARD, so column 0 is the rightmost. `WordGrid.cell_rect()` is the only place that turns a column into an x position.
 - A grid is valid only when every maximal run of two or more adjacent cells, across or down, is exactly one of the level's words. The layout search in `tools/pipeline/crossword.py` enforces it.
 
+## Screens
+- `Shell` is the one place the game lives. It owns the sky, the meteor, and anything belonging to no single screen: the settings window and the mansion card. It is the project's main scene.
+- Screens draw no sky of their own. `GameScreen.draws_sky` is what turns its copy off, and the rule behind it is that the sky never transitions: two of them would flicker at the seam.
+- There is one settings window for the whole game, on the shell. The play screen's gear emits `settings_requested` instead of opening its own, because two windows would be two places for the switches to disagree about what is stored.
+- The sky map is the main menu. Every window's «القائمة الرئيسية» lands there, and the title screen's second button opens it.
+- A mansion with no stars keeps its name back and shows «؟». Learning the name is the reward for finishing the mansion, so nothing may print it early.
+- The mansion figures on the map are placeholders: seven abstract clusters. The story calls for the real shapes redrawn from al-Sufi rather than copied, which is a drawing job nobody has done.
+- `scripts/mansions.gd` mirrors `tools/pipeline/mansions.py`. The table is in both because the map draws all twenty-eight and must not read five hundred and sixty level files to learn their names.
+- Amiri's ascenders and descenders run well past the point size. Size a label's box by the line the next one has to clear, not by the font size. This bit twice in one afternoon: the title landed on its subtitle, and the season on its count.
+
 ## Windows
 - Every window is a `SkyWindow`: a crest badge straddling the top edge, a title, optional prose, any rows it needs, then its buttons. Describe a window; never position one. The padding, type sizes and button heights live in that one file so four windows cannot drift apart.
 - Every window offers the way back to the main menu beside its own action. A player out of lanterns, facing a refill they cannot afford, must not be shut in a box. `menu_requested` carries it; no shell listens yet, so the window simply closes.
@@ -56,6 +66,8 @@ Targets iOS, Android, macOS, Windows, Linux, Steam. Desktop is a paid premium bu
 - Open the project with `godot -e --path .` from this folder, or via the Godot app. GDScript editing: VS Code with the `godot-tools` extension (`.vscode/` is configured).
 - Run the Arabic shaping test before touching text rendering: `godot --path . --quit-after 400 res://scenes/dev/shaping_test.tscn`. Check `tools/out/shaping_test.png`.
 - Run the slice test before committing engine changes: `godot --path . --quit-after 900 res://scenes/dev/game_test.tscn`. It exits non-zero on failure and writes `tools/out/game_slice.png`.
+- Run the way-in test too: `godot --path . --quit-after 900 res://scenes/dev/shell_test.tscn`. It drives the title, the map and the moves between screens.
+- Look at the way in: `godot --path . --quit-after 900 res://scenes/dev/screen_shots.tscn` writes one PNG per screen to `tools/out/`.
 - Look at a window before believing it: `godot --path . --quit-after 600 res://scenes/dev/window_shots.tscn` writes one PNG per window to `tools/out/`. Layout maths can be right while a window still reads wrong.
 - Adding a `class_name` script? Run `godot --path . --headless --import` once, or the next run fails with "Identifier not declared" until the editor rescans.
 - Pushing synthetic input in a test: send the whole press-move-release burst without awaiting frames in between, or the machine's real mouse slips in and ends the drag.

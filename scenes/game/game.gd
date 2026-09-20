@@ -17,6 +17,9 @@ signal level_solved
 ## the window closes and the player is back on the level. When a shell exists it
 ## connects here and nothing in this file changes.
 signal menu_requested
+## The gear. The shell owns the one settings window, because two of them would
+## be two places for the switches to disagree about what is actually stored.
+signal settings_requested
 
 enum Result {
 	CORRECT,  ## a grid word, found for the first time
@@ -80,22 +83,18 @@ var wrong_streak: int = 0
 
 var _bonus_found: Dictionary = {}
 var _toast_until: float = 0.0
-var _sky: GradientTexture2D
+## The sky behind this screen. A shell that draws its own turns this off, so the
+## two never stack and the background stays one continuous thing across screens.
+@export var draws_sky: bool = true
+var _sky: SkyBackdrop
 
-var _chip_coins: GlossyPanel
-var _chip_moon: GlossyPanel
-var _chip_lanterns: GlossyPanel
-var _coin_label: Label
-var _moon_label: Label
-var _moon_icon: UiIcon
-var _lantern_icons: Array[UiIcon] = []
-var _sky_stars: StarField
+## The counters at the top. Shared with the sky map, which shows the same three.
+var hud: HudBar
 var _preview_pill: GlossyPanel
 ## The four windows, public so tests and future screens can drive them.
 var complete_window: SkyWindow
 var lanterns_window: SkyWindow
 var restart_window: SkyWindow
-var settings_window: SkyWindow
 var wipe: MeteorWipe
 var next_button: GlossyPanel
 var refill_button: GlossyPanel
@@ -103,14 +102,7 @@ var restart_confirm_button: GlossyPanel
 var _complete_stars: StarDots
 var _complete_reward: Control
 var _clock_strip: Control
-var _language_strip: Control
-var _settings_close: GlossyPanel
-## Public so a test can flip a switch the way a finger does.
-var settings_rows: Array[SkyToggle] = []
 
-var settings: GameSettings = GameSettings.new()
-## Where progress is written. Empty turns it off, same as `progress_path`.
-@export var settings_path: String = "user://settings.json"
 ## Unix time when the next lantern comes back. Zero while they are full.
 var _lantern_clock: int = 0
 var _pending_level: Level = null
@@ -139,9 +131,6 @@ var _hint_cost: GlossyPanel
 func _ready() -> void:
 	# Only the out-of-lanterns window wants a frame clock, and it turns this on.
 	set_process(false)
-	if not settings_path.is_empty():
-		settings = GameSettings.read(settings_path)
-	_sky = _make_sky()
 	_build_chrome()
 	wheel.word_previewed.connect(_on_word_previewed)
 	wheel.word_submitted.connect(_on_word_submitted)
@@ -215,23 +204,6 @@ func show_level(new_level: Level) -> void:
 	_refresh_chrome()
 
 
-func _make_sky() -> GradientTexture2D:
-	var ramp := Gradient.new()
-	ramp.offsets = PackedFloat32Array([0.0, 0.45, 0.8, 1.0])
-	ramp.colors = PackedColorArray([
-		Palette.SKY_TOP, Palette.SKY_MID, Palette.SKY_LOW, Palette.SKY_BOTTOM
-	])
-	var texture := GradientTexture2D.new()
-	texture.gradient = ramp
-	texture.width = 8
-	texture.height = 256
-	texture.fill_from = Vector2(0, 0)
-	texture.fill_to = Vector2(0, 1)
-	return texture
-
-
-# --- building the chrome -----------------------------------------------------
-
 func _build_chrome() -> void:
 	# Nodes built here are never given an `owner`, so they are not written into
 	# the scene file. Clearing them first keeps an editor script reload from
@@ -239,34 +211,17 @@ func _build_chrome() -> void:
 	for child in get_children():
 		if child.owner == null:
 			child.queue_free()
-	_lantern_icons.clear()
 
 	# Behind everything, including the scene's own nodes.
-	_sky_stars = StarField.new()
-	add_child(_sky_stars)
-	move_child(_sky_stars, 0)
+	_sky = SkyBackdrop.new()
+	_sky.visible = draws_sky
+	add_child(_sky)
+	move_child(_sky, 0)
 
-	_chip_lanterns = _make_chip()
-	for i in LANTERNS_MAX:
-		var lamp := UiIcon.new()
-		lamp.kind = UiIcon.Kind.LANTERN
-		_chip_lanterns.add_child(lamp)
-		_lantern_icons.append(lamp)
-
-	_chip_moon = _make_chip()
-	_moon_icon = UiIcon.new()
-	_moon_icon.kind = UiIcon.Kind.MOON
-	_chip_moon.add_child(_moon_icon)
-	_moon_label = _make_label(UI_BOLD_FONT, Palette.TILE_INK)
-	_chip_moon.add_child(_moon_label)
-
-	_chip_coins = _make_chip()
-	var coin := UiIcon.new()
-	coin.kind = UiIcon.Kind.COIN
-	_chip_coins.add_child(coin)
-	_coin_label = _make_label(UI_BOLD_FONT, Palette.TILE_INK)
-	_chip_coins.add_child(_coin_label)
-
+	hud = HudBar.new()
+	hud.moon_phases = MOON_PHASES
+	hud.configure(UI_BOLD_FONT)
+	add_child(hud)
 	# The pill goes behind the preview label, which the scene file already owns.
 	_preview_pill = GlossyPanel.new()
 	_preview_pill.style = GlossyPanel.Style.PILL_RIVER
@@ -287,8 +242,9 @@ func _build_chrome() -> void:
 	_hint_cost.set_meta("label", cost_label)
 
 	shuffle_button = _make_button(UiIcon.Kind.SHUFFLE, _on_shuffle_pressed, "خلط الحروف")
-	settings_button = _make_button(UiIcon.Kind.SETTINGS, _on_settings_pressed, "الإعدادات")
-	restart_button = _make_button(UiIcon.Kind.RESTART, _on_restart_pressed, "إعادة المحاولة")
+	# Furthest out first: the gear at the very edge, restart inboard of it.
+	settings_button = hud.add_utility(UiIcon.Kind.SETTINGS, _on_settings_pressed, "الإعدادات")
+	restart_button = hud.add_utility(UiIcon.Kind.RESTART, _on_restart_pressed, "إعادة المحاولة")
 
 	# The windows are built after every piece of chrome, so a window covers the
 	# HUD. Built before, the chips and buttons would sit over the dim layer and
@@ -346,41 +302,6 @@ func _build_windows() -> void:
 		_on_cancel_restart
 	)
 	_wire(_menu_button(restart_window, 78.0), _on_menu_pressed)
-
-	settings_window = _new_window()
-	settings_window.set_crest(UiIcon.Kind.SETTINGS)
-	settings_window.set_title("الإعدادات")
-	for spec in [
-		["المؤثرات الصوتية", "sound"], ["الموسيقى", "music"], ["الاهتزاز", "haptics"]
-	]:
-		var row := SkyToggle.new()
-		row.label_text = spec[0]
-		settings_window.add_row(row, 92.0, 14.0)
-		var key: String = spec[1]
-		row.toggled.connect(func(on: bool) -> void: _on_setting_changed(key, on))
-		settings_rows.append(row)
-	_language_strip = _build_language_row(settings_window)
-	_wire(_menu_button(settings_window), _on_menu_pressed)
-
-	# The corner cross, as the design draws it: a window you opened yourself
-	# closes without having to leave the level.
-	_settings_close = GlossyPanel.new()
-	_settings_close.style = GlossyPanel.Style.BUTTON_CREAM
-	settings_window.panel.add_child(_settings_close)
-	var cross := _make_label(UI_BOLD_FONT, Color("6B5942"))
-	cross.text = "×"
-	_settings_close.add_child(cross)
-	_settings_close.set_meta("label", cross)
-	var close_button := Button.new()
-	close_button.flat = true
-	close_button.focus_mode = Control.FOCUS_ALL
-	close_button.tooltip_text = "إغلاق"
-	close_button.pressed.connect(_on_close_settings)
-	close_button.button_down.connect(func() -> void: _settings_close.set_pressed(true))
-	close_button.button_up.connect(func() -> void: _settings_close.set_pressed(false))
-	_settings_close.add_child(close_button)
-	_settings_close.set_meta("button", close_button)
-
 
 func _new_window() -> SkyWindow:
 	var window := SkyWindow.new()
@@ -445,37 +366,6 @@ func _build_clock_row(window: SkyWindow) -> Control:
 	return row
 
 
-func _build_language_row(window: SkyWindow) -> Control:
-	var row := Control.new()
-	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var tray := Panel.new()
-	tray.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	tray.add_theme_stylebox_override(
-		"panel", Palette.card(Color(Palette.TILE_BORDER, 0.2), Color(0, 0, 0, 0), 26, 0)
-	)
-	row.add_child(tray)
-	row.set_meta("tray", tray)
-	var name_label := _make_label(UI_BOLD_FONT, Color("4A3A2A"))
-	name_label.text = "اللغة"
-	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	row.add_child(name_label)
-	row.set_meta("name", name_label)
-	var value := _make_label(UI_BOLD_FONT, Color("6B5942"))
-	value.text = "العربية"
-	value.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	row.add_child(value)
-	row.set_meta("value", value)
-	window.add_row(row, 92.0, 14.0)
-	return row
-
-
-func _make_chip() -> GlossyPanel:
-	var chip := GlossyPanel.new()
-	chip.style = GlossyPanel.Style.CHIP
-	add_child(chip)
-	return chip
-
-
 func _make_label(font: Font, colour: Color) -> Label:
 	var label := Label.new()
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -518,12 +408,12 @@ func _scale() -> float:
 
 
 func _layout() -> void:
-	if level == null or _chip_coins == null:
+	if level == null or hud == null:
 		return
 	var s := _scale()
 
-	_sky_stars.position = Vector2.ZERO
-	_sky_stars.size = size
+	_sky.position = Vector2.ZERO
+	_sky.size = size
 
 	# Laid out bottom-up. The wheel is the fixed point, because it has to sit
 	# under a thumb; everything else stacks upward from it. A Label refuses to
@@ -585,7 +475,7 @@ func _layout() -> void:
 
 
 func _layout_windows(s: float) -> void:
-	for window: SkyWindow in [complete_window, lanterns_window, restart_window, settings_window]:
+	for window: SkyWindow in [complete_window, lanterns_window, restart_window]:
 		window.position = Vector2.ZERO
 		window.size = size
 		# relayout() stacks the parts and sizes the panel, so it has to run
@@ -594,36 +484,6 @@ func _layout_windows(s: float) -> void:
 
 	_layout_pair_row(_complete_reward, s, 150.0, 62.0, 44.0)
 	_layout_pair_row(_clock_strip, s, 330.0, 44.0, 30.0)
-
-	for row in settings_rows:
-		row.style(UI_BOLD_FONT, Color("4A3A2A"), int(32.0 * s))
-
-	var tray: Panel = _language_strip.get_meta("tray")
-	tray.position = Vector2.ZERO
-	tray.size = _language_strip.size
-	var pad := 26.0 * s
-	var name_label: Label = _language_strip.get_meta("name")
-	name_label.position = Vector2(pad, 0.0)
-	name_label.size = Vector2(_language_strip.size.x * 0.5 - pad, _language_strip.size.y)
-	name_label.add_theme_font_size_override("font_size", int(32.0 * s))
-	var value: Label = _language_strip.get_meta("value")
-	value.position = Vector2(_language_strip.size.x * 0.5, 0.0)
-	value.size = Vector2(_language_strip.size.x * 0.5 - pad, _language_strip.size.y)
-	value.add_theme_font_size_override("font_size", int(30.0 * s))
-
-	var close_side := 72.0 * s
-	_settings_close.position = Vector2(28.0 * s, 26.0 * s)
-	_settings_close.size = Vector2(close_side, close_side)
-	_settings_close.edge_override = 6.0 * s
-	_settings_close.radius_override = close_side * 0.5
-	var cross: Label = _settings_close.get_meta("label")
-	cross.position = Vector2.ZERO
-	cross.size = Vector2(close_side, _settings_close.face_height())
-	cross.add_theme_font_size_override("font_size", int(46.0 * s))
-	var close_button: Button = _settings_close.get_meta("button")
-	close_button.position = Vector2.ZERO
-	close_button.size = Vector2(close_side, close_side)
-
 
 ## A tray with a label and an icon centred inside it as one pair: the reward in
 ## the level-complete window, the countdown in the out-of-lanterns one. Centring
@@ -648,76 +508,12 @@ func _layout_pair_row(
 	icon.position = Vector2(left + text + gap, (row.size.y - side) * 0.5)
 
 
+## The counters and the utility buttons are one object now, shared with the sky
+## map. All this screen owes it is where to sit.
 func _layout_chips(s: float) -> void:
-	var height := CHIP_HEIGHT * s
-	var top := 60.0 * s
-	var margin := 60.0 * s
-	var gap := 18.0 * s
-	var font_size := int(34.0 * s)
-	var icon := 46.0 * s
-
-	# Two groups, as the design lays them out: the utility buttons at the
-	# reading start, which in Arabic is the right, and the counters opposite
-	# them. Within the counters, lanterns first, then coins, then the moon.
-	var util := 88.0 * s
-	var util_top := top + (height - util) * 0.5
-	_place_util(settings_button, Vector2(size.x - margin - util, util_top), util, s)
-	_place_util(restart_button, Vector2(size.x - margin - util * 2.0 - gap, util_top), util, s)
-
-	var lantern_pitch := 44.0 * s
-	var lantern_width := lantern_pitch * LANTERNS_MAX + 30.0 * s
-	var coin_width := 196.0 * s
-	var moon_width := 156.0 * s
-	var x := margin + moon_width + gap + coin_width + gap
-	_chip_lanterns.position = Vector2(x, top)
-	_chip_lanterns.size = Vector2(lantern_width, height)
-	var face := _chip_lanterns.face_height()
-	for i in _lantern_icons.size():
-		var lamp: UiIcon = _lantern_icons[i]
-		# The lantern art is two units wide to three tall, as the design draws it.
-		var lamp_height := icon
-		var lamp_width := minf(lamp_height * (2.0 / 3.0), lantern_pitch - 6.0 * s)
-		lamp.size = Vector2(lamp_width, lamp_height)
-		lamp.position = Vector2(
-			lantern_width - 15.0 * s - float(i + 1) * lantern_pitch
-				+ (lantern_pitch - lamp_width) * 0.5,
-			(face - lamp_height) * 0.5
-		)
-
-	x = margin + moon_width + gap
-	_chip_coins.position = Vector2(x, top)
-	_chip_coins.size = Vector2(coin_width, height)
-	face = _chip_coins.face_height()
-	var coin_icon: UiIcon = _chip_coins.get_child(0)
-	coin_icon.size = Vector2(icon, icon)
-	coin_icon.position = Vector2(coin_width - icon - 16.0 * s, (face - icon) * 0.5)
-	_coin_label.size = Vector2(coin_width - icon - 30.0 * s, face)
-	_coin_label.position = Vector2(8.0 * s, 0.0)
-	_coin_label.add_theme_font_size_override("font_size", font_size)
-
-	x = margin
-	_chip_moon.position = Vector2(x, top)
-	_chip_moon.size = Vector2(moon_width, height)
-	face = _chip_moon.face_height()
-	_moon_icon.size = Vector2(icon, icon)
-	_moon_icon.position = Vector2(moon_width - icon - 16.0 * s, (face - icon) * 0.5)
-	_moon_label.size = Vector2(moon_width - icon - 30.0 * s, face)
-	_moon_label.position = Vector2(8.0 * s, 0.0)
-	_moon_label.add_theme_font_size_override("font_size", font_size)
-
-
-func _place_util(panel: GlossyPanel, at: Vector2, side: float, s: float) -> void:
-	panel.position = at
-	panel.size = Vector2(side, side)
-	panel.edge_override = 8.0 * s
-	panel.radius_override = side * 0.5
-	var icon: UiIcon = panel.get_meta("icon")
-	var art := side * 0.52
-	icon.size = Vector2(art, art)
-	icon.position = Vector2((side - art) * 0.5, (panel.face_height() - art) * 0.5)
-	var button: Button = panel.get_meta("button")
-	button.position = Vector2.ZERO
-	button.size = Vector2(side, side)
+	hud.position = Vector2(0.0, 60.0 * s)
+	hud.size = Vector2(size.x, HudBar.CHIP_HEIGHT * s)
+	hud.relayout(s)
 
 
 func _layout_buttons(s: float) -> void:
@@ -911,7 +707,7 @@ func _celebrate_bonus(word: String) -> void:
 	_place_preview_pill()
 
 	var from := _preview_pill.position + _preview_pill.size * 0.5
-	var to := _chip_moon.position + _moon_icon.position + _moon_icon.size * 0.5
+	var to := hud.position + hud.moon_icon_centre()
 
 	var tween := create_tween()
 	tween.tween_interval(0.12)
@@ -974,10 +770,7 @@ func _land_star(at: Vector2) -> void:
 	# coins were paid half a second ago.
 	_moon_shown = MOON_PHASES if _full_moon_pending else moon
 	_refresh_chrome()
-	_chip_moon.pivot_offset = _chip_moon.size * 0.5
-	var punch := _chip_moon.create_tween()
-	punch.tween_property(_chip_moon, "scale", Vector2(1.2, 1.2), 0.08)
-	punch.tween_property(_chip_moon, "scale", Vector2.ONE, 0.1)
+	hud.punch_moon()
 	_float_gain(at, "+%s" % Arabic.eastern_digits(1))
 	if _full_moon_pending:
 		_full_moon_pending = false
@@ -1045,35 +838,13 @@ func _open(window: SkyWindow) -> void:
 
 
 func _hide_windows() -> void:
-	for window: SkyWindow in [
-		complete_window, lanterns_window, restart_window, settings_window
-	]:
+	for window: SkyWindow in [complete_window, lanterns_window, restart_window]:
 		if window != null:
 			window.visible = false
 
 
 func _on_settings_pressed() -> void:
-	for i in settings_rows.size():
-		settings_rows[i].on = [settings.sound, settings.music, settings.haptics][i]
-	_open(settings_window)
-
-
-func _on_close_settings() -> void:
-	settings_window.close()
-
-
-func _on_setting_changed(key: String, on: bool) -> void:
-	match key:
-		"sound":
-			settings.sound = on
-		"music":
-			settings.music = on
-		"haptics":
-			settings.haptics = on
-	# Nothing plays yet, so this only remembers. The window is real even when
-	# what it controls is not built.
-	if not settings_path.is_empty():
-		settings.write(settings_path)
+	settings_requested.emit()
 
 
 func _on_restart_pressed() -> void:
@@ -1166,8 +937,7 @@ func _refresh_clock() -> void:
 func _content_nodes() -> Array[Control]:
 	return [
 		caption, stars, toast, grid, preview, _preview_pill, wheel,
-		_chip_coins, _chip_moon, _chip_lanterns, hint_button, shuffle_button, _hint_cost,
-		settings_button, restart_button,
+		hud, hint_button, shuffle_button, _hint_cost,
 	]
 
 
@@ -1287,7 +1057,7 @@ func _notification(what: int) -> void:
 
 ## The lantern at `index`, counting from the right. For tests and for tweens.
 func lantern_icon(index: int) -> UiIcon:
-	return _lantern_icons[index] if index < _lantern_icons.size() else null
+	return hud.lantern_icon(index) if hud != null else null
 
 
 func bonus_found_count() -> int:
@@ -1295,15 +1065,12 @@ func bonus_found_count() -> int:
 
 
 func _refresh_chrome() -> void:
-	if _coin_label == null:
+	if hud == null:
 		return
-	_coin_label.text = Arabic.eastern_digits(coins)
-	_moon_label.text = "%s / %s" % [
-		Arabic.eastern_digits(_moon_shown), Arabic.eastern_digits(MOON_PHASES)
-	]
-	_moon_icon.level = float(_moon_shown) / float(MOON_PHASES)
-	for i in _lantern_icons.size():
-		_lantern_icons[i].level = 1.0 if i < lanterns else 0.0
+	hud.coins = coins
+	hud.lanterns = lanterns
+	# `_moon_shown`, not `moon`: the chip waits for the flying star to land.
+	hud.moon = _moon_shown
 
 
 func _say(message: String) -> void:
@@ -1338,7 +1105,3 @@ func _process(_delta: float) -> void:
 
 	if not wanted:
 		set_process(false)
-
-
-func _draw() -> void:
-	draw_texture_rect(_sky, Rect2(Vector2.ZERO, size), false)

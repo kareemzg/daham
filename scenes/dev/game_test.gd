@@ -387,7 +387,6 @@ func _check_windows() -> void:
 		"اكتمل المستوى": game.complete_window,
 		"نفدت الفوانيس": game.lanterns_window,
 		"إعادة المحاولة": game.restart_window,
-		"الإعدادات": game.settings_window,
 	}
 	for name in windows:
 		var window: SkyWindow = windows[name]
@@ -403,10 +402,7 @@ func _check_windows() -> void:
 	print("=== a window's words stay inside it ===")
 	for name in windows:
 		var window: SkyWindow = windows[name]
-		# Settings is a list of rows and carries no prose; the other three say
-		# something, and what they say has to be readable.
-		if name != "الإعدادات":
-			_check("%s says something" % name, window.body_label.visible)
+		_check("%s says something" % name, window.body_label.visible)
 		if not window.body_label.visible:
 			continue
 		var bottom: float = window.body_label.position.y + window.body_label.size.y
@@ -468,32 +464,25 @@ func _check_windows() -> void:
 	_check("a refill you cannot afford is refused", not game.refill_lanterns())
 	_check_equal("...and takes nothing", game.coins, GameScreen.LANTERN_REFILL_COST - 1)
 
-	print("=== the settings window remembers ===")
-	var settings_path := "user://settings_test.json"
-	GameSettings.clear(settings_path)
-	game.settings_path = settings_path
+	# The gear does not open a window here. The shell owns the one settings
+	# window, so two of them can never disagree about what is stored.
+	print("=== the gear asks the shell ===")
+	var asked_settings := [false]
+	game.settings_requested.connect(func() -> void: asked_settings[0] = true)
 	(game.settings_button.get_meta("button") as Button).pressed.emit()
-	_check("the settings window opened", game.settings_window.visible)
-	_check_equal("music starts on", game.settings.music, true)
-	game.settings_rows[1].button.pressed.emit()
-	_check_equal("the switch turned it off", game.settings.music, false)
-	_check("...and wrote it down", FileAccess.file_exists(settings_path))
-	var reloaded := GameSettings.read(settings_path)
-	_check_equal("...where it survives a quit", reloaded.music, false)
-	_check_equal("...leaving the rest alone", reloaded.sound, true)
-	GameSettings.clear(settings_path)
-	game.settings_path = ""
+	_check("the gear asks for settings", asked_settings[0])
 
 	print("=== the main menu button ===")
 	var asked := [false]
 	game.menu_requested.connect(func() -> void: asked[0] = true)
+	game.restart_window.settle()
 	var menu: GlossyPanel = null
-	for shell in game.settings_window.buttons():
+	for shell in game.restart_window.buttons():
 		if (shell.get_meta("label") as Label).text == "القائمة الرئيسية":
 			menu = shell
 	(menu.get_meta("button") as Button).pressed.emit()
 	_check("pressing it asks for the menu", asked[0])
-	_check("...and takes the window away", not game.settings_window.visible)
+	_check("...and takes the window away", not game.restart_window.visible)
 
 
 func _drag_wheel(indices: Array) -> void:

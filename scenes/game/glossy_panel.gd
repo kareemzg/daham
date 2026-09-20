@@ -176,6 +176,57 @@ static func preset(for_style: int) -> Dictionary:
 	return preset(Style.TILE)
 
 
+## A button made of this panel: a label on it and a real `Button` on top, so the
+## control is reachable by keyboard and by a screen reader and not only by
+## tapping a drawing. The caller connects `get_meta("button").pressed`.
+static func make_button(style_preset: int, text: String, font: Font, ink: Color) -> GlossyPanel:
+	var shell := GlossyPanel.new()
+	shell.style = style_preset
+
+	var label := Label.new()
+	label.text = text
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.text_direction = Control.TEXT_DIRECTION_RTL
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	label.add_theme_font_override("font", font)
+	label.add_theme_color_override("font_color", ink)
+	shell.add_child(label)
+	shell.set_meta("label", label)
+
+	var button := Button.new()
+	button.flat = true
+	button.focus_mode = Control.FOCUS_ALL
+	button.tooltip_text = text
+	button.button_down.connect(func() -> void: shell.set_pressed(true))
+	button.button_up.connect(func() -> void: shell.set_pressed(false))
+	shell.add_child(button)
+	shell.set_meta("button", button)
+	return shell
+
+
+## The same, with an icon in place of words. `label_text` names it for a screen
+## reader, since there is nothing to read.
+static func make_round(icon_kind: int, label_text: String) -> GlossyPanel:
+	var shell := GlossyPanel.new()
+	shell.style = Style.BUTTON_CREAM
+
+	var icon := UiIcon.new()
+	icon.kind = icon_kind
+	shell.add_child(icon)
+	shell.set_meta("icon", icon)
+
+	var button := Button.new()
+	button.flat = true
+	button.focus_mode = Control.FOCUS_ALL
+	button.tooltip_text = label_text
+	button.button_down.connect(func() -> void: shell.set_pressed(true))
+	button.button_up.connect(func() -> void: shell.set_pressed(false))
+	shell.add_child(button)
+	shell.set_meta("button", button)
+	return shell
+
+
 func _init() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 

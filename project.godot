@@ -15,7 +15,7 @@ config/name_localized={
 "ar": "رحلة الشاوي"
 }
 config/description="Arabic word-puzzle game. Letter wheel plus crossword grid, set on the Euphrates."
-run/main_scene="res://scenes/game/game.tscn"
+run/main_scene="res://scenes/shell/shell.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
 run/low_processor_mode=true
 config/icon="res://icon.svg"

@@ -34,13 +34,37 @@ Check it before committing engine changes:
 godot --path . --quit-after 900 res://scenes/dev/game_test.tscn
 ```
 
-145 checks covering level data, Arabic normalisation, the drag path through real
+139 checks covering level data, Arabic normalisation, the drag path through real
 input events, the word rules, the lantern penalty, the hint and shuffle buttons,
 the save round-trip, what a quit leaves behind, the moon filling across levels,
 the four windows and the way out of each, and the on-screen layout. It exits non-zero on failure and writes
 `tools/out/game_slice.png` to look at. Some checks read pixels back out of that
 frame, because layout maths can be right while nothing is painted, and a spent
 lantern has to actually look different from a lit one.
+
+## The way in
+
+`Shell` is the project's main scene and the one place the game lives: it owns
+the sky, the meteor, and the windows that belong to no single screen. Under it
+sit the title, the sky map, and the play screen.
+
+The sky map is what «القائمة الرئيسية» means. It shows one season of the lunar
+year at a time, its seven mansions scattered on a dotted thread: the finished
+ones drawn and named in gold, the current one ringed and part lit, the rest
+still dark and nameless. Learning a mansion's name is the reward for finishing
+it, so an untouched one shows only «؟».
+
+```bash
+godot --path . --quit-after 900 res://scenes/dev/shell_test.tscn
+```
+
+45 checks over the mansion table, where a save puts the player on the map, the
+moves between screens, and the single settings window the whole game shares.
+`res://scenes/dev/screen_shots.tscn` writes a PNG of each screen to look at.
+
+The figures on the map are placeholders. The story asks for the real mansion
+shapes redrawn from al-Sufi rather than copied, and that drawing has not been
+done.
 
 ## Looking at the windows
 
