@@ -34,13 +34,26 @@ Check it before committing engine changes:
 godot --path . --quit-after 900 res://scenes/dev/game_test.tscn
 ```
 
-105 checks covering level data, Arabic normalisation, the drag path through real
+145 checks covering level data, Arabic normalisation, the drag path through real
 input events, the word rules, the lantern penalty, the hint and shuffle buttons,
 the save round-trip, what a quit leaves behind, the moon filling across levels,
-and the on-screen layout. It exits non-zero on failure and writes
+the four windows and the way out of each, and the on-screen layout. It exits non-zero on failure and writes
 `tools/out/game_slice.png` to look at. Some checks read pixels back out of that
 frame, because layout maths can be right while nothing is painted, and a spent
 lantern has to actually look different from a lit one.
+
+## Looking at the windows
+
+There are four: the level is done, the lanterns are out, start the level over,
+and settings. This draws each one over a part-played level and writes a PNG:
+
+```bash
+godot --path . --quit-after 600 res://scenes/dev/window_shots.tscn
+```
+
+Every one of them offers the way back to the main menu beside its own action,
+which is the rule that matters most: a player who cannot go on must never be
+left holding only the action they cannot take.
 
 ## Watching the motion
 

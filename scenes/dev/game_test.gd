@@ -180,6 +180,7 @@ func _run() -> void:
 	await _check_autosave()
 	await _check_finish_save()
 	_check_full_moon()
+	await _check_windows()
 
 	_finish()
 
@@ -298,7 +299,20 @@ func _check_finish_save() -> void:
 	for word in ["كتاب", "كاتب", "كتب", "تاب", "بات"]:
 		first.submit(word)
 	_check("the level was solved", first.grid.is_solved())
-	_check("the window is up", first.popup.visible)
+	_check("the window is up", first.complete_window.visible)
+
+	# This screen has just been built, so this is the window's FIRST layout, and
+	# that is where a self-wrapping Label went wrong: with no width yet it
+	# wrapped at nothing, claimed the height of twenty-seven lines, and centred
+	# five words somewhere off the bottom of the panel. Checked on a screen that
+	# has been laid out all run, it would have looked fine.
+	var body: Label = first.complete_window.body_label
+	var planned: float = float(body.text.count("\n") + 1) * SkyWindow.BODY_LINE * first._scale()
+	_check(
+		"its prose is the height the window planned (%0.0f <= %0.0f)"
+			% [body.size.y, planned + 2.0],
+		body.size.y <= planned + 2.0
+	)
 	var coins_at_window: int = first.coins
 	# The quit: no handler runs, the screen simply stops existing.
 	first.queue_free()
@@ -318,7 +332,7 @@ func _check_finish_save() -> void:
 	await get_tree().process_frame
 	_check_equal("it reopens on the next level", second.level.id, "m04-13")
 	_check("...with a grid still to solve", not second.grid.is_solved())
-	_check("...and no window in the way", not second.popup.visible)
+	_check("...and no window in the way", not second.complete_window.visible)
 	_check_equal("...and the moon where it was", second.moon, 1)
 	second.queue_free()
 	await get_tree().process_frame
@@ -362,6 +376,126 @@ func _check_full_moon() -> void:
 	_check_equal("...and an empty moon, not a stuck full one", snapshot.moon, 0)
 
 
+## The four windows, driven through their real buttons.
+##
+## The rule that matters most here is the one the player asked for: every window
+## offers the way back to the main menu beside its own action. A player out of
+## lanterns, facing a refill they cannot afford, must not be shut in a box.
+func _check_windows() -> void:
+	print("=== every window offers the way out ===")
+	var windows := {
+		"اكتمل المستوى": game.complete_window,
+		"نفدت الفوانيس": game.lanterns_window,
+		"إعادة المحاولة": game.restart_window,
+		"الإعدادات": game.settings_window,
+	}
+	for name in windows:
+		var window: SkyWindow = windows[name]
+		var found := false
+		for shell in window.buttons():
+			if (shell.get_meta("label") as Label).text == "القائمة الرئيسية":
+				found = true
+		_check("%s offers the main menu" % name, found)
+
+	# A Label that wraps on its own once claimed twenty-seven lines for a caption
+	# of five words and centred them off the bottom of the panel. Every number
+	# in the window was right; only the drawing was wrong.
+	print("=== a window's words stay inside it ===")
+	for name in windows:
+		var window: SkyWindow = windows[name]
+		# Settings is a list of rows and carries no prose; the other three say
+		# something, and what they say has to be readable.
+		if name != "الإعدادات":
+			_check("%s says something" % name, window.body_label.visible)
+		if not window.body_label.visible:
+			continue
+		var bottom: float = window.body_label.position.y + window.body_label.size.y
+		_check(
+			"%s: the prose fits the panel (%0.0f <= %0.0f)"
+				% [name, bottom, window.panel.size.y],
+			bottom <= window.panel.size.y
+		)
+		_check(
+			"%s: ...and does not spill out the sides (%0.0f <= %0.0f)"
+				% [name, window.body_label.size.x, window.panel.size.x],
+			window.body_label.size.x <= window.panel.size.x
+		)
+		var shells := window.buttons()
+		var last: GlossyPanel = shells[shells.size() - 1]
+		var foot: float = last.position.y + last.size.y
+		_check(
+			"%s: its last button is on the panel (%0.0f <= %0.0f)"
+				% [name, foot, window.panel.size.y],
+			foot <= window.panel.size.y
+		)
+
+	print("=== the restart button ===")
+	var fixture := Level.load_from("res://data/levels/sample.json")
+	game.show_level(fixture)
+	game.submit("كتاب")
+	var coins_before: int = game.coins
+	var lanterns_before: int = game.lanterns
+	(game.restart_button.get_meta("button") as Button).pressed.emit()
+	_check("it asks before it throws anything away", game.restart_window.visible)
+	_check_equal("...and the level is untouched meanwhile", game.grid.found_count(), 1)
+	(game.restart_confirm_button.get_meta("button") as Button).pressed.emit()
+	_check_equal("confirming starts the level over", game.grid.found_count(), 0)
+	# The window says the lanterns and coins are not touched. They must not be.
+	_check_equal("...without costing a lantern", game.lanterns, lanterns_before)
+	_check_equal("...or a coin", game.coins, coins_before)
+
+	print("=== running out of lanterns ===")
+	game.show_level(fixture)
+	game.lanterns = 1
+	game.coins = 500
+	for i in GameScreen.WRONG_STREAK_COST:
+		game.submit("باك")
+	_check_equal("the last lantern went out", game.lanterns, 0)
+	_check("the window opened on the guess that spent it", game.lanterns_window.visible)
+	_check("a wait started", game.capture().lantern_clock > 0)
+
+	var purse: int = game.coins
+	_check("the refill went through", game.refill_lanterns())
+	_check_equal(
+		"...and cost its price", game.coins, purse - GameScreen.LANTERN_REFILL_COST
+	)
+	_check_equal("...and filled them", game.lanterns, GameScreen.LANTERNS_MAX)
+	_check_equal("...and ended the wait", game.capture().lantern_clock, 0)
+	await get_tree().create_timer(SkyPopup.CLOSE_SECONDS + 0.08).timeout
+	_check("...and closed the window", not game.lanterns_window.visible)
+
+	game.coins = GameScreen.LANTERN_REFILL_COST - 1
+	_check("a refill you cannot afford is refused", not game.refill_lanterns())
+	_check_equal("...and takes nothing", game.coins, GameScreen.LANTERN_REFILL_COST - 1)
+
+	print("=== the settings window remembers ===")
+	var settings_path := "user://settings_test.json"
+	GameSettings.clear(settings_path)
+	game.settings_path = settings_path
+	(game.settings_button.get_meta("button") as Button).pressed.emit()
+	_check("the settings window opened", game.settings_window.visible)
+	_check_equal("music starts on", game.settings.music, true)
+	game.settings_rows[1].button.pressed.emit()
+	_check_equal("the switch turned it off", game.settings.music, false)
+	_check("...and wrote it down", FileAccess.file_exists(settings_path))
+	var reloaded := GameSettings.read(settings_path)
+	_check_equal("...where it survives a quit", reloaded.music, false)
+	_check_equal("...leaving the rest alone", reloaded.sound, true)
+	GameSettings.clear(settings_path)
+	game.settings_path = ""
+
+	print("=== the main menu button ===")
+	var asked := [false]
+	game.menu_requested.connect(func() -> void: asked[0] = true)
+	var menu: GlossyPanel = null
+	for shell in game.settings_window.buttons():
+		if (shell.get_meta("label") as Label).text == "القائمة الرئيسية":
+			menu = shell
+	(menu.get_meta("button") as Button).pressed.emit()
+	_check("pressing it asks for the menu", asked[0])
+	_check("...and takes the window away", not game.settings_window.visible)
+
+
 func _drag_wheel(indices: Array) -> void:
 	# Pushed as one burst, with no frame waits in between. Waiting would let a
 	# real mouse event from the machine running the test slip in and end the
@@ -390,8 +524,8 @@ func _drag_wheel(indices: Array) -> void:
 ## The window that ends a level, and the move to the next one.
 func _check_level_complete() -> void:
 	print("=== the level-complete window ===")
-	_check("the window opened when the grid was solved", game.popup.visible)
-	game.popup.settle()
+	_check("the window opened when the grid was solved", game.complete_window.visible)
+	game.complete_window.settle()
 	await _save_shot("level_complete")
 
 	var before := game.level.id
@@ -400,7 +534,7 @@ func _check_level_complete() -> void:
 	# The wipe swaps the content as it crosses the middle.
 	await get_tree().create_timer(MeteorWipe.DURATION + 0.15).timeout
 	_check_equal("it moved on to the next level", game.level.id, "m04-13")
-	_check("the window is gone", not game.popup.visible)
+	_check("the window is gone", not game.complete_window.visible)
 	_check_equal("the new level starts empty", game.grid.found_count(), 0)
 	# The moon is the player's, not the level's. Emptying it here would mean it
 	# never fills: a level yields two bonus words at its thinnest, and the moon

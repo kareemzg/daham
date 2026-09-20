@@ -16,6 +16,11 @@ const CLOSE_SECONDS := 0.13
 ## The window itself. Add your content to this, not to the popup.
 var panel: GlossyPanel
 
+## How far the content hangs above the panel's top edge, for a crest badge that
+## straddles it. The panel is pushed down by half of this so the window still
+## reads as centred rather than sitting low on the screen.
+var overhang: float = 0.0
+
 var _dim := ColorRect.new()
 var _halo := TextureRect.new()
 var _halo_texture: GradientTexture2D
@@ -66,7 +71,7 @@ func _notification(what: int) -> void:
 func _place() -> void:
 	_dim.position = Vector2.ZERO
 	_dim.size = size
-	panel.position = (size - panel.size) * 0.5
+	panel.position = (size - panel.size) * 0.5 + Vector2(0.0, overhang * 0.5)
 	panel.pivot_offset = panel.size * 0.5
 	var reach := panel.size * 2.0
 	_halo.size = reach
