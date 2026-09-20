@@ -1,0 +1,57 @@
+{
+  "id": "m06-05",
+  "mansion": 6,
+  "mansion_name": "الهنعة",
+  "season": "spring",
+  "index_in_mansion": 5,
+  "letters": [
+    "ن",
+    "و",
+    "ا",
+    "ب"
+  ],
+  "grid": {
+    "rows": 4,
+    "cols": 4
+  },
+  "words": [
+    {
+      "text": "ابن",
+      "row": 0,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "نواب",
+      "row": 1,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "وان",
+      "row": 1,
+      "col": 1,
+      "direction": "v"
+    },
+    {
+      "text": "بنا",
+      "row": 3,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "انب",
+    "انو",
+    "اوب",
+    "اون",
+    "بان",
+    "بوان",
+    "بون",
+    "ناب",
+    "ناو",
+    "نبا",
+    "نوب",
+    "واب"
+  ]
+}

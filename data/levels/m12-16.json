@@ -1,0 +1,67 @@
+{
+  "id": "m12-16",
+  "mansion": 12,
+  "mansion_name": "الصرفة",
+  "season": "summer",
+  "index_in_mansion": 16,
+  "letters": [
+    "م",
+    "ت",
+    "ك",
+    "ر",
+    "ر"
+  ],
+  "grid": {
+    "rows": 4,
+    "cols": 5
+  },
+  "words": [
+    {
+      "text": "متر",
+      "row": 0,
+      "col": 1,
+      "direction": "h"
+    },
+    {
+      "text": "ترك",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "تمر",
+      "row": 1,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "مرت",
+      "row": 1,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "متكرر",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "تكرر",
+    "تكرم",
+    "تمك",
+    "رتم",
+    "رمت",
+    "كتم",
+    "كرر",
+    "كرم",
+    "كمت",
+    "كمر",
+    "متك",
+    "مرر",
+    "مكت",
+    "مكر",
+    "مكرر"
+  ]
+}

@@ -37,6 +37,10 @@ var tile_radius: float = 80.0:
 ## How forgiving the hit test is; fingers are not precise.
 var hit_slack: float = 1.15
 
+## Share of the gap between two tile centres that a tile may fill. Below 1.0 the
+## tiles keep clear of each other.
+const CROWDING := 0.92
+
 var _letters: PackedStringArray = PackedStringArray()
 var _selection: PackedInt32Array = PackedInt32Array()
 var _pointer: Vector2 = Vector2.ZERO
@@ -85,9 +89,8 @@ func setup(letters: PackedStringArray) -> void:
 		tile.add_child(label)
 		_labels.append(label)
 
-	var span := body_radius * 2.0
-	custom_minimum_size = Vector2(span, span)
-	size = Vector2(span, span)
+	# Same reason as WordGrid: no minimum, or the wheel cannot be resized down.
+	size = Vector2(body_radius * 2.0, body_radius * 2.0)
 	_place()
 
 
@@ -108,10 +111,11 @@ func _place() -> void:
 	_trail.position = Vector2.ZERO
 	_trail.size = size
 
-	var diameter := tile_radius * 2.0
+	var radius := effective_tile_radius()
+	var diameter := radius * 2.0
 	var edge := diameter * EDGE_SHARE
 	# The design sets the letter at about half the tile's diameter.
-	var font_size := int(tile_radius * 1.03)
+	var font_size := int(radius * 1.03)
 	for i in _tiles.size():
 		var tile: GlossyPanel = _tiles[i]
 		tile.size = Vector2(diameter, diameter + edge)
@@ -127,6 +131,18 @@ func _place() -> void:
 
 func letter_count() -> int:
 	return _letters.size()
+
+
+## The radius tiles are actually drawn at.
+##
+## `tile_radius` is what the design asks for; this is what fits. The orbit is
+## fixed, so the more letters there are the less room each one has: seven tiles
+## at the four-letter size overlap, and the wheel reads as a smear.
+func effective_tile_radius() -> float:
+	var count := _letters.size()
+	if count < 2:
+		return tile_radius
+	return minf(tile_radius, orbit_radius * sin(PI / float(count)) * CROWDING)
 
 
 ## The letters in wheel order.
@@ -156,7 +172,7 @@ func tile_centre(index: int) -> Vector2:
 
 
 func index_at(local_position: Vector2) -> int:
-	var reach := tile_radius * hit_slack
+	var reach := effective_tile_radius() * hit_slack
 	var best := -1
 	var best_distance := reach
 	for i in _letters.size():
@@ -274,4 +290,4 @@ func _paint_trail() -> void:
 	if points.size() < 2:
 		return
 	# One stroke, the width and opacity the design draws it at.
-	_trail.draw_polyline(points, Color(Palette.TRAIL, 0.72), tile_radius * 0.55, true)
+	_trail.draw_polyline(points, Color(Palette.TRAIL, 0.72), effective_tile_radius() * 0.55, true)

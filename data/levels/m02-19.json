@@ -1,0 +1,59 @@
+{
+  "id": "m02-19",
+  "mansion": 2,
+  "mansion_name": "البطين",
+  "season": "spring",
+  "index_in_mansion": 19,
+  "letters": [
+    "ط",
+    "ب",
+    "ع",
+    "ا"
+  ],
+  "grid": {
+    "rows": 4,
+    "cols": 4
+  },
+  "words": [
+    {
+      "text": "طابع",
+      "row": 0,
+      "col": 1,
+      "direction": "v"
+    },
+    {
+      "text": "طبع",
+      "row": 0,
+      "col": 1,
+      "direction": "h"
+    },
+    {
+      "text": "عطا",
+      "row": 0,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "طبعا",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "ابط",
+    "اطبع",
+    "باط",
+    "باع",
+    "بطا",
+    "بعا",
+    "طاب",
+    "طاع",
+    "طبا",
+    "طباع",
+    "عاب",
+    "عبا",
+    "عبط",
+    "عطب"
+  ]
+}

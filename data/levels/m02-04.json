@@ -1,0 +1,48 @@
+{
+  "id": "m02-04",
+  "mansion": 2,
+  "mansion_name": "البطين",
+  "season": "spring",
+  "index_in_mansion": 4,
+  "letters": [
+    "ر",
+    "د",
+    "و",
+    "د"
+  ],
+  "grid": {
+    "rows": 3,
+    "cols": 5
+  },
+  "words": [
+    {
+      "text": "دور",
+      "row": 0,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "رود",
+      "row": 0,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "ورد",
+      "row": 0,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "ردود",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "دود",
+    "ردد",
+    "ودر"
+  ]
+}

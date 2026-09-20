@@ -1,0 +1,48 @@
+{
+  "id": "m06-16",
+  "mansion": 6,
+  "mansion_name": "الهنعة",
+  "season": "spring",
+  "index_in_mansion": 16,
+  "letters": [
+    "ش",
+    "ا",
+    "ر",
+    "ة"
+  ],
+  "grid": {
+    "rows": 4,
+    "cols": 4
+  },
+  "words": [
+    {
+      "text": "راش",
+      "row": 0,
+      "col": 1,
+      "direction": "h"
+    },
+    {
+      "text": "اشر",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "رشا",
+      "row": 1,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "شارة",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "ارش",
+    "شاة",
+    "شار"
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "id": "m05-04",
+  "mansion": 5,
+  "mansion_name": "الهقعة",
+  "season": "spring",
+  "index_in_mansion": 4,
+  "letters": [
+    "ق",
+    "د",
+    "م",
+    "ي"
+  ],
+  "grid": {
+    "rows": 4,
+    "cols": 5
+  },
+  "words": [
+    {
+      "text": "قديم",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "قيد",
+      "row": 0,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "قدمي",
+      "row": 1,
+      "col": 1,
+      "direction": "h"
+    },
+    {
+      "text": "قدم",
+      "row": 3,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "دقي",
+    "دمي",
+    "ديم",
+    "قدي",
+    "قيم",
+    "مدق",
+    "مدي",
+    "مقيد"
+  ]
+}

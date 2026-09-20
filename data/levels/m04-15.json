@@ -1,0 +1,54 @@
+{
+  "id": "m04-15",
+  "mansion": 4,
+  "mansion_name": "الدبران",
+  "season": "spring",
+  "index_in_mansion": 15,
+  "letters": [
+    "ف",
+    "ي",
+    "م",
+    "ن"
+  ],
+  "grid": {
+    "rows": 5,
+    "cols": 4
+  },
+  "words": [
+    {
+      "text": "مني",
+      "row": 0,
+      "col": 1,
+      "direction": "v"
+    },
+    {
+      "text": "فيمن",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "فني",
+      "row": 2,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "مين",
+      "row": 2,
+      "col": 2,
+      "direction": "v"
+    }
+  ],
+  "bonus": [
+    "فيم",
+    "فين",
+    "منفي",
+    "منيف",
+    "نفي",
+    "نمي",
+    "نيف",
+    "نيم",
+    "يمن"
+  ]
+}

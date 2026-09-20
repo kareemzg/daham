@@ -13,7 +13,7 @@ Targets: iOS, Android, macOS, Windows, Linux (Steam). Engine: Godot 4, GDScript.
 - `assets/ui/icons/` the icon set as SVG, imported at five times its 64px box. Godot rasterises SVG with ThorVG, which does paths, strokes and gradients but not filters, masks or text.
 - `assets/ui/glossy_panel.gdshader` the one shader the whole interface is drawn with: a rounded rect with a three-stop gradient, run down the face or outward from a point, plus a top highlight, a same-hue border, the hard bottom edge and an optional dark inner rim. `assets/ui/panel_shadow.gdshader` draws what goes under it, a soft drop shadow or a hard ring. `GlossyPanel` wraps both with a preset per element, every number in the 1080-wide reference space.
 - `assets/fonts/` bundled Amiri (display, manuscript text) and IBM Plex Sans Arabic (UI), both under the SIL Open Font License with the license file beside each family. Scenes reference the `.tres` FontVariation resources, not the TTFs directly. `assets/theme/default_theme.tres` makes Plex the default font for every Control.
-- `data/levels/` generated level JSON, produced by `tools/pipeline/`, never edited by hand.
+- `data/levels/` 560 generated levels plus the hand-written `sample.json` the test runs against. Produced by `tools/pipeline/`, never edited by hand.
 - `tools/pipeline/` Python content pipeline: crossword layout and level export. See its README.
 - `docs/` design documents: `story-sky.md` is the story bible; `claude-design-prompt.md` keeps the palette, type and motion spec (its story sections are superseded).
 
@@ -34,7 +34,7 @@ Check it before committing engine changes:
 godot --path . --quit-after 900 res://scenes/dev/game_test.tscn
 ```
 
-52 checks covering level data, Arabic normalisation, the drag path through real
+60 checks covering level data, Arabic normalisation, the drag path through real
 input events, the word rules, the lantern penalty, the hint and shuffle buttons,
 and the on-screen layout. It exits non-zero on failure and writes
 `tools/out/game_slice.png` to look at. Some checks read pixels back out of that

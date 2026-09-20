@@ -1,0 +1,56 @@
+{
+  "id": "m08-11",
+  "mansion": 8,
+  "mansion_name": "النثرة",
+  "season": "summer",
+  "index_in_mansion": 11,
+  "letters": [
+    "ج",
+    "ا",
+    "ئ",
+    "ز",
+    "ة"
+  ],
+  "grid": {
+    "rows": 5,
+    "cols": 6
+  },
+  "words": [
+    {
+      "text": "جاز",
+      "row": 0,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "جزئ",
+      "row": 0,
+      "col": 3,
+      "direction": "h"
+    },
+    {
+      "text": "جائز",
+      "row": 1,
+      "col": 1,
+      "direction": "v"
+    },
+    {
+      "text": "جائزة",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "جزا",
+      "row": 4,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "اجئ",
+    "اجز",
+    "ازج",
+    "زاج"
+  ]
+}

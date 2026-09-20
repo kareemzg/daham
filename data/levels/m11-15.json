@@ -1,0 +1,57 @@
+{
+  "id": "m11-15",
+  "mansion": 11,
+  "mansion_name": "الزبرة",
+  "season": "summer",
+  "index_in_mansion": 15,
+  "letters": [
+    "ت",
+    "ح",
+    "د",
+    "ي",
+    "د"
+  ],
+  "grid": {
+    "rows": 5,
+    "cols": 7
+  },
+  "words": [
+    {
+      "text": "حديد",
+      "row": 0,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "حدد",
+      "row": 0,
+      "col": 6,
+      "direction": "v"
+    },
+    {
+      "text": "تحديد",
+      "row": 1,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "تحدد",
+      "row": 1,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "تحدي",
+      "row": 4,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "تحد",
+    "حددي",
+    "حدي",
+    "حيت",
+    "حيد"
+  ]
+}

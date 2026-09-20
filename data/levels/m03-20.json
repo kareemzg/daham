@@ -1,0 +1,56 @@
+{
+  "id": "m03-20",
+  "mansion": 3,
+  "mansion_name": "الثريا",
+  "season": "spring",
+  "index_in_mansion": 20,
+  "letters": [
+    "ا",
+    "ح",
+    "ذ",
+    "ي",
+    "ة"
+  ],
+  "grid": {
+    "rows": 4,
+    "cols": 6
+  },
+  "words": [
+    {
+      "text": "حياة",
+      "row": 0,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "اية",
+      "row": 0,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "حية",
+      "row": 1,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "حيا",
+      "row": 1,
+      "col": 3,
+      "direction": "h"
+    },
+    {
+      "text": "احذية",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "احي",
+    "اذي",
+    "اذية",
+    "حذا"
+  ]
+}

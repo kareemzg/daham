@@ -1,0 +1,50 @@
+{
+  "id": "m04-01",
+  "mansion": 4,
+  "mansion_name": "الدبران",
+  "season": "spring",
+  "index_in_mansion": 1,
+  "letters": [
+    "ص",
+    "ا",
+    "ل",
+    "ة"
+  ],
+  "grid": {
+    "rows": 4,
+    "cols": 6
+  },
+  "words": [
+    {
+      "text": "صالة",
+      "row": 0,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "صلاة",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "اصل",
+      "row": 1,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "الة",
+      "row": 2,
+      "col": 2,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "صال",
+    "صلا",
+    "صلة",
+    "لصا",
+    "لصة"
+  ]
+}

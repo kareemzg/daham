@@ -1,0 +1,50 @@
+{
+  "id": "m01-09",
+  "mansion": 1,
+  "mansion_name": "الشرطان",
+  "season": "spring",
+  "index_in_mansion": 9,
+  "letters": [
+    "م",
+    "ا",
+    "س",
+    "ة"
+  ],
+  "grid": {
+    "rows": 3,
+    "cols": 5
+  },
+  "words": [
+    {
+      "text": "اسم",
+      "row": 0,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "امس",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "امة",
+      "row": 0,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "ماسة",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "سام",
+    "سما",
+    "سمة",
+    "ماس",
+    "مسا"
+  ]
+}

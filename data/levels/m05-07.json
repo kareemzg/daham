@@ -1,0 +1,60 @@
+{
+  "id": "m05-07",
+  "mansion": 5,
+  "mansion_name": "الهقعة",
+  "season": "spring",
+  "index_in_mansion": 7,
+  "letters": [
+    "ت",
+    "ج",
+    "ه",
+    "ي",
+    "ز"
+  ],
+  "grid": {
+    "rows": 5,
+    "cols": 6
+  },
+  "words": [
+    {
+      "text": "تجهيز",
+      "row": 0,
+      "col": 1,
+      "direction": "h"
+    },
+    {
+      "text": "تجهز",
+      "row": 0,
+      "col": 1,
+      "direction": "v"
+    },
+    {
+      "text": "زيت",
+      "row": 0,
+      "col": 5,
+      "direction": "v"
+    },
+    {
+      "text": "تهيج",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "جهز",
+      "row": 2,
+      "col": 3,
+      "direction": "v"
+    }
+  ],
+  "bonus": [
+    "تهجي",
+    "تيه",
+    "جزت",
+    "جزي",
+    "جهزي",
+    "جيز",
+    "زيج",
+    "هيج"
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "id": "m06-13",
+  "mansion": 6,
+  "mansion_name": "الهنعة",
+  "season": "spring",
+  "index_in_mansion": 13,
+  "letters": [
+    "خ",
+    "ل",
+    "ا",
+    "ص"
+  ],
+  "grid": {
+    "rows": 3,
+    "cols": 4
+  },
+  "words": [
+    {
+      "text": "اصل",
+      "row": 0,
+      "col": 1,
+      "direction": "v"
+    },
+    {
+      "text": "الخ",
+      "row": 0,
+      "col": 1,
+      "direction": "h"
+    },
+    {
+      "text": "خاص",
+      "row": 0,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "خلاص",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "اخص",
+    "اخل",
+    "اخلص",
+    "خال",
+    "خالص",
+    "خصال",
+    "خصل",
+    "خلا",
+    "خلص",
+    "صال",
+    "صلا",
+    "لاخ",
+    "لخص",
+    "لصا"
+  ]
+}

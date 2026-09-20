@@ -1,0 +1,57 @@
+{
+  "id": "m10-17",
+  "mansion": 10,
+  "mansion_name": "الجبهة",
+  "season": "summer",
+  "index_in_mansion": 17,
+  "letters": [
+    "م",
+    "و",
+    "ض",
+    "و",
+    "ع"
+  ],
+  "grid": {
+    "rows": 4,
+    "cols": 6
+  },
+  "words": [
+    {
+      "text": "موضوع",
+      "row": 0,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "موضع",
+      "row": 0,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "وضع",
+      "row": 0,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "عوض",
+      "row": 2,
+      "col": 3,
+      "direction": "h"
+    },
+    {
+      "text": "عضو",
+      "row": 3,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "عوم",
+    "معوض",
+    "وضم",
+    "وعم",
+    "ومض"
+  ]
+}

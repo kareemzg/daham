@@ -1,0 +1,48 @@
+{
+  "id": "m05-08",
+  "mansion": 5,
+  "mansion_name": "الهقعة",
+  "season": "spring",
+  "index_in_mansion": 8,
+  "letters": [
+    "ت",
+    "ق",
+    "ض",
+    "ي"
+  ],
+  "grid": {
+    "rows": 3,
+    "cols": 5
+  },
+  "words": [
+    {
+      "text": "تقضي",
+      "row": 0,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "تقي",
+      "row": 0,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "ضيق",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "قضت",
+      "row": 2,
+      "col": 2,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "تضيق",
+    "قضي",
+    "قيض"
+  ]
+}

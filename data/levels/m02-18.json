@@ -1,0 +1,52 @@
+{
+  "id": "m02-18",
+  "mansion": 2,
+  "mansion_name": "البطين",
+  "season": "spring",
+  "index_in_mansion": 18,
+  "letters": [
+    "ر",
+    "ق",
+    "ص",
+    "ة"
+  ],
+  "grid": {
+    "rows": 3,
+    "cols": 5
+  },
+  "words": [
+    {
+      "text": "قصر",
+      "row": 0,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "رقص",
+      "row": 0,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "قصة",
+      "row": 0,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "رقصة",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "رقة",
+    "صرة",
+    "صقر",
+    "قرة",
+    "قرص",
+    "قرصة",
+    "قصرة"
+  ]
+}

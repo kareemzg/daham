@@ -1,0 +1,53 @@
+{
+  "id": "m07-13",
+  "mansion": 7,
+  "mansion_name": "الذراع",
+  "season": "spring",
+  "index_in_mansion": 13,
+  "letters": [
+    "ت",
+    "ع",
+    "ي",
+    "ش"
+  ],
+  "grid": {
+    "rows": 4,
+    "cols": 5
+  },
+  "words": [
+    {
+      "text": "تشيع",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "تعش",
+      "row": 1,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "عيش",
+      "row": 1,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "تعيش",
+      "row": 3,
+      "col": 1,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "تشع",
+    "تعشي",
+    "تيش",
+    "شيت",
+    "شيع",
+    "عتي",
+    "عشي",
+    "يعش"
+  ]
+}

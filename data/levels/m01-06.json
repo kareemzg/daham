@@ -1,0 +1,51 @@
+{
+  "id": "m01-06",
+  "mansion": 1,
+  "mansion_name": "الشرطان",
+  "season": "spring",
+  "index_in_mansion": 6,
+  "letters": [
+    "ت",
+    "ع",
+    "ر",
+    "ض"
+  ],
+  "grid": {
+    "rows": 3,
+    "cols": 5
+  },
+  "words": [
+    {
+      "text": "تعر",
+      "row": 0,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "رضع",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "عرض",
+      "row": 0,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "تعرض",
+      "row": 2,
+      "col": 1,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "ترع",
+    "تضرع",
+    "رعت",
+    "ضرع",
+    "عتر",
+    "عرت"
+  ]
+}

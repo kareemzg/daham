@@ -1,0 +1,56 @@
+{
+  "id": "m02-09",
+  "mansion": 2,
+  "mansion_name": "البطين",
+  "season": "spring",
+  "index_in_mansion": 9,
+  "letters": [
+    "س",
+    "و",
+    "ر",
+    "ي"
+  ],
+  "grid": {
+    "rows": 3,
+    "cols": 6
+  },
+  "words": [
+    {
+      "text": "سوري",
+      "row": 0,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "سري",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "روس",
+      "row": 0,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "سير",
+      "row": 1,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "رسو",
+    "رسي",
+    "روسي",
+    "روي",
+    "سرو",
+    "سور",
+    "سوي",
+    "ورس",
+    "وري",
+    "ويس",
+    "يسر"
+  ]
+}

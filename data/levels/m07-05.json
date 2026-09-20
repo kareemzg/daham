@@ -1,0 +1,54 @@
+{
+  "id": "m07-05",
+  "mansion": 7,
+  "mansion_name": "الذراع",
+  "season": "spring",
+  "index_in_mansion": 5,
+  "letters": [
+    "ق",
+    "ر",
+    "و",
+    "ن"
+  ],
+  "grid": {
+    "rows": 3,
+    "cols": 5
+  },
+  "words": [
+    {
+      "text": "قرون",
+      "row": 0,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "قرن",
+      "row": 0,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "نور",
+      "row": 0,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "ورق",
+      "row": 2,
+      "col": 2,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "روق",
+    "رونق",
+    "قرو",
+    "قنو",
+    "قور",
+    "نقر",
+    "نقو",
+    "نوق",
+    "وقر"
+  ]
+}

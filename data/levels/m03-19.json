@@ -1,0 +1,67 @@
+{
+  "id": "m03-19",
+  "mansion": 3,
+  "mansion_name": "الثريا",
+  "season": "spring",
+  "index_in_mansion": 19,
+  "letters": [
+    "ف",
+    "ا",
+    "ك",
+    "ه",
+    "ة"
+  ],
+  "grid": {
+    "rows": 5,
+    "cols": 5
+  },
+  "words": [
+    {
+      "text": "كافة",
+      "row": 0,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "كهف",
+      "row": 0,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "افة",
+      "row": 0,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "فاكهة",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "كاف",
+      "row": 2,
+      "col": 2,
+      "direction": "v"
+    }
+  ],
+  "bonus": [
+    "افك",
+    "افكه",
+    "اكف",
+    "اهة",
+    "فاه",
+    "فكاهة",
+    "فكة",
+    "فكه",
+    "فها",
+    "كاه",
+    "كفا",
+    "كفاة",
+    "كفة",
+    "هاف",
+    "هفا"
+  ]
+}

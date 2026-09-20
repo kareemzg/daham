@@ -1,0 +1,62 @@
+{
+  "id": "m08-20",
+  "mansion": 8,
+  "mansion_name": "النثرة",
+  "season": "summer",
+  "index_in_mansion": 20,
+  "letters": [
+    "ا",
+    "ن",
+    "ذ",
+    "ا",
+    "ك"
+  ],
+  "grid": {
+    "rows": 3,
+    "cols": 7
+  },
+  "words": [
+    {
+      "text": "كنا",
+      "row": 0,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "انذاك",
+      "row": 0,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "اذا",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "كان",
+      "row": 0,
+      "col": 6,
+      "direction": "v"
+    },
+    {
+      "text": "انا",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "اذاك",
+    "اذان",
+    "اذن",
+    "اكن",
+    "انك",
+    "ذاك",
+    "ذان",
+    "كانا",
+    "كذا",
+    "ناك"
+  ]
+}

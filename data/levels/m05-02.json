@@ -1,0 +1,53 @@
+{
+  "id": "m05-02",
+  "mansion": 5,
+  "mansion_name": "الهقعة",
+  "season": "spring",
+  "index_in_mansion": 2,
+  "letters": [
+    "م",
+    "ا",
+    "ي",
+    "و"
+  ],
+  "grid": {
+    "rows": 4,
+    "cols": 5
+  },
+  "words": [
+    {
+      "text": "مايو",
+      "row": 0,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "يوما",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "يوم",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "امي",
+      "row": 3,
+      "col": 2,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "امو",
+    "اموي",
+    "اوي",
+    "ايم",
+    "ماو",
+    "ماوي",
+    "ماي",
+    "وام"
+  ]
+}

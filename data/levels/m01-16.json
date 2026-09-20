@@ -1,0 +1,55 @@
+{
+  "id": "m01-16",
+  "mansion": 1,
+  "mansion_name": "الشرطان",
+  "season": "spring",
+  "index_in_mansion": 16,
+  "letters": [
+    "ت",
+    "ص",
+    "ف",
+    "ح"
+  ],
+  "grid": {
+    "rows": 3,
+    "cols": 5
+  },
+  "words": [
+    {
+      "text": "صحف",
+      "row": 0,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "فحص",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "فتح",
+      "row": 0,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "تصفح",
+      "row": 2,
+      "col": 1,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "تحف",
+    "تصح",
+    "تفحص",
+    "تفصح",
+    "حتف",
+    "حفت",
+    "حفص",
+    "صفت",
+    "صفح",
+    "فصح"
+  ]
+}

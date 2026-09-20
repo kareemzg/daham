@@ -1,0 +1,49 @@
+{
+  "id": "m03-09",
+  "mansion": 3,
+  "mansion_name": "الثريا",
+  "season": "spring",
+  "index_in_mansion": 9,
+  "letters": [
+    "ص",
+    "غ",
+    "ي",
+    "ر"
+  ],
+  "grid": {
+    "rows": 5,
+    "cols": 4
+  },
+  "words": [
+    {
+      "text": "صيغ",
+      "row": 0,
+      "col": 1,
+      "direction": "v"
+    },
+    {
+      "text": "غير",
+      "row": 0,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "صغير",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "صغر",
+      "row": 2,
+      "col": 0,
+      "direction": "v"
+    }
+  ],
+  "bonus": [
+    "صري",
+    "صير",
+    "غري",
+    "يغر"
+  ]
+}

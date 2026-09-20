@@ -1,0 +1,48 @@
+{
+  "id": "m01-15",
+  "mansion": 1,
+  "mansion_name": "الشرطان",
+  "season": "spring",
+  "index_in_mansion": 15,
+  "letters": [
+    "ا",
+    "ر",
+    "ا",
+    "ك"
+  ],
+  "grid": {
+    "rows": 3,
+    "cols": 4
+  },
+  "words": [
+    {
+      "text": "كار",
+      "row": 0,
+      "col": 1,
+      "direction": "v"
+    },
+    {
+      "text": "كرا",
+      "row": 0,
+      "col": 1,
+      "direction": "h"
+    },
+    {
+      "text": "ارك",
+      "row": 0,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "اراك",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "ارا",
+    "اكار",
+    "اكر"
+  ]
+}

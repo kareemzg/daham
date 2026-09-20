@@ -1,0 +1,49 @@
+{
+  "id": "m02-11",
+  "mansion": 2,
+  "mansion_name": "البطين",
+  "season": "spring",
+  "index_in_mansion": 11,
+  "letters": [
+    "ر",
+    "ح",
+    "ي",
+    "ل"
+  ],
+  "grid": {
+    "rows": 3,
+    "cols": 6
+  },
+  "words": [
+    {
+      "text": "ريح",
+      "row": 0,
+      "col": 1,
+      "direction": "v"
+    },
+    {
+      "text": "رحل",
+      "row": 0,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "حيل",
+      "row": 1,
+      "col": 3,
+      "direction": "h"
+    },
+    {
+      "text": "رحيل",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "حري",
+    "حلي",
+    "حير",
+    "لحي"
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "id": "m06-10",
+  "mansion": 6,
+  "mansion_name": "الهنعة",
+  "season": "spring",
+  "index_in_mansion": 10,
+  "letters": [
+    "م",
+    "ص",
+    "ر",
+    "ف"
+  ],
+  "grid": {
+    "rows": 3,
+    "cols": 6
+  },
+  "words": [
+    {
+      "text": "مصرف",
+      "row": 0,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "مصر",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "فرص",
+      "row": 0,
+      "col": 5,
+      "direction": "v"
+    },
+    {
+      "text": "صفر",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "رصف",
+    "صرف",
+    "صرم",
+    "فرم",
+    "فصم",
+    "مصف",
+    "مصفر",
+    "مفر"
+  ]
+}

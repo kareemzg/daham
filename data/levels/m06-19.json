@@ -1,0 +1,53 @@
+{
+  "id": "m06-19",
+  "mansion": 6,
+  "mansion_name": "الهنعة",
+  "season": "spring",
+  "index_in_mansion": 19,
+  "letters": [
+    "ع",
+    "ا",
+    "ط",
+    "ف"
+  ],
+  "grid": {
+    "rows": 5,
+    "cols": 4
+  },
+  "words": [
+    {
+      "text": "عفا",
+      "row": 0,
+      "col": 1,
+      "direction": "v"
+    },
+    {
+      "text": "عطف",
+      "row": 0,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "عاطف",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "عطا",
+      "row": 2,
+      "col": 0,
+      "direction": "v"
+    }
+  ],
+  "bonus": [
+    "اعطف",
+    "اعف",
+    "طاع",
+    "طاف",
+    "طفا",
+    "عاف",
+    "عطاف",
+    "فاع"
+  ]
+}

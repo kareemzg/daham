@@ -1,0 +1,61 @@
+{
+  "id": "m06-09",
+  "mansion": 6,
+  "mansion_name": "الهنعة",
+  "season": "spring",
+  "index_in_mansion": 9,
+  "letters": [
+    "ق",
+    "ر",
+    "ا",
+    "ء",
+    "ة"
+  ],
+  "grid": {
+    "rows": 4,
+    "cols": 7
+  },
+  "words": [
+    {
+      "text": "قراءة",
+      "row": 0,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "قارة",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "اقر",
+      "row": 0,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "قرا",
+      "row": 1,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "قرة",
+      "row": 3,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "ارق",
+    "راء",
+    "راق",
+    "رقا",
+    "رقة",
+    "قاء",
+    "قار",
+    "قراء",
+    "قراة"
+  ]
+}

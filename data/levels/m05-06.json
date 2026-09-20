@@ -1,0 +1,57 @@
+{
+  "id": "m05-06",
+  "mansion": 5,
+  "mansion_name": "الهقعة",
+  "season": "spring",
+  "index_in_mansion": 6,
+  "letters": [
+    "ر",
+    "م",
+    "و",
+    "ز"
+  ],
+  "grid": {
+    "rows": 3,
+    "cols": 6
+  },
+  "words": [
+    {
+      "text": "رموز",
+      "row": 0,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "رمز",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "ورم",
+      "row": 0,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "روم",
+      "row": 1,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "رزم",
+    "زمر",
+    "زمور",
+    "زور",
+    "زوم",
+    "مرز",
+    "مرو",
+    "مزر",
+    "مزور",
+    "موز",
+    "موزر",
+    "وزر"
+  ]
+}

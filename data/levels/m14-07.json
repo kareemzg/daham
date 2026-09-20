@@ -1,0 +1,58 @@
+{
+  "id": "m14-07",
+  "mansion": 14,
+  "mansion_name": "السماك",
+  "season": "summer",
+  "index_in_mansion": 7,
+  "letters": [
+    "ح",
+    "ي",
+    "ا",
+    "ز",
+    "ة"
+  ],
+  "grid": {
+    "rows": 5,
+    "cols": 5
+  },
+  "words": [
+    {
+      "text": "حياة",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "حيا",
+      "row": 0,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "اية",
+      "row": 0,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "حيازة",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "حية",
+      "row": 2,
+      "col": 0,
+      "direction": "v"
+    }
+  ],
+  "bonus": [
+    "احي",
+    "ازح",
+    "حاز",
+    "حيز",
+    "زاي",
+    "زيا"
+  ]
+}

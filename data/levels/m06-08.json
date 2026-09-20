@@ -1,0 +1,57 @@
+{
+  "id": "m06-08",
+  "mansion": 6,
+  "mansion_name": "الهنعة",
+  "season": "spring",
+  "index_in_mansion": 8,
+  "letters": [
+    "ت",
+    "ف",
+    "و",
+    "ق"
+  ],
+  "grid": {
+    "rows": 3,
+    "cols": 5
+  },
+  "words": [
+    {
+      "text": "وقت",
+      "row": 0,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "وفق",
+      "row": 0,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "فوق",
+      "row": 0,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "تفوق",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "تقو",
+    "توف",
+    "توفق",
+    "توق",
+    "توقف",
+    "فتق",
+    "فتو",
+    "فتوق",
+    "فوت",
+    "قوت",
+    "وفت",
+    "وقف"
+  ]
+}

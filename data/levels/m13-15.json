@@ -1,0 +1,63 @@
+{
+  "id": "m13-15",
+  "mansion": 13,
+  "mansion_name": "العواء",
+  "season": "summer",
+  "index_in_mansion": 15,
+  "letters": [
+    "ا",
+    "ش",
+    "ع",
+    "ا",
+    "ل"
+  ],
+  "grid": {
+    "rows": 3,
+    "cols": 8
+  },
+  "words": [
+    {
+      "text": "عاش",
+      "row": 0,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "الا",
+      "row": 0,
+      "col": 1,
+      "direction": "v"
+    },
+    {
+      "text": "عال",
+      "row": 0,
+      "col": 5,
+      "direction": "v"
+    },
+    {
+      "text": "علا",
+      "row": 0,
+      "col": 5,
+      "direction": "h"
+    },
+    {
+      "text": "اشعال",
+      "row": 2,
+      "col": 1,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "اشاع",
+    "اشع",
+    "اشعل",
+    "اشل",
+    "اعش",
+    "اعل",
+    "شاع",
+    "شال",
+    "شعل",
+    "شلا",
+    "عشا"
+  ]
+}

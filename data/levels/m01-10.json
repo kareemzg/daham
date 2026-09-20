@@ -1,0 +1,48 @@
+{
+  "id": "m01-10",
+  "mansion": 1,
+  "mansion_name": "الشرطان",
+  "season": "spring",
+  "index_in_mansion": 10,
+  "letters": [
+    "ع",
+    "ش",
+    "ا",
+    "ء"
+  ],
+  "grid": {
+    "rows": 3,
+    "cols": 5
+  },
+  "words": [
+    {
+      "text": "شاع",
+      "row": 0,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "عاش",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "شاء",
+      "row": 0,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "عشاء",
+      "row": 2,
+      "col": 1,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "اشع",
+    "اعش",
+    "عشا"
+  ]
+}

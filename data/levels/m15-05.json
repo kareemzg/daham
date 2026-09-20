@@ -1,0 +1,66 @@
+{
+  "id": "m15-05",
+  "mansion": 15,
+  "mansion_name": "الغفر",
+  "season": "autumn",
+  "index_in_mansion": 5,
+  "letters": [
+    "ت",
+    "س",
+    "ي",
+    "ط",
+    "ر"
+  ],
+  "grid": {
+    "rows": 5,
+    "cols": 5
+  },
+  "words": [
+    {
+      "text": "يسر",
+      "row": 0,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "سيطر",
+      "row": 0,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "تسيطر",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "سري",
+      "row": 2,
+      "col": 1,
+      "direction": "v"
+    },
+    {
+      "text": "سير",
+      "row": 4,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "ترس",
+    "تري",
+    "تسر",
+    "تسطير",
+    "تطر",
+    "تطير",
+    "تيس",
+    "تيسر",
+    "رسي",
+    "ستر",
+    "سطر",
+    "سيرت",
+    "طري",
+    "طير"
+  ]
+}

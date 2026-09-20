@@ -1,0 +1,57 @@
+{
+  "id": "m05-16",
+  "mansion": 5,
+  "mansion_name": "الهقعة",
+  "season": "spring",
+  "index_in_mansion": 16,
+  "letters": [
+    "س",
+    "ي",
+    "ا",
+    "س",
+    "ة"
+  ],
+  "grid": {
+    "rows": 3,
+    "cols": 7
+  },
+  "words": [
+    {
+      "text": "اسس",
+      "row": 0,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "ايس",
+      "row": 0,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "اية",
+      "row": 0,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "ياس",
+      "row": 1,
+      "col": 4,
+      "direction": "h"
+    },
+    {
+      "text": "سياسة",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "اسي",
+    "اسية",
+    "ساس",
+    "ساسة",
+    "سيس"
+  ]
+}

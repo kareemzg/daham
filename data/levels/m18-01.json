@@ -1,0 +1,62 @@
+{
+  "id": "m18-01",
+  "mansion": 18,
+  "mansion_name": "القلب",
+  "season": "autumn",
+  "index_in_mansion": 1,
+  "letters": [
+    "ا",
+    "س",
+    "ا",
+    "س",
+    "ي",
+    "ا"
+  ],
+  "grid": {
+    "rows": 5,
+    "cols": 6
+  },
+  "words": [
+    {
+      "text": "اساسيا",
+      "row": 0,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "اساسي",
+      "row": 0,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "اساسا",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "اسيا",
+      "row": 0,
+      "col": 5,
+      "direction": "v"
+    },
+    {
+      "text": "اساس",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "اسا",
+    "اسس",
+    "اسي",
+    "ايا",
+    "اياس",
+    "ايس",
+    "ساس",
+    "سيس",
+    "ياس"
+  ]
+}

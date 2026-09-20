@@ -1,0 +1,64 @@
+{
+  "id": "m09-17",
+  "mansion": 9,
+  "mansion_name": "الطرف",
+  "season": "summer",
+  "index_in_mansion": 17,
+  "letters": [
+    "م",
+    "م",
+    "د",
+    "و",
+    "ح"
+  ],
+  "grid": {
+    "rows": 6,
+    "cols": 5
+  },
+  "words": [
+    {
+      "text": "محمد",
+      "row": 0,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "ممدوح",
+      "row": 1,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "محمود",
+      "row": 1,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "حمد",
+      "row": 3,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "دوم",
+      "row": 5,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "حمم",
+    "حمو",
+    "حوم",
+    "دوح",
+    "محم",
+    "محو",
+    "مدح",
+    "ممحو",
+    "موحد",
+    "وحد",
+    "وحم",
+    "ومد"
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "id": "m04-04",
+  "mansion": 4,
+  "mansion_name": "الدبران",
+  "season": "spring",
+  "index_in_mansion": 4,
+  "letters": [
+    "و",
+    "ز",
+    "ي",
+    "ر"
+  ],
+  "grid": {
+    "rows": 4,
+    "cols": 4
+  },
+  "words": [
+    {
+      "text": "زور",
+      "row": 0,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "وزير",
+      "row": 1,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "روي",
+      "row": 1,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "زوي",
+      "row": 3,
+      "col": 1,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "رزي",
+    "زري",
+    "زوري",
+    "زير",
+    "وري",
+    "وزر"
+  ]
+}

@@ -68,8 +68,8 @@ func setup(level: Level) -> void:
 		panel.add_child(label)
 		_labels[cell] = label
 
-	custom_minimum_size = grid_size()
-	size = grid_size()
+	# No custom_minimum_size: the caller positions this control and sets its cell
+	# size, and a minimum recorded here would stop it shrinking for a wider grid.
 	_place()
 
 

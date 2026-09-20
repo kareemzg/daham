@@ -1,0 +1,50 @@
+{
+  "id": "m07-09",
+  "mansion": 7,
+  "mansion_name": "الذراع",
+  "season": "spring",
+  "index_in_mansion": 9,
+  "letters": [
+    "س",
+    "ه",
+    "ي",
+    "ل"
+  ],
+  "grid": {
+    "rows": 3,
+    "cols": 6
+  },
+  "words": [
+    {
+      "text": "هيل",
+      "row": 0,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "ليس",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "سهل",
+      "row": 0,
+      "col": 5,
+      "direction": "v"
+    },
+    {
+      "text": "سهيل",
+      "row": 2,
+      "col": 2,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "سلي",
+    "سهلي",
+    "سيل",
+    "لهي",
+    "هلس"
+  ]
+}

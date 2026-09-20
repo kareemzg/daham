@@ -1,0 +1,54 @@
+{
+  "id": "m03-04",
+  "mansion": 3,
+  "mansion_name": "الثريا",
+  "season": "spring",
+  "index_in_mansion": 4,
+  "letters": [
+    "ت",
+    "ن",
+    "ف",
+    "س"
+  ],
+  "grid": {
+    "rows": 3,
+    "cols": 5
+  },
+  "words": [
+    {
+      "text": "تنفس",
+      "row": 0,
+      "col": 1,
+      "direction": "h"
+    },
+    {
+      "text": "نفس",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "سفن",
+      "row": 0,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "تنس",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "سفت",
+    "سنت",
+    "فتن",
+    "فنس",
+    "نتس",
+    "نتف",
+    "نست",
+    "نسف",
+    "نفت"
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "id": "m01-11",
+  "mansion": 1,
+  "mansion_name": "الشرطان",
+  "season": "spring",
+  "index_in_mansion": 11,
+  "letters": [
+    "ت",
+    "ل",
+    "ق",
+    "ى"
+  ],
+  "grid": {
+    "rows": 4,
+    "cols": 4
+  },
+  "words": [
+    {
+      "text": "قتلى",
+      "row": 0,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "قتل",
+      "row": 1,
+      "col": 1,
+      "direction": "v"
+    },
+    {
+      "text": "قلت",
+      "row": 1,
+      "col": 1,
+      "direction": "h"
+    },
+    {
+      "text": "تلقى",
+      "row": 3,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "تقلى",
+    "تلق",
+    "تلى",
+    "قلى",
+    "لقى"
+  ]
+}

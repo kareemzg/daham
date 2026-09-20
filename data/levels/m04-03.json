@@ -1,0 +1,55 @@
+{
+  "id": "m04-03",
+  "mansion": 4,
+  "mansion_name": "الدبران",
+  "season": "spring",
+  "index_in_mansion": 3,
+  "letters": [
+    "ق",
+    "د",
+    "و",
+    "م"
+  ],
+  "grid": {
+    "rows": 3,
+    "cols": 6
+  },
+  "words": [
+    {
+      "text": "وقد",
+      "row": 0,
+      "col": 1,
+      "direction": "v"
+    },
+    {
+      "text": "قدم",
+      "row": 0,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "قوم",
+      "row": 0,
+      "col": 3,
+      "direction": "h"
+    },
+    {
+      "text": "قدوم",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "دوق",
+    "دوم",
+    "قدو",
+    "قود",
+    "مدق",
+    "مقود",
+    "موقد",
+    "ودق",
+    "وقم",
+    "ومد"
+  ]
+}

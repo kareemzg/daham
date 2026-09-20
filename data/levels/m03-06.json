@@ -1,0 +1,65 @@
+{
+  "id": "m03-06",
+  "mansion": 3,
+  "mansion_name": "الثريا",
+  "season": "spring",
+  "index_in_mansion": 6,
+  "letters": [
+    "و",
+    "ا",
+    "ح",
+    "د",
+    "ة"
+  ],
+  "grid": {
+    "rows": 5,
+    "cols": 6
+  },
+  "words": [
+    {
+      "text": "اود",
+      "row": 0,
+      "col": 3,
+      "direction": "h"
+    },
+    {
+      "text": "وحدة",
+      "row": 0,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "واحد",
+      "row": 1,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "واحدة",
+      "row": 2,
+      "col": 1,
+      "direction": "h"
+    },
+    {
+      "text": "احد",
+      "row": 4,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "ادو",
+    "اوحد",
+    "حاد",
+    "حدا",
+    "حدة",
+    "حدوة",
+    "دحا",
+    "دواة",
+    "دوح",
+    "دوحة",
+    "واحة",
+    "واد",
+    "وحد"
+  ]
+}

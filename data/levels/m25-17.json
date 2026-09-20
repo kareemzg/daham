@@ -1,0 +1,71 @@
+{
+  "id": "m25-17",
+  "mansion": 25,
+  "mansion_name": "سعد الأخبية",
+  "season": "winter",
+  "index_in_mansion": 17,
+  "letters": [
+    "ا",
+    "ب",
+    "ت",
+    "ز",
+    "ا",
+    "ز"
+  ],
+  "grid": {
+    "rows": 4,
+    "cols": 7
+  },
+  "words": [
+    {
+      "text": "تاب",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "باز",
+      "row": 0,
+      "col": 4,
+      "direction": "h"
+    },
+    {
+      "text": "ابا",
+      "row": 0,
+      "col": 5,
+      "direction": "v"
+    },
+    {
+      "text": "تبا",
+      "row": 1,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "بات",
+      "row": 1,
+      "col": 1,
+      "direction": "v"
+    },
+    {
+      "text": "ابتزاز",
+      "row": 2,
+      "col": 1,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "ابات",
+    "ابت",
+    "ابتز",
+    "ابز",
+    "اتا",
+    "ازا",
+    "ازب",
+    "بتا",
+    "بزاز",
+    "تاز",
+    "زاب",
+    "زات"
+  ]
+}

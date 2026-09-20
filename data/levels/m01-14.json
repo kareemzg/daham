@@ -1,0 +1,52 @@
+{
+  "id": "m01-14",
+  "mansion": 1,
+  "mansion_name": "الشرطان",
+  "season": "spring",
+  "index_in_mansion": 14,
+  "letters": [
+    "خ",
+    "ل",
+    "ف",
+    "ي"
+  ],
+  "grid": {
+    "rows": 3,
+    "cols": 6
+  },
+  "words": [
+    {
+      "text": "خفي",
+      "row": 0,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "خلفي",
+      "row": 0,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "خلف",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "فيل",
+      "row": 1,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "خلي",
+    "خليف",
+    "خيف",
+    "خيل",
+    "فلي",
+    "لفخ",
+    "ليف"
+  ]
+}

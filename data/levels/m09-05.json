@@ -1,0 +1,62 @@
+{
+  "id": "m09-05",
+  "mansion": 9,
+  "mansion_name": "الطرف",
+  "season": "summer",
+  "index_in_mansion": 5,
+  "letters": [
+    "م",
+    "و",
+    "ج",
+    "و",
+    "د"
+  ],
+  "grid": {
+    "rows": 5,
+    "cols": 5
+  },
+  "words": [
+    {
+      "text": "وجد",
+      "row": 0,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "دمج",
+      "row": 1,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "وجود",
+      "row": 1,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "موجود",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "دوم",
+      "row": 4,
+      "col": 2,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "جمد",
+    "جمود",
+    "جود",
+    "جودو",
+    "مجد",
+    "مجود",
+    "موج",
+    "وجم",
+    "ودج",
+    "ومد"
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "id": "m01-12",
+  "mansion": 1,
+  "mansion_name": "الشرطان",
+  "season": "spring",
+  "index_in_mansion": 12,
+  "letters": [
+    "م",
+    "ح",
+    "س",
+    "ن"
+  ],
+  "grid": {
+    "rows": 4,
+    "cols": 4
+  },
+  "words": [
+    {
+      "text": "منح",
+      "row": 0,
+      "col": 1,
+      "direction": "h"
+    },
+    {
+      "text": "حسن",
+      "row": 0,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "سمح",
+      "row": 1,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "محسن",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "حسم",
+    "حمس",
+    "حنس",
+    "سحم",
+    "سحن",
+    "سمن",
+    "سنح",
+    "محن",
+    "مسح",
+    "مسن",
+    "نحس",
+    "نحم",
+    "نسم",
+    "نمس"
+  ]
+}

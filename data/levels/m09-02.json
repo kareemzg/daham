@@ -1,0 +1,59 @@
+{
+  "id": "m09-02",
+  "mansion": 9,
+  "mansion_name": "الطرف",
+  "season": "summer",
+  "index_in_mansion": 2,
+  "letters": [
+    "ت",
+    "ك",
+    "ي",
+    "ي",
+    "ف"
+  ],
+  "grid": {
+    "rows": 5,
+    "cols": 5
+  },
+  "words": [
+    {
+      "text": "كيت",
+      "row": 0,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "كيف",
+      "row": 0,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "كييف",
+      "row": 1,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "تكييف",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "كتف",
+      "row": 4,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "تكيف",
+    "فتك",
+    "فتي",
+    "كفت",
+    "كفي",
+    "كفيت",
+    "يتي"
+  ]
+}

@@ -15,3 +15,4 @@ script = ExtResource("1_test")
 
 [node name="Game" parent="." instance=ExtResource("2_game")]
 layout_mode = 1
+level_path = "res://data/levels/sample.json"

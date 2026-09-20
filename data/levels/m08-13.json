@@ -1,0 +1,58 @@
+{
+  "id": "m08-13",
+  "mansion": 8,
+  "mansion_name": "النثرة",
+  "season": "summer",
+  "index_in_mansion": 13,
+  "letters": [
+    "م",
+    "ي",
+    "ا",
+    "م",
+    "ي"
+  ],
+  "grid": {
+    "rows": 4,
+    "cols": 6
+  },
+  "words": [
+    {
+      "text": "امي",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "ماي",
+      "row": 0,
+      "col": 5,
+      "direction": "v"
+    },
+    {
+      "text": "امم",
+      "row": 1,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "مما",
+      "row": 1,
+      "col": 1,
+      "direction": "v"
+    },
+    {
+      "text": "ميامي",
+      "row": 2,
+      "col": 1,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "اممي",
+    "ايم",
+    "ميم",
+    "ياي",
+    "يمام",
+    "يمم"
+  ]
+}

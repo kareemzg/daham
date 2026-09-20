@@ -1,0 +1,64 @@
+{
+  "id": "m05-03",
+  "mansion": 5,
+  "mansion_name": "الهقعة",
+  "season": "spring",
+  "index_in_mansion": 3,
+  "letters": [
+    "م",
+    "ح",
+    "م",
+    "و",
+    "د"
+  ],
+  "grid": {
+    "rows": 5,
+    "cols": 5
+  },
+  "words": [
+    {
+      "text": "محمود",
+      "row": 0,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "محمد",
+      "row": 0,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "موحد",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "حمد",
+      "row": 2,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "دوم",
+      "row": 2,
+      "col": 4,
+      "direction": "v"
+    }
+  ],
+  "bonus": [
+    "حمم",
+    "حمو",
+    "حوم",
+    "دوح",
+    "محم",
+    "محو",
+    "مدح",
+    "ممحو",
+    "ممدوح",
+    "وحد",
+    "وحم",
+    "ومد"
+  ]
+}

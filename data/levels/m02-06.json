@@ -1,0 +1,52 @@
+{
+  "id": "m02-06",
+  "mansion": 2,
+  "mansion_name": "البطين",
+  "season": "spring",
+  "index_in_mansion": 6,
+  "letters": [
+    "ت",
+    "و",
+    "ق",
+    "ع"
+  ],
+  "grid": {
+    "rows": 4,
+    "cols": 5
+  },
+  "words": [
+    {
+      "text": "تقع",
+      "row": 0,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "وقت",
+      "row": 1,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "وقع",
+      "row": 1,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "توقع",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "تعوق",
+    "تقو",
+    "توق",
+    "عتق",
+    "عوق",
+    "قوت",
+    "وعق"
+  ]
+}

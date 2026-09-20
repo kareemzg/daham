@@ -1,0 +1,55 @@
+{
+  "id": "m06-11",
+  "mansion": 6,
+  "mansion_name": "الهنعة",
+  "season": "spring",
+  "index_in_mansion": 11,
+  "letters": [
+    "س",
+    "ي",
+    "ا",
+    "س",
+    "ي"
+  ],
+  "grid": {
+    "rows": 3,
+    "cols": 7
+  },
+  "words": [
+    {
+      "text": "اسس",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "ياي",
+      "row": 0,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "ايس",
+      "row": 0,
+      "col": 6,
+      "direction": "v"
+    },
+    {
+      "text": "سياسي",
+      "row": 1,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "ياس",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "اسي",
+    "ساس",
+    "سيس"
+  ]
+}

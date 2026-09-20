@@ -1,0 +1,55 @@
+{
+  "id": "m03-12",
+  "mansion": 3,
+  "mansion_name": "الثريا",
+  "season": "spring",
+  "index_in_mansion": 12,
+  "letters": [
+    "ت",
+    "ع",
+    "ق",
+    "ب"
+  ],
+  "grid": {
+    "rows": 4,
+    "cols": 5
+  },
+  "words": [
+    {
+      "text": "عقب",
+      "row": 0,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "تعقب",
+      "row": 1,
+      "col": 1,
+      "direction": "h"
+    },
+    {
+      "text": "تقع",
+      "row": 1,
+      "col": 1,
+      "direction": "v"
+    },
+    {
+      "text": "تعب",
+      "row": 3,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "بقت",
+    "بقع",
+    "تبع",
+    "تبق",
+    "عبت",
+    "عبق",
+    "عتب",
+    "عتق",
+    "قبع",
+    "قتب"
+  ]
+}

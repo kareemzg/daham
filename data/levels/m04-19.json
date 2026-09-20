@@ -1,0 +1,67 @@
+{
+  "id": "m04-19",
+  "mansion": 4,
+  "mansion_name": "الدبران",
+  "season": "spring",
+  "index_in_mansion": 19,
+  "letters": [
+    "ي",
+    "ن",
+    "ا",
+    "ي",
+    "ر"
+  ],
+  "grid": {
+    "rows": 3,
+    "cols": 7
+  },
+  "words": [
+    {
+      "text": "راي",
+      "row": 0,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "اني",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "نار",
+      "row": 0,
+      "col": 6,
+      "direction": "v"
+    },
+    {
+      "text": "اين",
+      "row": 1,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "يناير",
+      "row": 2,
+      "col": 2,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "ارن",
+    "اري",
+    "اير",
+    "ايرن",
+    "ران",
+    "راين",
+    "رنا",
+    "ريان",
+    "رين",
+    "ريني",
+    "ناري",
+    "ناي",
+    "نير",
+    "يان",
+    "ياي"
+  ]
+}

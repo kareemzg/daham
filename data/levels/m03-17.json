@@ -1,0 +1,52 @@
+{
+  "id": "m03-17",
+  "mansion": 3,
+  "mansion_name": "الثريا",
+  "season": "spring",
+  "index_in_mansion": 17,
+  "letters": [
+    "ت",
+    "ن",
+    "ك",
+    "ر"
+  ],
+  "grid": {
+    "rows": 3,
+    "cols": 6
+  },
+  "words": [
+    {
+      "text": "كنت",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "ترك",
+      "row": 0,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "ركن",
+      "row": 1,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "تنكر",
+      "row": 2,
+      "col": 2,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "تركن",
+    "ترن",
+    "تنك",
+    "كتن",
+    "نتر",
+    "نكت",
+    "نكر"
+  ]
+}

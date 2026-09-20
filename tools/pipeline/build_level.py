@@ -20,9 +20,11 @@ from crossword import Placement, grid_size, layout, render
 REPO_ROOT = Path(__file__).resolve().parents[2]
 LEVELS_DIR = REPO_ROOT / "data" / "levels"
 
-# The sample level that runs through every design artboard and the engine slice.
+# The fixture the engine test runs against. Deliberately hand-written and
+# deliberately NOT one of the generated ids: generate.py owns m01-01 upward, and
+# a regenerated level must never silently change what the test checks.
 SAMPLE = {
-    "id": "m04-12",
+    "id": "sample",
     "mansion": 4,
     "mansion_name": "الدبران",
     "season": "spring",

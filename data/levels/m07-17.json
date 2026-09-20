@@ -1,0 +1,54 @@
+{
+  "id": "m07-17",
+  "mansion": 7,
+  "mansion_name": "الذراع",
+  "season": "spring",
+  "index_in_mansion": 17,
+  "letters": [
+    "ا",
+    "ش",
+    "ع",
+    "ل"
+  ],
+  "grid": {
+    "rows": 4,
+    "cols": 4
+  },
+  "words": [
+    {
+      "text": "عاش",
+      "row": 0,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "اشعل",
+      "row": 1,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "عال",
+      "row": 1,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "علا",
+      "row": 3,
+      "col": 1,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "اشع",
+    "اشل",
+    "اعش",
+    "اعل",
+    "شاع",
+    "شال",
+    "شعل",
+    "شلا",
+    "عشا"
+  ]
+}

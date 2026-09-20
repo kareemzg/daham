@@ -42,7 +42,7 @@ func _run() -> void:
 	if level == null:
 		_finish()
 		return
-	_check_equal("level id", level.id, "m04-12")
+	_check_equal("level id", level.id, "sample")
 	_check_equal("grid rows", level.rows, 4)
 	_check_equal("grid cols", level.cols, 6)
 	_check_equal("grid words", level.words.size(), 5)
@@ -148,6 +148,31 @@ func _run() -> void:
 	)
 	# Eleven already lit, plus one per word found and one for the hinted letter.
 	_check_equal("stars lit", game.stars.lit, level.index_in_mansion - 1 + 6)
+
+	# Generated grids run from four columns to eleven. The fixture is six, so on
+	# its own it would never catch a layout that cannot shrink.
+	print("=== the widest level in the game still fits ===")
+	var widest := Level.load_from("res://data/levels/m27-12.json")
+	_check("the widest level loads", widest != null)
+	if widest != null:
+		_check_equal("it is the eleven-column one", widest.cols, 11)
+		game.show_level(widest)
+		var left: float = game.grid.position.x
+		var right: float = left + game.grid.size.x
+		var bottom: float = game.grid.position.y + game.grid.size.y
+		_check("it starts on screen (%s >= 0)" % left, left >= 0.0)
+		_check("it ends on screen (%s <= %s)" % [right, game.size.x], right <= game.size.x)
+		_check(
+			"it clears the preview (%s <= %s)" % [bottom, game.preview.position.y],
+			bottom <= game.preview.position.y
+		)
+		_check("its cells shrank (%s < %s)" % [game.grid.cell_size, GameScreen.CELL],
+			game.grid.cell_size < GameScreen.CELL)
+		# Seven letters on the wheel at the four-letter tile size overlap.
+		_check_equal("its wheel holds seven letters", game.wheel.letter_count(), 7)
+		var spacing: float = 2.0 * game.wheel.orbit_radius * sin(PI / 7.0)
+		var drawn: float = game.wheel.effective_tile_radius() * 2.0
+		_check("its tiles keep clear (%0.1f <= %0.1f)" % [drawn, spacing], drawn <= spacing)
 
 	_finish()
 
