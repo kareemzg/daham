@@ -114,13 +114,13 @@ func _draw() -> void:
 		var at: Vector2 = _points[i]
 		if i < lit:
 			_glow(at, halo, Palette.GOLD_LIGHT, 0.62)
-			draw_circle(at, core, Palette.GOLD_LIGHT)
+			draw_circle(at, core, Palette.GOLD_LIGHT, true, -1.0, true)
 			# A white pinpoint keeps the centre from reading as flat gold.
-			draw_circle(at, core * 0.45, Color(1, 1, 1, 0.95))
+			draw_circle(at, core * 0.45, Color(1, 1, 1, 0.95), true, -1.0, true)
 		elif i == lit:
 			# The one this level will light: still dim, but ringed and glowing.
 			_glow(at, halo * 0.8, Palette.GOLD, 0.42)
 			draw_arc(at, core * 2.2, 0.0, TAU, 32, Palette.GOLD, 2.5, true)
-			draw_circle(at, core * 0.7, Color(Palette.GOLD_LIGHT, 0.9))
+			draw_circle(at, core * 0.7, Color(Palette.GOLD_LIGHT, 0.9), true, -1.0, true)
 		else:
-			draw_circle(at, core * 0.55, Palette.DIM_STAR)
+			draw_circle(at, core * 0.55, Palette.DIM_STAR, true, -1.0, true)

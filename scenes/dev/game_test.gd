@@ -181,6 +181,7 @@ func _run() -> void:
 	await _check_finish_save()
 	_check_full_moon()
 	await _check_windows()
+	_check_smooth_edges()
 
 	_finish()
 
@@ -483,6 +484,47 @@ func _check_windows() -> void:
 	(menu.get_meta("button") as Button).pressed.emit()
 	_check("pressing it asks for the menu", asked[0])
 	_check("...and takes the window away", not game.restart_window.visible)
+
+
+## Godot's drawing calls take antialiasing as an argument and it defaults to
+## off. Sixteen of them defaulted their way into a sky full of jagged stars, and
+## nothing on screen looked wrong in a way any other check could see: the shapes
+## were in the right places, with the right colours, and chewed at the edges.
+func _check_smooth_edges() -> void:
+	print("=== hand-drawn shapes ask for smooth edges ===")
+	var rough := PackedStringArray()
+	for path in _scripts_under("res://scenes"):
+		var text := FileAccess.get_file_as_string(path)
+		var line_number := 0
+		for line in text.split("\n"):
+			line_number += 1
+			var trimmed := line.strip_edges()
+			for call in ["draw_circle(", "draw_polyline(", "draw_arc(", "draw_line("]:
+				if trimmed.begins_with(call) and not trimmed.ends_with("true)"):
+					rough.append("%s:%s" % [path.get_file(), line_number])
+	_check(
+		"nothing is drawn with hard edges (%s)"
+			% ("none" if rough.is_empty() else ", ".join(rough)),
+		rough.is_empty()
+	)
+
+
+func _scripts_under(root: String) -> PackedStringArray:
+	var found := PackedStringArray()
+	var dir := DirAccess.open(root)
+	if dir == null:
+		return found
+	dir.list_dir_begin()
+	var entry := dir.get_next()
+	while entry != "":
+		var full := root.path_join(entry)
+		if dir.current_is_dir():
+			found.append_array(_scripts_under(full))
+		elif entry.ends_with(".gd"):
+			found.append(full)
+		entry = dir.get_next()
+	dir.list_dir_end()
+	return found
 
 
 func _drag_wheel(indices: Array) -> void:

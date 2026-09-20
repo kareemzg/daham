@@ -66,8 +66,8 @@ func _draw() -> void:
 
 	# The head sits a little ahead of the band, on the way down.
 	var head := Vector2(head_x - lean * _progress, size.y * _progress)
-	draw_circle(head, 46.0 * scale, Color(Palette.GOLD_LIGHT, 0.3))
-	draw_circle(head, 7.0 * scale, Color(1, 1, 1, 0.95))
+	draw_circle(head, 46.0 * scale, Color(Palette.GOLD_LIGHT, 0.3), true, -1.0, true)
+	draw_circle(head, 7.0 * scale, Color(1, 1, 1, 0.95), true, -1.0, true)
 
 
 func _band(head_x: float, lean: float, width: float, colour: Color) -> void:

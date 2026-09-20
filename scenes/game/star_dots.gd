@@ -45,7 +45,7 @@ func _draw() -> void:
 		# Right to left: the first star of the mansion is the rightmost one.
 		var x := size.x - radius - float(i) * step
 		if i < lit:
-			draw_circle(Vector2(x, middle), radius, Palette.GOLD)
+			draw_circle(Vector2(x, middle), radius, Palette.GOLD, true, -1.0, true)
 			draw_arc(Vector2(x, middle), radius, 0.0, TAU, 20, Palette.GOLD_DEEP, radius * 0.22, true)
 		else:
-			draw_circle(Vector2(x, middle), radius * 0.82, Color("D9CCB4"))
+			draw_circle(Vector2(x, middle), radius * 0.82, Color("D9CCB4"), true, -1.0, true)

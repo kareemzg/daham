@@ -54,6 +54,8 @@ Targets iOS, Android, macOS, Windows, Linux, Steam. Desktop is a paid premium bu
 - Panel presets are written against the 1080-wide reference and scaled at runtime, same as the layout numbers in `game.gd`.
 - Icons are SVG under `assets/ui/icons/`, drawn through `UiIcon`. Keep new ones to paths, strokes and gradients: Godot rasterises SVG with ThorVG, which ignores filters, masks and text. Set `svg/scale=5.0` and `mipmaps/generate=true` in the `.import` file.
 - Generating mipmaps is only half of it: the project sets `rendering/textures/canvas_textures/default_texture_filter=3` (Linear Mipmap) so they are actually used. On plain Linear, a 320px icon drawn at 46px samples four texels out of a much wider footprint and comes out looking chewed.
+- Godot's drawing calls take antialiasing as an argument and it defaults to OFF: `draw_circle(at, radius, colour, true, -1.0, true)`. Sixteen circles quietly defaulting their way into a sky of jagged stars is what "everything looks pixelated" turned out to mean. `_check_smooth_edges` in the slice test reads the source and fails on any hard-edged call, because nothing else can see it: the shapes are in the right places, in the right colours, and chewed at the edges.
+- Angle-quote characters (`‹` `›`) are bidi-mirrored: inside an Arabic label each one renders as its opposite, so both season arrows pointed inward. Arrows are drawn as icons, never typed.
 - `draw_colored_polygon` has no antialiasing. Trace the same outline with an antialiased `draw_polyline` when the shape has a curved edge, as the moon phase does.
 - The game scripts are `@tool`, so `scenes/game/game.tscn` previews live in the editor. Nodes built in code get no `owner` and are never saved into the scene.
 

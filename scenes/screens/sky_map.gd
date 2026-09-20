@@ -24,6 +24,7 @@ signal shop_requested
 
 const REF_WIDTH := 1080.0
 const DISPLAY_FONT := preload("res://assets/fonts/arabic_display.tres")
+const DISPLAY_BOLD_FONT := preload("res://assets/fonts/arabic_display_bold.tres")
 const UI_BOLD_FONT := preload("res://assets/fonts/arabic_ui_bold.tres")
 
 ## Where each mansion of a season sits, as a fraction of the field's box.
@@ -93,7 +94,7 @@ func _build() -> void:
 	_back_button = _arrow(false, "الفصل السابق")
 	_forward_button = _arrow(true, "الفصل التالي")
 
-	_season_name = _label(DISPLAY_FONT, Palette.CREAM)
+	_season_name = _label(DISPLAY_BOLD_FONT, Palette.CREAM)
 	add_child(_season_name)
 	_season_count = _label(UI_BOLD_FONT, Color("8FAEBF"))
 	add_child(_season_count)
@@ -141,9 +142,11 @@ func _build() -> void:
 	_entry(UiIcon.Kind.COIN, "المتجر", shop_requested)
 
 
+## Drawn, not typed. The angle-quote characters are bidi-mirrored, so inside an
+## Arabic label each one renders as its opposite and both arrows point inward.
 func _arrow(forward: bool, label_text: String) -> GlossyPanel:
-	var panel := GlossyPanel.make_button(
-		GlossyPanel.Style.BUTTON_CREAM, "‹" if forward else "›", UI_BOLD_FONT, Color("8A4A12")
+	var panel := GlossyPanel.make_round(
+		UiIcon.Kind.CHEVRON_NEXT if forward else UiIcon.Kind.CHEVRON_PREV, label_text
 	)
 	add_child(panel)
 	(panel.get_meta("button") as Button).pressed.connect(
@@ -153,13 +156,16 @@ func _arrow(forward: bool, label_text: String) -> GlossyPanel:
 
 func _entry(kind: int, label_text: String, out: Signal) -> GlossyPanel:
 	var panel := GlossyPanel.make_button(
-		GlossyPanel.Style.BUTTON_RIVER, label_text, UI_BOLD_FONT, Color("E7D9BC")
+		GlossyPanel.Style.PANEL_NIGHT, label_text, UI_BOLD_FONT, Color("E7D9BC")
 	)
 	add_child(panel)
 	var icon := UiIcon.new()
 	icon.kind = kind
 	panel.add_child(icon)
 	panel.set_meta("icon", icon)
+	var note := _label(UI_BOLD_FONT, Color("8FAEBF"))
+	panel.add_child(note)
+	panel.set_meta("note", note)
 	(panel.get_meta("button") as Button).pressed.connect(func() -> void: out.emit())
 	_entries.append(panel)
 	return panel
@@ -242,6 +248,17 @@ func _refresh() -> void:
 	_card_stars.setup(Mansions.LEVELS_PER_MANSION, current_index - 1)
 	_back_button.visible = season_shown > 0
 	_forward_button.visible = season_shown < Mansions.SEASONS.size() - 1
+
+	# The numbers under each entry. The daily streak is not tracked yet, so it
+	# reads zero rather than borrowing the design's example.
+	var finished := current_mansion - 1
+	var notes := [
+		"%s من %s" % [Arabic.eastern_digits(0), Arabic.eastern_digits(7)],
+		Arabic.eastern_digits(finished),
+		"منظار · أسطرلاب",
+	]
+	for i in _entries.size():
+		(_entries[i].get_meta("note") as Label).text = notes[i]
 	queue_redraw()
 
 
@@ -264,11 +281,11 @@ func _layout() -> void:
 	_season_name.position = Vector2(0.0, header_top - 22.0 * s)
 	_season_name.size = Vector2(size.x, 116.0 * s)
 	_season_name.add_theme_font_size_override("font_size", int(80.0 * s))
-	_season_count.position = Vector2(0.0, header_top + 96.0 * s)
+	_season_count.position = Vector2(0.0, header_top + 124.0 * s)
 	_season_count.size = Vector2(size.x, 40.0 * s)
 	_season_count.add_theme_font_size_override("font_size", int(32.0 * s))
 
-	var dot_row := header_top + 148.0 * s
+	var dot_row := header_top + 176.0 * s
 	var dot_gap := 20.0 * s
 	var dot_side := 22.0 * s
 	var row_width := dot_side * float(_dots.size()) + dot_gap * float(_dots.size() - 1)
@@ -349,10 +366,10 @@ func _place_arrow(panel: GlossyPanel, at: Vector2, side: float, s: float) -> voi
 	panel.size = Vector2(side, side)
 	panel.edge_override = 8.0 * s
 	panel.radius_override = side * 0.5
-	var label: Label = panel.get_meta("label")
-	label.position = Vector2.ZERO
-	label.size = Vector2(side, panel.face_height())
-	label.add_theme_font_size_override("font_size", int(52.0 * s))
+	var icon: UiIcon = panel.get_meta("icon")
+	var art := side * 0.46
+	icon.size = Vector2(art, art)
+	icon.position = Vector2((side - art) * 0.5, (panel.face_height() - art) * 0.5)
 	var button: Button = panel.get_meta("button")
 	button.position = Vector2.ZERO
 	button.size = Vector2(side, side)
@@ -364,16 +381,20 @@ func _place_entry(
 	panel.position = at
 	panel.size = Vector2(width, height)
 	panel.edge_override = 10.0 * s
-	panel.radius_override = 30.0 * s
+	panel.radius_override = 44.0 * s
 	var face := panel.face_height()
 	var icon: UiIcon = panel.get_meta("icon")
-	var art := 58.0 * s
+	var art := 60.0 * s
 	icon.size = Vector2(art, art)
-	icon.position = Vector2((width - art) * 0.5, face * 0.24)
+	icon.position = Vector2((width - art) * 0.5, 26.0 * s)
 	var label: Label = panel.get_meta("label")
-	label.position = Vector2(4.0 * s, face * 0.52)
-	label.size = Vector2(width - 8.0 * s, face * 0.36)
-	label.add_theme_font_size_override("font_size", int(26.0 * s))
+	label.position = Vector2(4.0 * s, 96.0 * s)
+	label.size = Vector2(width - 8.0 * s, 40.0 * s)
+	label.add_theme_font_size_override("font_size", int(28.0 * s))
+	var note: Label = panel.get_meta("note")
+	note.position = Vector2(4.0 * s, 134.0 * s)
+	note.size = Vector2(width - 8.0 * s, 36.0 * s)
+	note.add_theme_font_size_override("font_size", int(26.0 * s))
 	var button: Button = panel.get_meta("button")
 	button.position = Vector2.ZERO
 	button.size = Vector2(width, height)
@@ -414,10 +435,10 @@ func _draw() -> void:
 					* float(lit) / float(Mansions.LEVELS_PER_MANSION)))
 			)
 			if shown:
-				draw_circle(points[j], 16.0 * s, Color(Palette.GOLD_LIGHT, 0.22))
-				draw_circle(points[j], 5.6 * s, Palette.GOLD_LIGHT)
+				draw_circle(points[j], 16.0 * s, Color(Palette.GOLD_LIGHT, 0.22), true, -1.0, true)
+				draw_circle(points[j], 5.6 * s, Palette.GOLD_LIGHT, true, -1.0, true)
 			else:
-				draw_circle(points[j], 5.2 * s, Color(Palette.DIM_STAR, 0.95))
+				draw_circle(points[j], 5.2 * s, Color(Palette.DIM_STAR, 0.95), true, -1.0, true)
 
 		if current:
 			draw_arc(centre, 66.0 * s, 0.0, TAU, 48, Color(Palette.GOLD, 0.85), 3.4 * s, true)

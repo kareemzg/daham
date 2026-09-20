@@ -34,10 +34,11 @@ Check it before committing engine changes:
 godot --path . --quit-after 900 res://scenes/dev/game_test.tscn
 ```
 
-139 checks covering level data, Arabic normalisation, the drag path through real
+140 checks covering level data, Arabic normalisation, the drag path through real
 input events, the word rules, the lantern penalty, the hint and shuffle buttons,
 the save round-trip, what a quit leaves behind, the moon filling across levels,
-the four windows and the way out of each, and the on-screen layout. It exits non-zero on failure and writes
+the four windows and the way out of each, the on-screen layout, and a scan of the
+source for shapes drawn without antialiasing. It exits non-zero on failure and writes
 `tools/out/game_slice.png` to look at. Some checks read pixels back out of that
 frame, because layout maths can be right while nothing is painted, and a spent
 lantern has to actually look different from a lit one.

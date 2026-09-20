@@ -175,10 +175,10 @@ func _draw() -> void:
 	])
 	draw_polyline(branch, Color(Palette.GOLD_LIGHT, 0.16), 2.4 * s, true)
 	for point in figure:
-		draw_circle(point, 16.0 * s, Color(Palette.GOLD_LIGHT, 0.09))
-		draw_circle(point, 5.0 * s, Color(Palette.GOLD_LIGHT, 0.4))
+		draw_circle(point, 16.0 * s, Color(Palette.GOLD_LIGHT, 0.09), true, -1.0, true)
+		draw_circle(point, 5.0 * s, Color(Palette.GOLD_LIGHT, 0.4), true, -1.0, true)
 	for point in [branch[1], branch[2]]:
-		draw_circle(point, 4.4 * s, Color(Palette.GOLD_LIGHT, 0.3))
+		draw_circle(point, 4.4 * s, Color(Palette.GOLD_LIGHT, 0.3), true, -1.0, true)
 
 
 func _place_wide(

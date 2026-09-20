@@ -93,7 +93,7 @@ func _draw() -> void:
 	# of the track, on at its end.
 	var knob_radius := radius - 4.0 * s
 	var knob_x := left + (knob_radius + 4.0 * s if on else track.x - knob_radius - 4.0 * s)
-	draw_circle(Vector2(knob_x, top + radius), knob_radius, Color("FFFBF0"))
+	draw_circle(Vector2(knob_x, top + radius), knob_radius, Color("FFFBF0"), true, -1.0, true)
 
 
 func _rounded(fill: Color, border: Color, radius: float) -> StyleBoxFlat:
