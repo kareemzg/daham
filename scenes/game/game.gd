@@ -13,6 +13,10 @@ extends Control
 
 signal word_resolved(word: String, result: int)
 signal level_solved
+## Every window offers it. Nothing listens yet: the main menu is not built, so
+## the window closes and the player is back on the level. When a shell exists it
+## connects here and nothing in this file changes.
+signal menu_requested
 
 enum Result {
 	CORRECT,  ## a grid word, found for the first time
@@ -29,6 +33,9 @@ const WRONG_STREAK_COST := 5
 const LEVEL_REWARD := 45
 const HINT_COST := 50
 const MOON_REWARD := 30
+const LANTERN_REFILL_COST := 100
+## How long one lantern takes to come back on its own.
+const LANTERN_REGEN_SECONDS := 1800
 const TOAST_SECONDS := 1.1
 
 ## Design metrics, in the 1080-wide reference space; scaled by `_scale`.
@@ -84,13 +91,28 @@ var _moon_icon: UiIcon
 var _lantern_icons: Array[UiIcon] = []
 var _sky_stars: StarField
 var _preview_pill: GlossyPanel
-## Public so tests and future screens can drive them.
-var popup: SkyPopup
+## The four windows, public so tests and future screens can drive them.
+var complete_window: SkyWindow
+var lanterns_window: SkyWindow
+var restart_window: SkyWindow
+var settings_window: SkyWindow
 var wipe: MeteorWipe
-var _complete_title: Label
-var _complete_line: Label
-var _complete_reward: Label
 var next_button: GlossyPanel
+var refill_button: GlossyPanel
+var restart_confirm_button: GlossyPanel
+var _complete_stars: StarDots
+var _complete_reward: Control
+var _clock_strip: Control
+var _language_strip: Control
+var _settings_close: GlossyPanel
+## Public so a test can flip a switch the way a finger does.
+var settings_rows: Array[SkyToggle] = []
+
+var settings: GameSettings = GameSettings.new()
+## Where progress is written. Empty turns it off, same as `progress_path`.
+@export var settings_path: String = "user://settings.json"
+## Unix time when the next lantern comes back. Zero while they are full.
+var _lantern_clock: int = 0
 var _pending_level: Level = null
 ## Set when a guess filled the moon. The coins are already paid; this only tells
 ## the landing star to play the rings and let the chip empty afterwards.
@@ -102,6 +124,8 @@ var _moon_shown: int = 0
 ## Public so tests can press them through their real Button node.
 var hint_button: GlossyPanel
 var shuffle_button: GlossyPanel
+var settings_button: GlossyPanel
+var restart_button: GlossyPanel
 var _hint_cost: GlossyPanel
 
 @onready var stars: StarBand = $StarBand
@@ -113,6 +137,10 @@ var _hint_cost: GlossyPanel
 
 
 func _ready() -> void:
+	# Only the out-of-lanterns window wants a frame clock, and it turns this on.
+	set_process(false)
+	if not settings_path.is_empty():
+		settings = GameSettings.read(settings_path)
 	_sky = _make_sky()
 	_build_chrome()
 	wheel.word_previewed.connect(_on_word_previewed)
@@ -166,7 +194,7 @@ func show_level(new_level: Level) -> void:
 
 	_bonus_found.clear()
 	wrong_streak = 0
-	popup.visible = false
+	_hide_windows()
 
 	grid.setup(level)
 	wheel.body_radius = WHEEL_BODY
@@ -259,53 +287,186 @@ func _build_chrome() -> void:
 	_hint_cost.set_meta("label", cost_label)
 
 	shuffle_button = _make_button(UiIcon.Kind.SHUFFLE, _on_shuffle_pressed, "خلط الحروف")
+	settings_button = _make_button(UiIcon.Kind.SETTINGS, _on_settings_pressed, "الإعدادات")
+	restart_button = _make_button(UiIcon.Kind.RESTART, _on_restart_pressed, "إعادة المحاولة")
 
-	popup = SkyPopup.new()
-	add_child(popup)
-	_build_complete_panel()
+	# The windows are built after every piece of chrome, so a window covers the
+	# HUD. Built before, the chips and buttons would sit over the dim layer and
+	# stay bright and tappable while a modal window was up.
+	_build_windows()
 
 	wipe = MeteorWipe.new()
 	add_child(wipe)
 	wipe.swap.connect(_onwipe_swap)
 
 
-## The one window the game has so far: what you see when a level is done.
-func _build_complete_panel() -> void:
-	_complete_title = _make_label(DISPLAY_FONT, Palette.TILE_INK)
-	_complete_title.text = "اكتمل المستوى"
-	popup.panel.add_child(_complete_title)
+## The four windows. Each is the same `SkyWindow` with different parts, so the
+## padding, the type sizes and the button heights cannot drift between them.
+##
+## Every one of them offers the way back to the main menu beside its own action:
+## a player who cannot go on must never be left with only the action they cannot
+## take.
+func _build_windows() -> void:
+	complete_window = _new_window()
+	complete_window.set_crest(UiIcon.Kind.STAR)
+	complete_window.set_title("اكتمل المستوى")
+	complete_window.set_body("")
+	_complete_stars = StarDots.new()
+	complete_window.add_row(_complete_stars, 34.0)
+	_complete_reward = _build_reward_row(complete_window)
+	next_button = complete_window.add_button(GlossyPanel.Style.BUTTON_EMBER, "التالي")
+	_wire(next_button, _on_next_pressed)
+	_wire(_menu_button(complete_window), _on_menu_pressed)
 
-	var star := UiIcon.new()
-	star.kind = UiIcon.Kind.STAR
-	popup.panel.add_child(star)
-	popup.panel.set_meta("star", star)
+	lanterns_window = _new_window()
+	lanterns_window.set_crest(UiIcon.Kind.LANTERN, 0.0)
+	lanterns_window.set_title("نفدت الفوانيس")
+	lanterns_window.set_body("انطفأ آخر فانوس.\nاملأها لتكمل، أو عد لاحقاً.")
+	_clock_strip = _build_clock_row(lanterns_window)
+	refill_button = lanterns_window.add_button(
+		GlossyPanel.Style.BUTTON_EMBER,
+		"املأ الفوانيس · %s" % Arabic.eastern_digits(LANTERN_REFILL_COST),
+		UiIcon.Kind.COIN
+	)
+	_wire(refill_button, _on_refill_pressed)
+	_wire(_menu_button(lanterns_window), _on_menu_pressed)
 
-	_complete_line = _make_label(UI_BOLD_FONT, Color("6B5942"))
-	popup.panel.add_child(_complete_line)
+	restart_window = _new_window()
+	restart_window.set_crest(UiIcon.Kind.RESTART)
+	restart_window.set_title("تبدأ المستوى من جديد؟")
+	restart_window.set_body(
+		"تعود الرقعة فارغة وتفقد\nالكلمات التي وجدتها.\nالفوانيس والعملات لا تُمسّ."
+	)
+	restart_confirm_button = restart_window.add_button(
+		GlossyPanel.Style.BUTTON_EMBER, "ابدأ من جديد"
+	)
+	_wire(restart_confirm_button, _on_confirm_restart)
+	_wire(
+		restart_window.add_button(GlossyPanel.Style.BUTTON_CREAM, "إلغاء", -1, 92.0),
+		_on_cancel_restart
+	)
+	_wire(_menu_button(restart_window, 78.0), _on_menu_pressed)
 
+	settings_window = _new_window()
+	settings_window.set_crest(UiIcon.Kind.SETTINGS)
+	settings_window.set_title("الإعدادات")
+	for spec in [
+		["المؤثرات الصوتية", "sound"], ["الموسيقى", "music"], ["الاهتزاز", "haptics"]
+	]:
+		var row := SkyToggle.new()
+		row.label_text = spec[0]
+		settings_window.add_row(row, 92.0, 14.0)
+		var key: String = spec[1]
+		row.toggled.connect(func(on: bool) -> void: _on_setting_changed(key, on))
+		settings_rows.append(row)
+	_language_strip = _build_language_row(settings_window)
+	_wire(_menu_button(settings_window), _on_menu_pressed)
+
+	# The corner cross, as the design draws it: a window you opened yourself
+	# closes without having to leave the level.
+	_settings_close = GlossyPanel.new()
+	_settings_close.style = GlossyPanel.Style.BUTTON_CREAM
+	settings_window.panel.add_child(_settings_close)
+	var cross := _make_label(UI_BOLD_FONT, Color("6B5942"))
+	cross.text = "×"
+	_settings_close.add_child(cross)
+	_settings_close.set_meta("label", cross)
+	var close_button := Button.new()
+	close_button.flat = true
+	close_button.focus_mode = Control.FOCUS_ALL
+	close_button.tooltip_text = "إغلاق"
+	close_button.pressed.connect(_on_close_settings)
+	close_button.button_down.connect(func() -> void: _settings_close.set_pressed(true))
+	close_button.button_up.connect(func() -> void: _settings_close.set_pressed(false))
+	_settings_close.add_child(close_button)
+	_settings_close.set_meta("button", close_button)
+
+
+func _new_window() -> SkyWindow:
+	var window := SkyWindow.new()
+	window.configure(DISPLAY_FONT, UI_BOLD_FONT)
+	window.visible = false
+	add_child(window)
+	return window
+
+
+func _wire(shell: GlossyPanel, handler: Callable) -> void:
+	(shell.get_meta("button") as Button).pressed.connect(handler)
+
+
+func _menu_button(window: SkyWindow, height: float = 92.0) -> GlossyPanel:
+	return window.add_button(
+		GlossyPanel.Style.BUTTON_CREAM, "القائمة الرئيسية", UiIcon.Kind.HOME, height
+	)
+
+
+## A tinted tray with a number and a coin centred in it as one pair.
+func _build_reward_row(window: SkyWindow) -> Control:
+	var row := Control.new()
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var tray := Panel.new()
+	tray.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tray.add_theme_stylebox_override(
+		"panel", Palette.card(Color(Palette.TILE_BORDER, 0.22), Color(0, 0, 0, 0), 24, 0)
+	)
+	row.add_child(tray)
+	row.set_meta("tray", tray)
+	var label := _make_label(UI_BOLD_FONT, Color("4A3A08"))
+	label.text = "+%s" % Arabic.eastern_digits(LEVEL_REWARD)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	row.add_child(label)
+	row.set_meta("label", label)
 	var coin := UiIcon.new()
 	coin.kind = UiIcon.Kind.COIN
-	popup.panel.add_child(coin)
-	popup.panel.set_meta("coin", coin)
+	row.add_child(coin)
+	row.set_meta("coin", coin)
+	window.add_row(row, 104.0)
+	return row
 
-	_complete_reward = _make_label(UI_BOLD_FONT, Color("4A3A08"))
-	popup.panel.add_child(_complete_reward)
 
-	next_button = GlossyPanel.new()
-	next_button.style = GlossyPanel.Style.BUTTON_EMBER
-	popup.panel.add_child(next_button)
-	var label := _make_label(UI_BOLD_FONT, Color("FFF4E8"))
-	label.text = "التالي"
-	next_button.add_child(label)
-	next_button.set_meta("label", label)
-	var button := Button.new()
-	button.flat = true
-	button.focus_mode = Control.FOCUS_ALL
-	button.pressed.connect(_on_next_pressed)
-	button.button_down.connect(func() -> void: next_button.set_pressed(true))
-	button.button_up.connect(func() -> void: next_button.set_pressed(false))
-	next_button.add_child(button)
-	next_button.set_meta("button", button)
+func _build_clock_row(window: SkyWindow) -> Control:
+	var row := Control.new()
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var tray := Panel.new()
+	tray.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tray.add_theme_stylebox_override(
+		"panel", Palette.card(Color(Palette.TILE_BORDER, 0.22), Color(0, 0, 0, 0), 22, 0)
+	)
+	row.add_child(tray)
+	row.set_meta("tray", tray)
+	var label := _make_label(UI_BOLD_FONT, Color("6B5942"))
+	row.add_child(label)
+	row.set_meta("label", label)
+	var face := UiIcon.new()
+	face.kind = UiIcon.Kind.CLOCK
+	row.add_child(face)
+	row.set_meta("icon", face)
+	window.add_row(row, 84.0)
+	return row
+
+
+func _build_language_row(window: SkyWindow) -> Control:
+	var row := Control.new()
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var tray := Panel.new()
+	tray.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tray.add_theme_stylebox_override(
+		"panel", Palette.card(Color(Palette.TILE_BORDER, 0.2), Color(0, 0, 0, 0), 26, 0)
+	)
+	row.add_child(tray)
+	row.set_meta("tray", tray)
+	var name_label := _make_label(UI_BOLD_FONT, Color("4A3A2A"))
+	name_label.text = "اللغة"
+	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	row.add_child(name_label)
+	row.set_meta("name", name_label)
+	var value := _make_label(UI_BOLD_FONT, Color("6B5942"))
+	value.text = "العربية"
+	value.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	row.add_child(value)
+	row.set_meta("value", value)
+	window.add_row(row, 92.0, 14.0)
+	return row
 
 
 func _make_chip() -> GlossyPanel:
@@ -419,59 +580,72 @@ func _layout() -> void:
 
 	wipe.position = Vector2.ZERO
 	wipe.size = size
-	popup.position = Vector2.ZERO
-	popup.size = size
-	_layout_complete_panel(s)
+	_layout_windows(s)
 	queue_redraw()
 
 
-func _layout_complete_panel(s: float) -> void:
-	var panel := popup.panel
-	panel.size = Vector2(760.0 * s, 720.0 * s)
-	panel.edge_override = 12.0 * s
-	panel.radius_override = 52.0 * s
-	var face := panel.face_height()
+func _layout_windows(s: float) -> void:
+	for window: SkyWindow in [complete_window, lanterns_window, restart_window, settings_window]:
+		window.position = Vector2.ZERO
+		window.size = size
+		# relayout() stacks the parts and sizes the panel, so it has to run
+		# before anything reads a row's size.
+		window.relayout(s)
 
-	_complete_title.position = Vector2(0.0, 48.0 * s)
-	_complete_title.size = Vector2(panel.size.x, 70.0 * s)
-	_complete_title.add_theme_font_size_override("font_size", int(58.0 * s))
+	_layout_pair_row(_complete_reward, s, 150.0, 62.0, 44.0)
+	_layout_pair_row(_clock_strip, s, 330.0, 44.0, 30.0)
 
-	var star: UiIcon = panel.get_meta("star")
-	var star_side := 210.0 * s
-	star.size = Vector2(star_side, star_side)
-	star.position = Vector2((panel.size.x - star_side) * 0.5, 140.0 * s)
+	for row in settings_rows:
+		row.style(UI_BOLD_FONT, Color("4A3A2A"), int(32.0 * s))
 
-	_complete_line.position = Vector2(0.0, 372.0 * s)
-	_complete_line.size = Vector2(panel.size.x, 46.0 * s)
-	_complete_line.add_theme_font_size_override("font_size", int(30.0 * s))
+	var tray: Panel = _language_strip.get_meta("tray")
+	tray.position = Vector2.ZERO
+	tray.size = _language_strip.size
+	var pad := 26.0 * s
+	var name_label: Label = _language_strip.get_meta("name")
+	name_label.position = Vector2(pad, 0.0)
+	name_label.size = Vector2(_language_strip.size.x * 0.5 - pad, _language_strip.size.y)
+	name_label.add_theme_font_size_override("font_size", int(32.0 * s))
+	var value: Label = _language_strip.get_meta("value")
+	value.position = Vector2(_language_strip.size.x * 0.5, 0.0)
+	value.size = Vector2(_language_strip.size.x * 0.5 - pad, _language_strip.size.y)
+	value.add_theme_font_size_override("font_size", int(30.0 * s))
 
-	# The number and the coin read as one thing, so they are centred as one and
-	# the number hugs the coin instead of floating in its own box.
-	var coin: UiIcon = panel.get_meta("coin")
-	var coin_side := 60.0 * s
-	var text_width := 150.0 * s
-	var pair := text_width + 18.0 * s + coin_side
-	var pair_left := (panel.size.x - pair) * 0.5
-	_complete_reward.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	_complete_reward.position = Vector2(pair_left, 444.0 * s)
-	_complete_reward.size = Vector2(text_width, coin_side)
-	_complete_reward.add_theme_font_size_override("font_size", int(42.0 * s))
-	coin.size = Vector2(coin_side, coin_side)
-	coin.position = Vector2(pair_left + text_width + 18.0 * s, 444.0 * s)
+	var close_side := 72.0 * s
+	_settings_close.position = Vector2(28.0 * s, 26.0 * s)
+	_settings_close.size = Vector2(close_side, close_side)
+	_settings_close.edge_override = 6.0 * s
+	_settings_close.radius_override = close_side * 0.5
+	var cross: Label = _settings_close.get_meta("label")
+	cross.position = Vector2.ZERO
+	cross.size = Vector2(close_side, _settings_close.face_height())
+	cross.add_theme_font_size_override("font_size", int(46.0 * s))
+	var close_button: Button = _settings_close.get_meta("button")
+	close_button.position = Vector2.ZERO
+	close_button.size = Vector2(close_side, close_side)
 
-	var button_width := 380.0 * s
-	var button_height := 108.0 * s
-	next_button.position = Vector2((panel.size.x - button_width) * 0.5, face - button_height - 44.0 * s)
-	next_button.size = Vector2(button_width, button_height + 14.0 * s)
-	next_button.edge_override = 14.0 * s
-	next_button.radius_override = button_height * 0.5
-	var label: Label = next_button.get_meta("label")
-	label.position = Vector2.ZERO
-	label.size = Vector2(button_width, button_height)
-	label.add_theme_font_size_override("font_size", int(40.0 * s))
-	var button: Button = next_button.get_meta("button")
-	button.position = Vector2.ZERO
-	button.size = next_button.size
+
+## A tray with a label and an icon centred inside it as one pair: the reward in
+## the level-complete window, the countdown in the out-of-lanterns one. Centring
+## them as a pair is what stops the number floating away from its icon.
+func _layout_pair_row(
+	row: Control, s: float, text_width: float, icon_side: float, font_size: float
+) -> void:
+	var tray: Panel = row.get_meta("tray")
+	tray.position = Vector2.ZERO
+	tray.size = row.size
+
+	var label: Label = row.get_meta("label")
+	var icon: UiIcon = row.get_meta("coin") if row.has_meta("coin") else row.get_meta("icon")
+	var text := text_width * s
+	var side := icon_side * s
+	var gap := 18.0 * s
+	var left := (row.size.x - (text + gap + side)) * 0.5
+	label.position = Vector2(left, 0.0)
+	label.size = Vector2(text, row.size.y)
+	label.add_theme_font_size_override("font_size", int(font_size * s))
+	icon.size = Vector2(side, side)
+	icon.position = Vector2(left + text + gap, (row.size.y - side) * 0.5)
 
 
 func _layout_chips(s: float) -> void:
@@ -482,10 +656,19 @@ func _layout_chips(s: float) -> void:
 	var font_size := int(34.0 * s)
 	var icon := 46.0 * s
 
-	# Right to left: lanterns, then the moon meter, then coins.
+	# Two groups, as the design lays them out: the utility buttons at the
+	# reading start, which in Arabic is the right, and the counters opposite
+	# them. Within the counters, lanterns first, then coins, then the moon.
+	var util := 88.0 * s
+	var util_top := top + (height - util) * 0.5
+	_place_util(settings_button, Vector2(size.x - margin - util, util_top), util, s)
+	_place_util(restart_button, Vector2(size.x - margin - util * 2.0 - gap, util_top), util, s)
+
 	var lantern_pitch := 44.0 * s
 	var lantern_width := lantern_pitch * LANTERNS_MAX + 30.0 * s
-	var x := size.x - margin - lantern_width
+	var coin_width := 196.0 * s
+	var moon_width := 156.0 * s
+	var x := margin + moon_width + gap + coin_width + gap
 	_chip_lanterns.position = Vector2(x, top)
 	_chip_lanterns.size = Vector2(lantern_width, height)
 	var face := _chip_lanterns.face_height()
@@ -501,19 +684,7 @@ func _layout_chips(s: float) -> void:
 			(face - lamp_height) * 0.5
 		)
 
-	var moon_width := 156.0 * s
-	x -= gap + moon_width
-	_chip_moon.position = Vector2(x, top)
-	_chip_moon.size = Vector2(moon_width, height)
-	face = _chip_moon.face_height()
-	_moon_icon.size = Vector2(icon, icon)
-	_moon_icon.position = Vector2(moon_width - icon - 16.0 * s, (face - icon) * 0.5)
-	_moon_label.size = Vector2(moon_width - icon - 30.0 * s, face)
-	_moon_label.position = Vector2(8.0 * s, 0.0)
-	_moon_label.add_theme_font_size_override("font_size", font_size)
-
-	var coin_width := 196.0 * s
-	x -= gap + coin_width
+	x = margin + moon_width + gap
 	_chip_coins.position = Vector2(x, top)
 	_chip_coins.size = Vector2(coin_width, height)
 	face = _chip_coins.face_height()
@@ -523,6 +694,30 @@ func _layout_chips(s: float) -> void:
 	_coin_label.size = Vector2(coin_width - icon - 30.0 * s, face)
 	_coin_label.position = Vector2(8.0 * s, 0.0)
 	_coin_label.add_theme_font_size_override("font_size", font_size)
+
+	x = margin
+	_chip_moon.position = Vector2(x, top)
+	_chip_moon.size = Vector2(moon_width, height)
+	face = _chip_moon.face_height()
+	_moon_icon.size = Vector2(icon, icon)
+	_moon_icon.position = Vector2(moon_width - icon - 16.0 * s, (face - icon) * 0.5)
+	_moon_label.size = Vector2(moon_width - icon - 30.0 * s, face)
+	_moon_label.position = Vector2(8.0 * s, 0.0)
+	_moon_label.add_theme_font_size_override("font_size", font_size)
+
+
+func _place_util(panel: GlossyPanel, at: Vector2, side: float, s: float) -> void:
+	panel.position = at
+	panel.size = Vector2(side, side)
+	panel.edge_override = 8.0 * s
+	panel.radius_override = side * 0.5
+	var icon: UiIcon = panel.get_meta("icon")
+	var art := side * 0.52
+	icon.size = Vector2(art, art)
+	icon.position = Vector2((side - art) * 0.5, (panel.face_height() - art) * 0.5)
+	var button: Button = panel.get_meta("button")
+	button.position = Vector2.ZERO
+	button.size = Vector2(side, side)
 
 
 func _layout_buttons(s: float) -> void:
@@ -633,6 +828,7 @@ func submit(raw: String) -> int:
 	var word := Arabic.normalise(raw)
 	var result := _classify(word)
 	var finished := false
+	var spent_last := false
 	match result:
 		Result.CORRECT:
 			grid.reveal(word)
@@ -665,6 +861,13 @@ func submit(raw: String) -> int:
 				wrong_streak = 0
 				lanterns = maxi(lanterns - 1, 0)
 				_say("انطفأ فانوس")
+				# The clock starts on the first lantern lost, not on the last:
+				# a player who is down to four is already waiting for one back.
+				if _lantern_clock <= 0:
+					_lantern_clock = (
+						int(Time.get_unix_time_from_system()) + LANTERN_REGEN_SECONDS
+					)
+				spent_last = lanterns <= 0
 			else:
 				_say("ليست كلمة")
 		Result.TOO_SHORT:
@@ -678,6 +881,8 @@ func submit(raw: String) -> int:
 	# would reopen the game on a solved grid with no window and no way forward.
 	if result != Result.TOO_SHORT and not finished:
 		save()
+	if spent_last:
+		show_out_of_lanterns()
 	word_resolved.emit(word, result)
 	return result
 
@@ -828,6 +1033,132 @@ func _burst(at: Vector2) -> void:
 		tween.chain().tween_callback(ring.queue_free)
 
 
+# --- windows -----------------------------------------------------------------
+
+## Opens one window and makes sure no other is in the way. Laying out first
+## matters: a window whose body just changed is a different height, and opening
+## it before the stack is rebuilt shows it mid-resize.
+func _open(window: SkyWindow) -> void:
+	_hide_windows()
+	_layout_windows(_scale())
+	window.open()
+
+
+func _hide_windows() -> void:
+	for window: SkyWindow in [
+		complete_window, lanterns_window, restart_window, settings_window
+	]:
+		if window != null:
+			window.visible = false
+
+
+func _on_settings_pressed() -> void:
+	for i in settings_rows.size():
+		settings_rows[i].on = [settings.sound, settings.music, settings.haptics][i]
+	_open(settings_window)
+
+
+func _on_close_settings() -> void:
+	settings_window.close()
+
+
+func _on_setting_changed(key: String, on: bool) -> void:
+	match key:
+		"sound":
+			settings.sound = on
+		"music":
+			settings.music = on
+		"haptics":
+			settings.haptics = on
+	# Nothing plays yet, so this only remembers. The window is real even when
+	# what it controls is not built.
+	if not settings_path.is_empty():
+		settings.write(settings_path)
+
+
+func _on_restart_pressed() -> void:
+	_open(restart_window)
+
+
+func _on_cancel_restart() -> void:
+	restart_window.close()
+
+
+func _on_confirm_restart() -> void:
+	restart_window.close()
+	restart_level()
+
+
+## Puts the level back the way it started. The lanterns and the coins are not
+## touched: starting over is not the same as skipping, and the window says so.
+func restart_level() -> void:
+	if level == null:
+		return
+	show_level(level)
+	save()
+	_say("بدأ المستوى من جديد")
+
+
+func _on_menu_pressed() -> void:
+	_hide_windows()
+	menu_requested.emit()
+
+
+## The window that ends a run. It has no cross: the ways out of it are to refill
+## or to leave, and both are on it.
+func show_out_of_lanterns() -> void:
+	if _lantern_clock <= 0:
+		_lantern_clock = int(Time.get_unix_time_from_system()) + LANTERN_REGEN_SECONDS
+	_refresh_clock()
+	_open(lanterns_window)
+	set_process(true)
+
+
+func _on_refill_pressed() -> void:
+	if not refill_lanterns():
+		_say("العملات لا تكفي")
+
+
+func refill_lanterns() -> bool:
+	if coins < LANTERN_REFILL_COST:
+		return false
+	coins -= LANTERN_REFILL_COST
+	lanterns = LANTERNS_MAX
+	_lantern_clock = 0
+	_refresh_chrome()
+	lanterns_window.close()
+	set_process(false)
+	save()
+	return true
+
+
+## Hands back any lanterns earned since the clock last ran, including the ones
+## earned while the game was closed: the clock is a moment in time, not a
+## countdown that only ticks while someone is watching.
+func _tick_lanterns() -> void:
+	if _lantern_clock <= 0:
+		return
+	var now := int(Time.get_unix_time_from_system())
+	while _lantern_clock > 0 and now >= _lantern_clock and lanterns < LANTERNS_MAX:
+		lanterns += 1
+		_lantern_clock += LANTERN_REGEN_SECONDS
+	if lanterns >= LANTERNS_MAX:
+		_lantern_clock = 0
+	_refresh_chrome()
+
+
+func _refresh_clock() -> void:
+	var label: Label = _clock_strip.get_meta("label")
+	if _lantern_clock <= 0:
+		label.text = "الفوانيس ممتلئة"
+		return
+	var left := maxi(_lantern_clock - int(Time.get_unix_time_from_system()), 0)
+	var seconds := Arabic.eastern_digits(left % 60)
+	if left % 60 < 10:
+		seconds = Arabic.eastern_digits(0) + seconds
+	label.text = "يعود فانوس بعد %s:%s" % [Arabic.eastern_digits(left / 60), seconds]
+
+
 # --- moving between levels ---------------------------------------------------
 
 ## Everything drawn on the sky. The sky itself is not in the list: it never
@@ -836,6 +1167,7 @@ func _content_nodes() -> Array[Control]:
 	return [
 		caption, stars, toast, grid, preview, _preview_pill, wheel,
 		_chip_coins, _chip_moon, _chip_lanterns, hint_button, shuffle_button, _hint_cost,
+		settings_button, restart_button,
 	]
 
 
@@ -854,7 +1186,7 @@ func _on_next_pressed() -> void:
 	if _pending_level == null:
 		_say("المستوى التالي غير موجود")
 		return
-	popup.close()
+	complete_window.close()
 	wipe.play()
 	_fade_content(0.0, MeteorWipe.DURATION * 0.45)
 
@@ -874,13 +1206,16 @@ func _finish_level() -> void:
 	coins += LEVEL_REWARD
 	stars.light_next()
 	_refresh_chrome()
-	_complete_line.text = "%s · النجمة %s من %s" % [
+	complete_window.set_body("%s · النجمة %s من %s" % [
 		level.mansion_name,
 		Arabic.eastern_digits(level.index_in_mansion),
 		Arabic.eastern_digits(STARS_PER_MANSION),
-	]
-	_complete_reward.text = "+%s" % Arabic.eastern_digits(LEVEL_REWARD)
-	popup.open()
+	])
+	_complete_stars.setup(STARS_PER_MANSION, level.index_in_mansion)
+	(_complete_reward.get_meta("label") as Label).text = (
+		"+%s" % Arabic.eastern_digits(LEVEL_REWARD)
+	)
+	_open(complete_window)
 	# The save now points at the next level with a clean slate, so closing the
 	# game here and reopening it starts the next one rather than replaying this.
 	# Moving the screen there needs the level-complete screen first.
@@ -905,6 +1240,7 @@ func capture() -> Progress:
 	snapshot.lanterns = lanterns
 	snapshot.wrong_streak = wrong_streak
 	snapshot.moon = moon
+	snapshot.lantern_clock = _lantern_clock
 	for word in level.word_texts():
 		if grid.is_found(word):
 			snapshot.found.append(word)
@@ -923,6 +1259,10 @@ func restore(saved: Progress) -> void:
 	wrong_streak = saved.wrong_streak
 	moon = saved.moon
 	_moon_shown = saved.moon
+	_lantern_clock = saved.lantern_clock
+	# Lanterns keep coming back while the game is shut, so a returning player
+	# collects the wait they already served rather than starting it again.
+	_tick_lanterns()
 	for word in saved.found:
 		grid.reveal(word, false)
 	for cell in saved.revealed:
@@ -972,9 +1312,31 @@ func _say(message: String) -> void:
 	set_process(true)
 
 
+## Two jobs share the frame clock: clearing a toast once its moment is up, and
+## counting the wait down while the out-of-lanterns window is open. It switches
+## itself off when neither wants it, because the project runs in low-processor
+## mode and nothing else on this screen needs a tick.
 func _process(_delta: float) -> void:
-	if float(Time.get_ticks_msec()) / 1000.0 >= _toast_until:
-		toast.text = ""
+	if Engine.is_editor_hint():
+		return
+	var wanted := false
+
+	if not toast.text.is_empty():
+		if float(Time.get_ticks_msec()) / 1000.0 >= _toast_until:
+			toast.text = ""
+		else:
+			wanted = true
+
+	if lanterns_window != null and lanterns_window.visible:
+		_tick_lanterns()
+		_refresh_clock()
+		if lanterns > 0:
+			lanterns_window.close()
+			save()
+		else:
+			wanted = true
+
+	if not wanted:
 		set_process(false)
 
 

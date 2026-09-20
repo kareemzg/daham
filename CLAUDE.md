@@ -21,6 +21,15 @@ Targets iOS, Android, macOS, Windows, Linux, Steam. Desktop is a paid premium bu
 - Grid coordinates are logical: `row` grows down, `col` grows LEFTWARD, so column 0 is the rightmost. `WordGrid.cell_rect()` is the only place that turns a column into an x position.
 - A grid is valid only when every maximal run of two or more adjacent cells, across or down, is exactly one of the level's words. The layout search in `tools/pipeline/crossword.py` enforces it.
 
+## Windows
+- Every window is a `SkyWindow`: a crest badge straddling the top edge, a title, optional prose, any rows it needs, then its buttons. Describe a window; never position one. The padding, type sizes and button heights live in that one file so four windows cannot drift apart.
+- Every window offers the way back to the main menu beside its own action. A player out of lanterns, facing a refill they cannot afford, must not be shut in a box. `menu_requested` carries it; no shell listens yet, so the window simply closes.
+- Break a window's prose yourself with `\n`. A Label that wraps on its own refuses to be shorter than the height it works out at its own minimum width, and on a window's first layout that width is zero: it claimed twenty-seven lines for five words and centred them off the bottom of the panel. Every number was right and only the drawing was wrong, so a test has to check this on a freshly built screen.
+- Windows are built after every other piece of chrome, so they cover the HUD. Built before, the chips and buttons would sit over the dim layer and stay bright and tappable while a modal window was up.
+- Starting a level over costs nothing. Skipping costs a lantern; restarting does not, and the confirm window says so, so it must stay true.
+- The lantern clock is a moment in time, not a remaining duration. A wait that only ticks while the app is open is a wait a player dodges by closing it.
+- The settings switches are stored and nothing reads them: there is no audio yet. Storing them is what makes the window real rather than a drawing of a window.
+
 ## Motion
 - The sky never transitions. The star field and the gradient are one continuous background; only what sits on them changes. That is what makes the game read as one place rather than a stack of screens.
 - Screens change under a meteor: a streak from upper right to lower left, 450ms. `MeteorWipe` fires `swap` at its midpoint, which is where the content is exchanged.
@@ -47,6 +56,7 @@ Targets iOS, Android, macOS, Windows, Linux, Steam. Desktop is a paid premium bu
 - Open the project with `godot -e --path .` from this folder, or via the Godot app. GDScript editing: VS Code with the `godot-tools` extension (`.vscode/` is configured).
 - Run the Arabic shaping test before touching text rendering: `godot --path . --quit-after 400 res://scenes/dev/shaping_test.tscn`. Check `tools/out/shaping_test.png`.
 - Run the slice test before committing engine changes: `godot --path . --quit-after 900 res://scenes/dev/game_test.tscn`. It exits non-zero on failure and writes `tools/out/game_slice.png`.
+- Look at a window before believing it: `godot --path . --quit-after 600 res://scenes/dev/window_shots.tscn` writes one PNG per window to `tools/out/`. Layout maths can be right while a window still reads wrong.
 - Adding a `class_name` script? Run `godot --path . --headless --import` once, or the next run fails with "Identifier not declared" until the editor rescans.
 - Pushing synthetic input in a test: send the whole press-move-release burst without awaiting frames in between, or the machine's real mouse slips in and ends the drag.
 - The project runs in low-processor mode; any test script that awaits `RenderingServer.frame_post_draw` must first set `OS.low_processor_usage_mode = false` or it stalls.
