@@ -146,8 +146,10 @@ func _run() -> void:
 	_check_equal(
 		"reward paid", game.coins, 480 - GameScreen.HINT_COST + GameScreen.LEVEL_REWARD
 	)
-	# Eleven already lit, plus one per word found and one for the hinted letter.
-	_check_equal("stars lit", game.stars.lit, level.index_in_mansion - 1 + 6)
+	# Eleven for the levels behind this one, plus the one this level just earned.
+	_check_equal("stars lit", game.stars.lit, level.index_in_mansion)
+
+	await _check_level_complete()
 
 	# Generated grids run from four columns to eleven. The fixture is six, so on
 	# its own it would never catch a layout that cannot shrink.
@@ -174,7 +176,190 @@ func _run() -> void:
 		var drawn: float = game.wheel.effective_tile_radius() * 2.0
 		_check("its tiles keep clear (%0.1f <= %0.1f)" % [drawn, spacing], drawn <= spacing)
 
+	_check_saving()
+	await _check_autosave()
+	await _check_finish_save()
+	_check_full_moon()
+
 	_finish()
+
+
+## The reason mid-level saving exists: a player about to lose a lantern must not
+## be able to swipe the app away and come back with it. So the run of wrong
+## guesses has to survive a quit, and so does everything else mid-level.
+func _check_saving() -> void:
+	print("=== a force quit cannot undo progress ===")
+	var save_path := "user://progress_test.json"
+	Progress.clear(save_path)
+
+	# Put the game in the middle of a level, three wrong guesses deep.
+	var fixture := Level.load_from("res://data/levels/sample.json")
+	game.show_level(fixture)
+	game.submit("كتاب")
+	game.submit("بكت")
+	for i in 3:
+		game.submit("باك")
+	var hint_cell := game.grid.hint_cell()
+	game.grid.reveal_cell(hint_cell)
+
+	var before := game.capture()
+	_check_equal("the streak is captured", before.wrong_streak, 3)
+	_check("the save is written", before.write(save_path))
+
+	var reloaded := Progress.read(save_path)
+	_check_equal("level survives", reloaded.level_id, "sample")
+	_check_equal("streak survives the quit", reloaded.wrong_streak, 3)
+	_check_equal("coins survive", reloaded.coins, before.coins)
+	_check_equal("lanterns survive", reloaded.lanterns, before.lanterns)
+	_check_equal("found words survive", Array(reloaded.found), Array(before.found))
+	_check_equal("bonus words survive", Array(reloaded.bonus_found), Array(before.bonus_found))
+	_check_equal("the hinted letter survives", reloaded.revealed, before.revealed)
+
+	# The other half: a fresh screen plus that file has to come back the same.
+	game.show_level(fixture)
+	_check_equal("a fresh level starts empty", game.grid.found_count(), 0)
+	_check_equal("...and with no streak", game.wrong_streak, 0)
+	# A new level no longer empties the moon, so move it by hand: otherwise the
+	# check below would pass even if restore() never touched it.
+	game.moon = 7
+	game.restore(reloaded)
+	_check("كتاب is found again", game.grid.is_found("كتاب"))
+	_check_equal("the streak is back", game.wrong_streak, 3)
+	_check_equal("the moon is back", game.moon, before.moon)
+	_check("the hinted letter is back", game.grid.is_revealed_at(hint_cell))
+
+	# Two more wrong guesses, not five: quitting did not buy a fresh run.
+	var lanterns_before := game.lanterns
+	for i in 2:
+		game.submit("باك")
+	_check_equal(
+		"the streak carries on from where it stopped", game.lanterns, lanterns_before - 1
+	)
+
+	Progress.clear(save_path)
+	_check("the test save is cleaned up", not FileAccess.file_exists(save_path))
+
+
+## The checks above drive save and restore by hand. This one leaves the game to
+## do it: play a little, throw the screen away, open a new one, and see whether
+## it comes back where it was. Nothing calls save() here.
+func _check_autosave() -> void:
+	print("=== the game saves itself as it is played ===")
+	var save_path := "user://progress_auto_test.json"
+	Progress.clear(save_path)
+	var scene: PackedScene = load("res://scenes/game/game.tscn")
+
+	var first: GameScreen = scene.instantiate()
+	first.level_path = "res://data/levels/sample.json"
+	first.progress_path = save_path
+	add_child(first)
+	await get_tree().process_frame
+	first.submit("كتاب")
+	first.submit("باك")
+	first.submit("باك")
+	_check("a save appeared without being asked for", FileAccess.file_exists(save_path))
+	first.queue_free()
+	await get_tree().process_frame
+
+	# A different starting level on purpose: if the save is ignored, this is the
+	# level that shows, and the check below fails loudly instead of passing by luck.
+	var second: GameScreen = scene.instantiate()
+	second.level_path = "res://data/levels/m01-01.json"
+	second.progress_path = save_path
+	add_child(second)
+	await get_tree().process_frame
+	_check_equal("it reopens the level it left", second.level.id, "sample")
+	_check("...with the word still found", second.grid.is_found("كتاب"))
+	_check_equal("...and the streak still counting", second.wrong_streak, 2)
+	second.queue_free()
+	await get_tree().process_frame
+	Progress.clear(save_path)
+
+
+## The level-complete window is a place a player can quit from, and the most
+## tempting one: the reward is already paid. Whatever is saved there has to lead
+## somewhere. A save holding the level just solved would reopen on a finished
+## grid with no window, no button and no way on.
+func _check_finish_save() -> void:
+	print("=== quitting while the level-complete window is up ===")
+	var save_path := "user://progress_finish_test.json"
+	Progress.clear(save_path)
+	var scene: PackedScene = load("res://scenes/game/game.tscn")
+
+	var first: GameScreen = scene.instantiate()
+	first.level_path = "res://data/levels/sample.json"
+	first.progress_path = save_path
+	add_child(first)
+	await get_tree().process_frame
+	# A bonus word first, so the moon is not empty when the level ends. The star
+	# for it is still in the air when the save is written, which is the point:
+	# `moon` moves at once and only the chip waits.
+	first.submit("بكت")
+	for word in ["كتاب", "كاتب", "كتب", "تاب", "بات"]:
+		first.submit(word)
+	_check("the level was solved", first.grid.is_solved())
+	_check("the window is up", first.popup.visible)
+	var coins_at_window: int = first.coins
+	# The quit: no handler runs, the screen simply stops existing.
+	first.queue_free()
+	await get_tree().process_frame
+
+	var saved := Progress.read(save_path)
+	_check_equal("the save points at the next level", saved.level_id, "m04-13")
+	_check_equal("...holding none of the solved level", saved.found.size(), 0)
+	_check_equal("...and keeping the reward", saved.coins, coins_at_window)
+	_check_equal("...and carrying the moon", saved.moon, 1)
+
+	# The other half: the game has to actually open there and be playable.
+	var second: GameScreen = scene.instantiate()
+	second.level_path = "res://data/levels/sample.json"
+	second.progress_path = save_path
+	add_child(second)
+	await get_tree().process_frame
+	_check_equal("it reopens on the next level", second.level.id, "m04-13")
+	_check("...with a grid still to solve", not second.grid.is_solved())
+	_check("...and no window in the way", not second.popup.visible)
+	_check_equal("...and the moon where it was", second.moon, 1)
+	second.queue_free()
+	await get_tree().process_frame
+	Progress.clear(save_path)
+
+
+## Eight bonus words inside one level is out of reach, so until the moon began
+## carrying across levels this payout could never fire at all. Now it can, and
+## the coins have to land on the guess rather than on the star half a second
+## later: submit() writes a save inside that gap.
+func _check_full_moon() -> void:
+	print("=== the moon fills across levels and pays out ===")
+	var fixture := Level.load_from("res://data/levels/sample.json")
+	game.show_level(fixture)
+	game.moon = 0
+	var coins_before: int = game.coins
+
+	# Two bonus words a level, four levels. The moon does not care which level
+	# they came from, which is the whole point of it carrying.
+	for round_index in 4:
+		game.show_level(fixture)
+		_check_equal(
+			"the moon survived the move to level %s" % (round_index + 1),
+			game.moon, round_index * 2
+		)
+		game.submit("بكت")
+		game.submit("كبت")
+
+	_check_equal("the moon emptied once it filled", game.moon, 0)
+	_check_equal(
+		"...and paid out on the guess", game.coins, coins_before + GameScreen.MOON_REWARD
+	)
+	# The star is still in the air here. What is saved has to be the paid-out
+	# state, or a quit in that half second loses the reward and leaves a moon
+	# stuck at full, which no later bonus word could ever empty.
+	var snapshot := game.capture()
+	_check_equal(
+		"a quit before the star lands keeps the coins",
+		snapshot.coins, coins_before + GameScreen.MOON_REWARD
+	)
+	_check_equal("...and an empty moon, not a stuck full one", snapshot.moon, 0)
 
 
 func _drag_wheel(indices: Array) -> void:
@@ -200,6 +385,34 @@ func _drag_wheel(indices: Array) -> void:
 	release.position = wheel.global_position + wheel.tile_centre(indices[indices.size() - 1])
 	get_viewport().push_input(release, true)
 	await get_tree().process_frame
+
+
+## The window that ends a level, and the move to the next one.
+func _check_level_complete() -> void:
+	print("=== the level-complete window ===")
+	_check("the window opened when the grid was solved", game.popup.visible)
+	game.popup.settle()
+	await _save_shot("level_complete")
+
+	var before := game.level.id
+	(game.next_button.get_meta("button") as Button).pressed.emit()
+	_check_equal("the level has not changed yet", game.level.id, before)
+	# The wipe swaps the content as it crosses the middle.
+	await get_tree().create_timer(MeteorWipe.DURATION + 0.15).timeout
+	_check_equal("it moved on to the next level", game.level.id, "m04-13")
+	_check("the window is gone", not game.popup.visible)
+	_check_equal("the new level starts empty", game.grid.found_count(), 0)
+	# The moon is the player's, not the level's. Emptying it here would mean it
+	# never fills: a level yields two bonus words at its thinnest, and the moon
+	# wants eight.
+	_check_equal("the moon carries into the next level", game.moon, 1)
+
+
+func _save_shot(name: String) -> void:
+	var image := await _grab()
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://tools/out"))
+	image.save_png(ProjectSettings.globalize_path("res://tools/out/%s.png" % name))
+	print("  shot -> tools/out/%s.png" % name)
 
 
 func _grab() -> Image:

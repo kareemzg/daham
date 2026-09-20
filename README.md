@@ -9,7 +9,7 @@ Targets: iOS, Android, macOS, Windows, Linux (Steam). Engine: Godot 4, GDScript.
 ## Layout
 
 - `scenes/game/` the playable slice: `game.tscn` is the run scene. `scenes/dev/` holds developer test scenes. `scenes/main.tscn` is the old title placeholder, not wired up.
-- `scripts/` shared GDScript: `arabic.gd` (normalisation, Eastern digits) and `level.gd` (level JSON).
+- `scripts/` shared GDScript: `arabic.gd` (normalisation, Eastern digits), `level.gd` (level JSON) and `progress.gd` (the save file).
 - `assets/ui/icons/` the icon set as SVG, imported at five times its 64px box. Godot rasterises SVG with ThorVG, which does paths, strokes and gradients but not filters, masks or text.
 - `assets/ui/glossy_panel.gdshader` the one shader the whole interface is drawn with: a rounded rect with a three-stop gradient, run down the face or outward from a point, plus a top highlight, a same-hue border, the hard bottom edge and an optional dark inner rim. `assets/ui/panel_shadow.gdshader` draws what goes under it, a soft drop shadow or a hard ring. `GlossyPanel` wraps both with a preset per element, every number in the 1080-wide reference space.
 - `assets/fonts/` bundled Amiri (display, manuscript text) and IBM Plex Sans Arabic (UI), both under the SIL Open Font License with the license file beside each family. Scenes reference the `.tres` FontVariation resources, not the TTFs directly. `assets/theme/default_theme.tres` makes Plex the default font for every Control.
@@ -34,12 +34,34 @@ Check it before committing engine changes:
 godot --path . --quit-after 900 res://scenes/dev/game_test.tscn
 ```
 
-60 checks covering level data, Arabic normalisation, the drag path through real
+105 checks covering level data, Arabic normalisation, the drag path through real
 input events, the word rules, the lantern penalty, the hint and shuffle buttons,
+the save round-trip, what a quit leaves behind, the moon filling across levels,
 and the on-screen layout. It exits non-zero on failure and writes
 `tools/out/game_slice.png` to look at. Some checks read pixels back out of that
 frame, because layout maths can be right while nothing is painted, and a spent
 lantern has to actually look different from a lit one.
+
+## Watching the motion
+
+A screenshot cannot show an animation. This records one, driving the real game
+through a bonus word, the level-complete window and the move to the next level:
+
+```bash
+godot --path . --fixed-fps 30 --write-movie tools/out/reel/f.png res://scenes/dev/motion_reel.tscn
+```
+
+`--fixed-fps` is what makes it watchable: every frame advances by the same slice
+of time, so the recording plays back at the speed the game actually runs rather
+than at whatever speed the machine managed. Turn the frames into a GIF with:
+
+```bash
+ffmpeg -framerate 30 -i tools/out/reel/f%08d.png -vf "scale=380:-1:flags=lanczos,split[a][b];[a]palettegen=stats_mode=diff[p];[b][p]paletteuse" -loop 0 tools/out/motion_reel.gif
+```
+
+The reel re-implements nothing. It restores a part-played level and then calls
+the same methods a player's fingers would, so a motion that is wrong on screen
+is wrong in the recording too.
 
 ## Editing the look
 
