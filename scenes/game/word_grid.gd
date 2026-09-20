@@ -129,12 +129,27 @@ func revealed_count() -> int:
 	return _revealed.size()
 
 
+## Cells opened by a hint: revealed, but not covered by any finished word. These
+## are the ones a save has to remember by hand, since replaying the found words
+## rebuilds all the others.
+func hinted_cells() -> Array[Vector2i]:
+	var covered: Dictionary = {}
+	for word in _found:
+		for cell in _level.cells_of(_level.word_entry(word)):
+			covered[cell] = true
+	var out: Array[Vector2i] = []
+	for cell in _revealed:
+		if not covered.has(cell):
+			out.append(cell)
+	return out
+
+
 func is_solved() -> bool:
 	return _level != null and _found.size() == _level.words.size()
 
 
 ## Reveals a grid word. Returns false if it is not in this grid, or already found.
-func reveal(word: String) -> bool:
+func reveal(word: String, animate: bool = true) -> bool:
 	if _level == null or _found.has(word):
 		return false
 	var entry := _level.word_entry(word)
@@ -146,7 +161,8 @@ func reveal(word: String) -> bool:
 		var panel: GlossyPanel = _panels[cell]
 		panel.style = GlossyPanel.Style.TILE
 		_labels[cell].visible = true
-		_punch(panel)
+		if animate:
+			_punch(panel)
 	_place()
 	word_revealed.emit(word)
 	return true
@@ -167,14 +183,15 @@ func hint_cell() -> Vector2i:
 
 
 ## Opens one letter. A word whose every letter is now showing counts as found.
-func reveal_cell(cell: Vector2i) -> void:
+func reveal_cell(cell: Vector2i, animate: bool = true) -> void:
 	if _level == null or not _cells.has(cell) or _revealed.has(cell):
 		return
 	_revealed[cell] = true
 	var panel: GlossyPanel = _panels[cell]
 	panel.style = GlossyPanel.Style.TILE
 	_labels[cell].visible = true
-	_punch(panel)
+	if animate:
+		_punch(panel)
 	_place()
 	for entry in _level.words:
 		var text: String = entry["text"]
