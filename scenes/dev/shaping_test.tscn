@@ -1,0 +1,67 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scenes/dev/shaping_test.gd" id="1_script"]
+[ext_resource type="FontVariation" path="res://assets/fonts/arabic_display.tres" id="2_disp"]
+[ext_resource type="FontVariation" path="res://assets/fonts/arabic_ui.tres" id="3_ui"]
+
+[node name="ShapingTest" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_script")
+
+[node name="Paper" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.964706, 0.933333, 0.862745, 1)
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 40.0
+offset_top = 80.0
+offset_right = -40.0
+offset_bottom = -80.0
+theme_override_constants/separation = 40
+alignment = 1
+
+[node name="Connected" type="Label" parent="VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.168627, 0.14902, 0.12549, 1)
+theme_override_fonts/font = ExtResource("2_disp")
+theme_override_font_sizes/font_size = 140
+text = "كتاب كاتب كتب"
+horizontal_alignment = 1
+text_direction = 2
+
+[node name="Isolated" type="Label" parent="VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.180392, 0.490196, 0.54902, 1)
+theme_override_fonts/font = ExtResource("3_ui")
+theme_override_font_sizes/font_size = 140
+text = "ك ت ا ب"
+horizontal_alignment = 1
+text_direction = 2
+
+[node name="Level" type="Label" parent="VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.909804, 0.392157, 0.105882, 1)
+theme_override_fonts/font = ExtResource("3_ui")
+theme_override_font_sizes/font_size = 90
+text = "المستوى ١٢ · الجسر ١٢ / ٢٠"
+horizontal_alignment = 1
+text_direction = 2
+
+[node name="Proverb" type="Label" parent="VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.168627, 0.14902, 0.12549, 1)
+theme_override_fonts/font = ExtResource("2_disp")
+theme_override_font_sizes/font_size = 80
+text = "العلم في الصغر كالنقش على الحجر"
+horizontal_alignment = 1
+text_direction = 2

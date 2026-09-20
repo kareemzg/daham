@@ -1,0 +1,28 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Godot: run main scene",
+      "type": "godot",
+      "request": "launch",
+      "project": "${workspaceFolder}",
+      "editor_path": "/opt/homebrew/bin/godot"
+    },
+    {
+      "name": "Godot: playable slice test",
+      "type": "godot",
+      "request": "launch",
+      "project": "${workspaceFolder}",
+      "scene": "res://scenes/dev/game_test.tscn",
+      "editor_path": "/opt/homebrew/bin/godot"
+    },
+    {
+      "name": "Godot: shaping test",
+      "type": "godot",
+      "request": "launch",
+      "project": "${workspaceFolder}",
+      "scene": "res://scenes/dev/shaping_test.tscn",
+      "editor_path": "/opt/homebrew/bin/godot"
+    }
+  ]
+}

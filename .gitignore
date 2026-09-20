@@ -1,0 +1,15 @@
+# Godot
+.godot/
+*.tmp
+export_presets.cfg
+/android/
+/ios/
+
+# macOS
+.DS_Store
+
+# Test renders and pipeline scratch output
+tools/out/
+tools/pipeline/.venv/
+tools/pipeline/__pycache__/
+tools/pipeline/raw/

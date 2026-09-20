@@ -1,0 +1,6 @@
+{
+  "godotTools.editorPath.godot4": "/opt/homebrew/bin/godot",
+  "files.eol": "\n",
+  "[gdscript]": { "editor.insertSpaces": false, "editor.tabSize": 4 },
+  "files.exclude": { ".godot/": true }
+}
