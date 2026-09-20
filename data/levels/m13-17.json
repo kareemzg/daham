@@ -1,0 +1,60 @@
+{
+  "id": "m13-17",
+  "mansion": 13,
+  "mansion_name": "العواء",
+  "season": "summer",
+  "index_in_mansion": 17,
+  "letters": [
+    "ظ",
+    "ا",
+    "ه",
+    "ر",
+    "ة"
+  ],
+  "grid": {
+    "rows": 5,
+    "cols": 7
+  },
+  "words": [
+    {
+      "text": "ظاهر",
+      "row": 0,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "ظهر",
+      "row": 0,
+      "col": 4,
+      "direction": "h"
+    },
+    {
+      "text": "اظهر",
+      "row": 1,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "ظاهرة",
+      "row": 2,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "راه",
+      "row": 3,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "اهة",
+    "اهر",
+    "رها",
+    "ظهار",
+    "ظهرة",
+    "هار",
+    "هرا",
+    "هراة"
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "id": "m02-07",
+  "mansion": 2,
+  "mansion_name": "البطين",
+  "season": "spring",
+  "index_in_mansion": 7,
+  "letters": [
+    "و",
+    "ط",
+    "ن",
+    "ي"
+  ],
+  "grid": {
+    "rows": 4,
+    "cols": 5
+  },
+  "words": [
+    {
+      "text": "وطن",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "وطني",
+      "row": 1,
+      "col": 1,
+      "direction": "h"
+    },
+    {
+      "text": "وين",
+      "row": 1,
+      "col": 1,
+      "direction": "v"
+    },
+    {
+      "text": "طين",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "طني",
+    "طوي",
+    "نوط",
+    "نوي",
+    "وني"
+  ]
+}

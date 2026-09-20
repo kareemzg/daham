@@ -1,0 +1,64 @@
+{
+  "id": "m13-04",
+  "mansion": 13,
+  "mansion_name": "العواء",
+  "season": "summer",
+  "index_in_mansion": 4,
+  "letters": [
+    "م",
+    "ت",
+    "ق",
+    "د",
+    "م"
+  ],
+  "grid": {
+    "rows": 4,
+    "cols": 6
+  },
+  "words": [
+    {
+      "text": "تقدم",
+      "row": 0,
+      "col": 1,
+      "direction": "v"
+    },
+    {
+      "text": "قدم",
+      "row": 0,
+      "col": 3,
+      "direction": "h"
+    },
+    {
+      "text": "مقدم",
+      "row": 0,
+      "col": 5,
+      "direction": "v"
+    },
+    {
+      "text": "تقم",
+      "row": 1,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "متقدم",
+      "row": 3,
+      "col": 1,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "تدم",
+    "تمد",
+    "تمم",
+    "دمتم",
+    "قمتم",
+    "قمم",
+    "متق",
+    "متقد",
+    "مدت",
+    "مدق",
+    "مقت",
+    "ممتد"
+  ]
+}

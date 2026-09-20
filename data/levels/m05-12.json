@@ -1,0 +1,63 @@
+{
+  "id": "m05-12",
+  "mansion": 5,
+  "mansion_name": "الهقعة",
+  "season": "spring",
+  "index_in_mansion": 12,
+  "letters": [
+    "م",
+    "و",
+    "ه",
+    "ب",
+    "ة"
+  ],
+  "grid": {
+    "rows": 3,
+    "cols": 7
+  },
+  "words": [
+    {
+      "text": "وهم",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "وهب",
+      "row": 0,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "هبة",
+      "row": 0,
+      "col": 6,
+      "direction": "v"
+    },
+    {
+      "text": "وبه",
+      "row": 1,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "موهبة",
+      "row": 2,
+      "col": 2,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "بهو",
+    "بوم",
+    "بوه",
+    "مهب",
+    "مهو",
+    "موه",
+    "همة",
+    "هوة",
+    "هوم",
+    "ومه",
+    "وهبة"
+  ]
+}

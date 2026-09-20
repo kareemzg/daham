@@ -1,0 +1,61 @@
+{
+  "id": "m12-02",
+  "mansion": 12,
+  "mansion_name": "الصرفة",
+  "season": "summer",
+  "index_in_mansion": 2,
+  "letters": [
+    "ا",
+    "ع",
+    "د",
+    "ا",
+    "ء"
+  ],
+  "grid": {
+    "rows": 5,
+    "cols": 5
+  },
+  "words": [
+    {
+      "text": "اداء",
+      "row": 0,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "عاد",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "عدا",
+      "row": 0,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "اعداء",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "اعد",
+      "row": 2,
+      "col": 3,
+      "direction": "v"
+    }
+  ],
+  "bonus": [
+    "ادا",
+    "ادع",
+    "ادعاء",
+    "اعاد",
+    "داء",
+    "داع",
+    "دعا",
+    "دعاء",
+    "عداء"
+  ]
+}

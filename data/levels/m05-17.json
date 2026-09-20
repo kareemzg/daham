@@ -1,0 +1,55 @@
+{
+  "id": "m05-17",
+  "mansion": 5,
+  "mansion_name": "الهقعة",
+  "season": "spring",
+  "index_in_mansion": 17,
+  "letters": [
+    "ن",
+    "ز",
+    "ا",
+    "ع"
+  ],
+  "grid": {
+    "rows": 3,
+    "cols": 5
+  },
+  "words": [
+    {
+      "text": "نزاع",
+      "row": 0,
+      "col": 1,
+      "direction": "h"
+    },
+    {
+      "text": "نزع",
+      "row": 0,
+      "col": 1,
+      "direction": "v"
+    },
+    {
+      "text": "عنا",
+      "row": 0,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "اعز",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "ازن",
+    "اعن",
+    "انزع",
+    "زان",
+    "عاز",
+    "عان",
+    "عزا",
+    "عنز",
+    "نازع",
+    "نزا"
+  ]
+}

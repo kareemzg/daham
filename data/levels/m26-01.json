@@ -1,0 +1,70 @@
+{
+  "id": "m26-01",
+  "mansion": 26,
+  "mansion_name": "الفرغ المقدم",
+  "season": "winter",
+  "index_in_mansion": 1,
+  "letters": [
+    "ت",
+    "ع",
+    "د",
+    "د",
+    "ي",
+    "ة"
+  ],
+  "grid": {
+    "rows": 6,
+    "cols": 7
+  },
+  "words": [
+    {
+      "text": "دعت",
+      "row": 0,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "عدد",
+      "row": 0,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "عيد",
+      "row": 1,
+      "col": 5,
+      "direction": "v"
+    },
+    {
+      "text": "تعددية",
+      "row": 2,
+      "col": 1,
+      "direction": "h"
+    },
+    {
+      "text": "تعدد",
+      "row": 2,
+      "col": 1,
+      "direction": "v"
+    },
+    {
+      "text": "عدة",
+      "row": 4,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "تعددي",
+    "تعدي",
+    "دعة",
+    "دعي",
+    "دية",
+    "عتد",
+    "عتي",
+    "عتيد",
+    "عددي",
+    "عدي",
+    "عديد"
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "id": "m10-08",
+  "mansion": 10,
+  "mansion_name": "الجبهة",
+  "season": "summer",
+  "index_in_mansion": 8,
+  "letters": [
+    "و",
+    "ز",
+    "ر",
+    "ا",
+    "ء"
+  ],
+  "grid": {
+    "rows": 4,
+    "cols": 7
+  },
+  "words": [
+    {
+      "text": "ارز",
+      "row": 0,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "زوار",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "وراء",
+      "row": 0,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "وزراء",
+      "row": 1,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "زار",
+      "row": 3,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "ارو",
+    "ازر",
+    "ازرو",
+    "ازو",
+    "ازور",
+    "اور",
+    "اوز",
+    "راء",
+    "راز",
+    "راو",
+    "روا",
+    "رواء",
+    "زور",
+    "وار",
+    "وزر"
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "id": "m12-20",
+  "mansion": 12,
+  "mansion_name": "الصرفة",
+  "season": "summer",
+  "index_in_mansion": 20,
+  "letters": [
+    "ح",
+    "ك",
+    "و",
+    "م",
+    "ة"
+  ],
+  "grid": {
+    "rows": 5,
+    "cols": 5
+  },
+  "words": [
+    {
+      "text": "كوم",
+      "row": 0,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "مكة",
+      "row": 0,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "حكومة",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "حكم",
+      "row": 2,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "وكم",
+      "row": 2,
+      "col": 2,
+      "direction": "v"
+    }
+  ],
+  "bonus": [
+    "حكة",
+    "حكمة",
+    "حمة",
+    "حمو",
+    "حوم",
+    "حومة",
+    "كمة",
+    "كوة",
+    "كومة",
+    "محك",
+    "محو",
+    "مكو",
+    "وحم",
+    "وحمة"
+  ]
+}

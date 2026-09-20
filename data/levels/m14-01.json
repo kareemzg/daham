@@ -1,0 +1,60 @@
+{
+  "id": "m14-01",
+  "mansion": 14,
+  "mansion_name": "السماك",
+  "season": "summer",
+  "index_in_mansion": 1,
+  "letters": [
+    "ت",
+    "خ",
+    "ي",
+    "ل",
+    "ي"
+  ],
+  "grid": {
+    "rows": 4,
+    "cols": 7
+  },
+  "words": [
+    {
+      "text": "تخيلي",
+      "row": 0,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "تخيل",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "ليت",
+      "row": 0,
+      "col": 5,
+      "direction": "v"
+    },
+    {
+      "text": "خلت",
+      "row": 1,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "تخلي",
+      "row": 3,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "تخل",
+    "تخييل",
+    "تلي",
+    "تيل",
+    "خلي",
+    "خيل",
+    "يتي",
+    "يخت"
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "id": "m03-01",
+  "mansion": 3,
+  "mansion_name": "الثريا",
+  "season": "spring",
+  "index_in_mansion": 1,
+  "letters": [
+    "و",
+    "ا",
+    "ث",
+    "ق"
+  ],
+  "grid": {
+    "rows": 5,
+    "cols": 4
+  },
+  "words": [
+    {
+      "text": "واق",
+      "row": 0,
+      "col": 1,
+      "direction": "h"
+    },
+    {
+      "text": "اوثق",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "واثق",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "وثق",
+      "row": 2,
+      "col": 0,
+      "direction": "v"
+    }
+  ],
+  "bonus": [
+    "اقو",
+    "اوق",
+    "قوا",
+    "وثاق"
+  ]
+}

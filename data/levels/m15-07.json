@@ -1,0 +1,57 @@
+{
+  "id": "m15-07",
+  "mansion": 15,
+  "mansion_name": "الغفر",
+  "season": "autumn",
+  "index_in_mansion": 7,
+  "letters": [
+    "ا",
+    "ن",
+    "ش",
+    "ا",
+    "ء"
+  ],
+  "grid": {
+    "rows": 4,
+    "cols": 6
+  },
+  "words": [
+    {
+      "text": "انشاء",
+      "row": 0,
+      "col": 1,
+      "direction": "h"
+    },
+    {
+      "text": "انشا",
+      "row": 0,
+      "col": 1,
+      "direction": "v"
+    },
+    {
+      "text": "انا",
+      "row": 0,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "شان",
+      "row": 2,
+      "col": 3,
+      "direction": "h"
+    },
+    {
+      "text": "شاء",
+      "row": 3,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "اناء",
+    "ناء",
+    "ناش",
+    "نشا",
+    "نشاء"
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "id": "m04-14",
+  "mansion": 4,
+  "mansion_name": "الدبران",
+  "season": "spring",
+  "index_in_mansion": 14,
+  "letters": [
+    "خ",
+    "ا",
+    "ت",
+    "م"
+  ],
+  "grid": {
+    "rows": 3,
+    "cols": 6
+  },
+  "words": [
+    {
+      "text": "خاتم",
+      "row": 0,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "اخت",
+      "row": 0,
+      "col": 1,
+      "direction": "v"
+    },
+    {
+      "text": "مات",
+      "row": 0,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "تام",
+      "row": 2,
+      "col": 3,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "اتم",
+    "امت",
+    "تخم",
+    "خات",
+    "خام",
+    "ختام",
+    "ختم",
+    "ماخ",
+    "متا"
+  ]
+}

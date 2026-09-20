@@ -1,0 +1,57 @@
+{
+  "id": "m04-16",
+  "mansion": 4,
+  "mansion_name": "الدبران",
+  "season": "spring",
+  "index_in_mansion": 16,
+  "letters": [
+    "ع",
+    "ق",
+    "و",
+    "د"
+  ],
+  "grid": {
+    "rows": 5,
+    "cols": 4
+  },
+  "words": [
+    {
+      "text": "وقع",
+      "row": 0,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "عقد",
+      "row": 0,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "عقود",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "وقد",
+      "row": 2,
+      "col": 2,
+      "direction": "v"
+    }
+  ],
+  "bonus": [
+    "دوق",
+    "عدو",
+    "عود",
+    "عوق",
+    "قدو",
+    "قعد",
+    "قعود",
+    "قود",
+    "ودع",
+    "ودق",
+    "وعد",
+    "وعق"
+  ]
+}

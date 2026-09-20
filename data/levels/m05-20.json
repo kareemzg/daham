@@ -1,0 +1,60 @@
+{
+  "id": "m05-20",
+  "mansion": 5,
+  "mansion_name": "الهقعة",
+  "season": "spring",
+  "index_in_mansion": 20,
+  "letters": [
+    "ا",
+    "ب",
+    "ا",
+    "د",
+    "ة"
+  ],
+  "grid": {
+    "rows": 4,
+    "cols": 7
+  },
+  "words": [
+    {
+      "text": "ابادة",
+      "row": 0,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "ابدا",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "اداة",
+      "row": 0,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "ابا",
+      "row": 2,
+      "col": 4,
+      "direction": "h"
+    },
+    {
+      "text": "بدا",
+      "row": 3,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "اباد",
+    "ابد",
+    "ادا",
+    "اداب",
+    "ادب",
+    "باد",
+    "داب",
+    "دابة"
+  ]
+}

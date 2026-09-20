@@ -1,0 +1,57 @@
+{
+  "id": "m02-02",
+  "mansion": 2,
+  "mansion_name": "البطين",
+  "season": "spring",
+  "index_in_mansion": 2,
+  "letters": [
+    "ل",
+    "م",
+    "ح",
+    "ة"
+  ],
+  "grid": {
+    "rows": 4,
+    "cols": 5
+  },
+  "words": [
+    {
+      "text": "حملة",
+      "row": 0,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "محل",
+      "row": 1,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "حمل",
+      "row": 1,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "لمحة",
+      "row": 3,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "حلة",
+    "حلم",
+    "حلمة",
+    "حمة",
+    "لحم",
+    "لحمة",
+    "لمة",
+    "لمح",
+    "محلة",
+    "ملة",
+    "ملح",
+    "ملحة"
+  ]
+}

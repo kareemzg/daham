@@ -1,0 +1,68 @@
+{
+  "id": "m23-07",
+  "mansion": 23,
+  "mansion_name": "سعد بلع",
+  "season": "winter",
+  "index_in_mansion": 7,
+  "letters": [
+    "ا",
+    "ذ",
+    "ك",
+    "ي",
+    "ا",
+    "ء"
+  ],
+  "grid": {
+    "rows": 4,
+    "cols": 8
+  },
+  "words": [
+    {
+      "text": "اذكياء",
+      "row": 0,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "اياك",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "كذا",
+      "row": 0,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "اذا",
+      "row": 0,
+      "col": 6,
+      "direction": "v"
+    },
+    {
+      "text": "ايا",
+      "row": 2,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "ذاك",
+      "row": 3,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "اذاك",
+    "اذكاء",
+    "اذي",
+    "ايذاء",
+    "ايك",
+    "ذكاء",
+    "ذكي",
+    "ذكيا",
+    "ياء"
+  ]
+}

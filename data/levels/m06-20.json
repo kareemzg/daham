@@ -1,0 +1,51 @@
+{
+  "id": "m06-20",
+  "mansion": 6,
+  "mansion_name": "الهنعة",
+  "season": "spring",
+  "index_in_mansion": 20,
+  "letters": [
+    "ا",
+    "ت",
+    "ج",
+    "ه"
+  ],
+  "grid": {
+    "rows": 4,
+    "cols": 5
+  },
+  "words": [
+    {
+      "text": "تاج",
+      "row": 0,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "تجاه",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "اتجه",
+      "row": 1,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "هات",
+      "row": 3,
+      "col": 2,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "تاه",
+    "تها",
+    "جاه",
+    "هاج",
+    "هتا",
+    "هجا"
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "id": "m07-19",
+  "mansion": 7,
+  "mansion_name": "الذراع",
+  "season": "spring",
+  "index_in_mansion": 19,
+  "letters": [
+    "ت",
+    "ط",
+    "ر",
+    "ق"
+  ],
+  "grid": {
+    "rows": 4,
+    "cols": 4
+  },
+  "words": [
+    {
+      "text": "تقطر",
+      "row": 0,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "تطرق",
+      "row": 1,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "طرق",
+      "row": 1,
+      "col": 1,
+      "direction": "v"
+    },
+    {
+      "text": "قطر",
+      "row": 3,
+      "col": 1,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "ترق",
+    "تطر",
+    "رتق",
+    "قتر",
+    "قرت",
+    "قرط"
+  ]
+}

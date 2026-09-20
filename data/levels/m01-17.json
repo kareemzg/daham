@@ -1,0 +1,48 @@
+{
+  "id": "m01-17",
+  "mansion": 1,
+  "mansion_name": "الشرطان",
+  "season": "spring",
+  "index_in_mansion": 17,
+  "letters": [
+    "و",
+    "ص",
+    "ل",
+    "ة"
+  ],
+  "grid": {
+    "rows": 5,
+    "cols": 4
+  },
+  "words": [
+    {
+      "text": "صول",
+      "row": 0,
+      "col": 1,
+      "direction": "h"
+    },
+    {
+      "text": "وصل",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "وصلة",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "صلة",
+      "row": 2,
+      "col": 1,
+      "direction": "v"
+    }
+  ],
+  "bonus": [
+    "صوة",
+    "صولة",
+    "لصة"
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "id": "m02-15",
+  "mansion": 2,
+  "mansion_name": "البطين",
+  "season": "spring",
+  "index_in_mansion": 15,
+  "letters": [
+    "ض",
+    "م",
+    "ي",
+    "ر"
+  ],
+  "grid": {
+    "rows": 4,
+    "cols": 4
+  },
+  "words": [
+    {
+      "text": "رضي",
+      "row": 0,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "مريض",
+      "row": 0,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "ضمير",
+      "row": 1,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "مرض",
+      "row": 3,
+      "col": 1,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "رمض",
+    "رمي",
+    "ريم",
+    "ضرم",
+    "ضري",
+    "ضمر",
+    "ضمي",
+    "ضير",
+    "ضيم",
+    "مرضي",
+    "مري",
+    "مضر",
+    "مضي"
+  ]
+}

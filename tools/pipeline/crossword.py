@@ -22,6 +22,18 @@ from typing import Iterator
 HORIZONTAL = "h"
 VERTICAL = "v"
 
+## The search is exhaustive, which is fine for five words and ruinous for eight.
+## These caps trade "the most compact arrangement that exists" for "a compact
+## arrangement, found in bounded time". Raise them when a level matters more than
+## the clock; the generator lowers them when it is only asking "is this even
+## possible?".
+SOLUTION_CAP = 64
+NODE_CAP = 60_000
+
+
+class LayoutFailed(ValueError):
+    """No valid interlocking arrangement was found within the caps."""
+
 Cell = tuple[int, int]
 Grid = dict[Cell, str]
 
@@ -111,18 +123,30 @@ def _normalise(placements: tuple[Placement, ...]) -> tuple[tuple[Placement, ...]
     return shifted, rows, cols
 
 
-def layout(words: list[str]) -> tuple[Placement, ...]:
-    """Find the most compact valid layout for `words`.
+def layout(
+    words: list[str],
+    *,
+    solution_cap: int = SOLUTION_CAP,
+    node_cap: int = NODE_CAP,
+) -> tuple[Placement, ...]:
+    """Find a compact valid layout for `words`.
 
-    Raises ValueError when the words cannot interlock at all.
+    Stops once `solution_cap` arrangements have been found or `node_cap` grids
+    have been tried, then returns the most compact of whatever it has.
+
+    Raises LayoutFailed when the words cannot interlock within those bounds.
     """
     if not words:
-        raise ValueError("no words to lay out")
+        raise LayoutFailed("no words to lay out")
     targets = tuple(words)
     ordered = sorted(words, key=len, reverse=True)
     solutions: list[tuple[tuple[Placement, ...], int, int]] = []
+    nodes = 0
 
     def search(grid: Grid, placed: tuple[Placement, ...], remaining: tuple[str, ...]) -> None:
+        nonlocal nodes
+        if len(solutions) >= solution_cap or nodes >= node_cap:
+            return
         if not remaining:
             if _is_complete(grid, targets):
                 solutions.append(_normalise(placed))
@@ -138,13 +162,16 @@ def layout(words: list[str]) -> tuple[Placement, ...]:
                 continue
             if not all(_could_still_become_a_word(run, targets) for run in _runs(candidate)):
                 continue
+            nodes += 1
             search(candidate, placed + (placement,), tuple(rest))
+            if len(solutions) >= solution_cap or nodes >= node_cap:
+                return
 
     first = Placement(ordered[0], 0, 0, HORIZONTAL)
     search(_apply({}, first) or {}, (first,), tuple(ordered[1:]))
 
     if not solutions:
-        raise ValueError(f"no valid interlocking layout for {words}")
+        raise LayoutFailed(f"no valid interlocking layout for {words}")
 
     # Most compact first, then the squarest, then stable by word order.
     solutions.sort(key=lambda item: (item[1] * item[2], abs(item[1] - item[2]), item[1]))

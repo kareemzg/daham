@@ -1,0 +1,64 @@
+{
+  "id": "m08-07",
+  "mansion": 8,
+  "mansion_name": "النثرة",
+  "season": "summer",
+  "index_in_mansion": 7,
+  "letters": [
+    "ا",
+    "ض",
+    "ط",
+    "ه",
+    "ا",
+    "د"
+  ],
+  "grid": {
+    "rows": 4,
+    "cols": 8
+  },
+  "words": [
+    {
+      "text": "اضطهاد",
+      "row": 0,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "اهدا",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "هاد",
+      "row": 0,
+      "col": 5,
+      "direction": "v"
+    },
+    {
+      "text": "داه",
+      "row": 0,
+      "col": 7,
+      "direction": "v"
+    },
+    {
+      "text": "طاه",
+      "row": 1,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "هدا",
+      "row": 3,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "ادا",
+    "اضطهد",
+    "اهد",
+    "دها",
+    "ضاد"
+  ]
+}

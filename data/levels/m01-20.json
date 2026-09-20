@@ -1,0 +1,53 @@
+{
+  "id": "m01-20",
+  "mansion": 1,
+  "mansion_name": "الشرطان",
+  "season": "spring",
+  "index_in_mansion": 20,
+  "letters": [
+    "ز",
+    "و",
+    "ج",
+    "ي"
+  ],
+  "grid": {
+    "rows": 5,
+    "cols": 4
+  },
+  "words": [
+    {
+      "text": "جوي",
+      "row": 0,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "زوجي",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "زوج",
+      "row": 2,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "جوز",
+      "row": 2,
+      "col": 2,
+      "direction": "v"
+    }
+  ],
+  "bonus": [
+    "جزي",
+    "جوزي",
+    "جيز",
+    "زوي",
+    "زيج",
+    "وجز",
+    "وجي",
+    "وجيز"
+  ]
+}

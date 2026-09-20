@@ -1,0 +1,64 @@
+{
+  "id": "m05-01",
+  "mansion": 5,
+  "mansion_name": "الهقعة",
+  "season": "spring",
+  "index_in_mansion": 1,
+  "letters": [
+    "ا",
+    "ع",
+    "ج",
+    "ا",
+    "ب"
+  ],
+  "grid": {
+    "rows": 4,
+    "cols": 6
+  },
+  "words": [
+    {
+      "text": "باع",
+      "row": 0,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "اجاب",
+      "row": 0,
+      "col": 1,
+      "direction": "v"
+    },
+    {
+      "text": "عجب",
+      "row": 1,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "ابا",
+      "row": 1,
+      "col": 5,
+      "direction": "v"
+    },
+    {
+      "text": "اعجاب",
+      "row": 2,
+      "col": 1,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "اعجب",
+    "باج",
+    "بجع",
+    "بعا",
+    "بعج",
+    "جاب",
+    "جاع",
+    "جبا",
+    "عاب",
+    "عاج",
+    "عبا",
+    "عجاب"
+  ]
+}

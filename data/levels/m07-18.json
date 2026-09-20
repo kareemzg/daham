@@ -1,0 +1,49 @@
+{
+  "id": "m07-18",
+  "mansion": 7,
+  "mansion_name": "الذراع",
+  "season": "spring",
+  "index_in_mansion": 18,
+  "letters": [
+    "د",
+    "ج",
+    "ا",
+    "ج"
+  ],
+  "grid": {
+    "rows": 3,
+    "cols": 4
+  },
+  "words": [
+    {
+      "text": "دجاج",
+      "row": 0,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "جدا",
+      "row": 0,
+      "col": 1,
+      "direction": "v"
+    },
+    {
+      "text": "جاد",
+      "row": 0,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "اجد",
+      "row": 2,
+      "col": 1,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "اجج",
+    "جاج",
+    "داج",
+    "دجا"
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "id": "m24-18",
+  "mansion": 24,
+  "mansion_name": "سعد السعود",
+  "season": "winter",
+  "index_in_mansion": 18,
+  "letters": [
+    "ا",
+    "م",
+    "ت",
+    "ص",
+    "ا",
+    "ص"
+  ],
+  "grid": {
+    "rows": 5,
+    "cols": 6
+  },
+  "words": [
+    {
+      "text": "صمت",
+      "row": 0,
+      "col": 1,
+      "direction": "h"
+    },
+    {
+      "text": "مات",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "تام",
+      "row": 1,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "امتصاص",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "اما",
+      "row": 2,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "اتم",
+      "row": 4,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "اتا",
+    "اصص",
+    "اصم",
+    "اصمت",
+    "امات",
+    "امت",
+    "امتص",
+    "امص",
+    "صام",
+    "صامت",
+    "ماص",
+    "متا",
+    "مصاص",
+    "مصت"
+  ]
+}

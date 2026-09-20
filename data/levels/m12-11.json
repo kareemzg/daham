@@ -1,0 +1,60 @@
+{
+  "id": "m12-11",
+  "mansion": 12,
+  "mansion_name": "الصرفة",
+  "season": "summer",
+  "index_in_mansion": 11,
+  "letters": [
+    "ق",
+    "ذ",
+    "ا",
+    "ئ",
+    "ف"
+  ],
+  "grid": {
+    "rows": 4,
+    "cols": 6
+  },
+  "words": [
+    {
+      "text": "قذائف",
+      "row": 0,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "قذف",
+      "row": 0,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "افق",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "فائق",
+      "row": 0,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "اقف",
+      "row": 3,
+      "col": 3,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "اقذف",
+    "ذاق",
+    "فاق",
+    "فقا",
+    "قاذف",
+    "قاف",
+    "قذاف",
+    "قفا"
+  ]
+}

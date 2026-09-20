@@ -1,0 +1,67 @@
+{
+  "id": "m11-18",
+  "mansion": 11,
+  "mansion_name": "الزبرة",
+  "season": "summer",
+  "index_in_mansion": 18,
+  "letters": [
+    "ح",
+    "و",
+    "ا",
+    "د",
+    "ث"
+  ],
+  "grid": {
+    "rows": 5,
+    "cols": 5
+  },
+  "words": [
+    {
+      "text": "حدث",
+      "row": 0,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "احد",
+      "row": 1,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "واحد",
+      "row": 1,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "حوادث",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "حدوث",
+      "row": 4,
+      "col": 1,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "احث",
+    "احدث",
+    "ادو",
+    "اوحد",
+    "اود",
+    "حاث",
+    "حاد",
+    "حادث",
+    "حثا",
+    "حدا",
+    "حداث",
+    "دحا",
+    "دوح",
+    "واد",
+    "وحد"
+  ]
+}

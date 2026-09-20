@@ -1,0 +1,47 @@
+{
+  "id": "m07-01",
+  "mansion": 7,
+  "mansion_name": "الذراع",
+  "season": "spring",
+  "index_in_mansion": 1,
+  "letters": [
+    "ت",
+    "ر",
+    "ك",
+    "ي"
+  ],
+  "grid": {
+    "rows": 3,
+    "cols": 5
+  },
+  "words": [
+    {
+      "text": "كيت",
+      "row": 0,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "ترك",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "تري",
+      "row": 0,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "تركي",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "كري",
+    "كير"
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "id": "m10-14",
+  "mansion": 10,
+  "mansion_name": "الجبهة",
+  "season": "summer",
+  "index_in_mansion": 14,
+  "letters": [
+    "ف",
+    "ي",
+    "ي",
+    "ن",
+    "ا"
+  ],
+  "grid": {
+    "rows": 3,
+    "cols": 7
+  },
+  "words": [
+    {
+      "text": "فيينا",
+      "row": 0,
+      "col": 1,
+      "direction": "h"
+    },
+    {
+      "text": "فان",
+      "row": 0,
+      "col": 1,
+      "direction": "v"
+    },
+    {
+      "text": "اني",
+      "row": 0,
+      "col": 5,
+      "direction": "v"
+    },
+    {
+      "text": "فني",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "اين",
+      "row": 2,
+      "col": 4,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "انف",
+    "انفي",
+    "فاني",
+    "فين",
+    "فينا",
+    "فيني",
+    "ناف",
+    "نافي",
+    "ناي",
+    "نايف",
+    "نفي",
+    "نيف",
+    "يان",
+    "ياي",
+    "يفين"
+  ]
+}

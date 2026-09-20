@@ -1,0 +1,48 @@
+{
+  "id": "m01-07",
+  "mansion": 1,
+  "mansion_name": "الشرطان",
+  "season": "spring",
+  "index_in_mansion": 7,
+  "letters": [
+    "ع",
+    "ي",
+    "ن",
+    "ة"
+  ],
+  "grid": {
+    "rows": 3,
+    "cols": 6
+  },
+  "words": [
+    {
+      "text": "عينة",
+      "row": 0,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "عين",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "نية",
+      "row": 0,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "عني",
+      "row": 1,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "عنة",
+    "عنية",
+    "نعي"
+  ]
+}

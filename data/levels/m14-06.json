@@ -1,0 +1,66 @@
+{
+  "id": "m14-06",
+  "mansion": 14,
+  "mansion_name": "السماك",
+  "season": "summer",
+  "index_in_mansion": 6,
+  "letters": [
+    "ا",
+    "ز",
+    "ع",
+    "ا",
+    "ج"
+  ],
+  "grid": {
+    "rows": 5,
+    "cols": 5
+  },
+  "words": [
+    {
+      "text": "جاز",
+      "row": 0,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "عجز",
+      "row": 0,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "ازعاج",
+      "row": 1,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "عاجز",
+      "row": 1,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "اعز",
+      "row": 4,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "اجاز",
+    "اجز",
+    "ازا",
+    "ازج",
+    "ازعج",
+    "اعجاز",
+    "اعجز",
+    "جاع",
+    "جزا",
+    "جزع",
+    "زاج",
+    "عاج",
+    "عاز",
+    "عزا"
+  ]
+}

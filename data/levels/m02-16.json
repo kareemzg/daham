@@ -1,0 +1,48 @@
+{
+  "id": "m02-16",
+  "mansion": 2,
+  "mansion_name": "البطين",
+  "season": "spring",
+  "index_in_mansion": 16,
+  "letters": [
+    "م",
+    "ظ",
+    "ل",
+    "ة"
+  ],
+  "grid": {
+    "rows": 4,
+    "cols": 5
+  },
+  "words": [
+    {
+      "text": "ظلمة",
+      "row": 0,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "ظلم",
+      "row": 1,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "ملة",
+      "row": 1,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "مظلة",
+      "row": 3,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "ظلة",
+    "لمة",
+    "مظل"
+  ]
+}

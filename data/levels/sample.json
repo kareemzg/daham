@@ -1,0 +1,53 @@
+{
+  "id": "sample",
+  "mansion": 4,
+  "mansion_name": "الدبران",
+  "season": "spring",
+  "index_in_mansion": 12,
+  "letters": [
+    "ك",
+    "ت",
+    "ا",
+    "ب"
+  ],
+  "grid": {
+    "rows": 4,
+    "cols": 6
+  },
+  "words": [
+    {
+      "text": "كاتب",
+      "row": 0,
+      "col": 1,
+      "direction": "v"
+    },
+    {
+      "text": "كتب",
+      "row": 0,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "تاب",
+      "row": 1,
+      "col": 3,
+      "direction": "h"
+    },
+    {
+      "text": "بات",
+      "row": 1,
+      "col": 5,
+      "direction": "v"
+    },
+    {
+      "text": "كتاب",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "بكت",
+    "كبت"
+  ]
+}

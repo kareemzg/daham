@@ -1,0 +1,57 @@
+{
+  "id": "m08-15",
+  "mansion": 8,
+  "mansion_name": "النثرة",
+  "season": "summer",
+  "index_in_mansion": 15,
+  "letters": [
+    "ث",
+    "ل",
+    "ا",
+    "ث",
+    "ة"
+  ],
+  "grid": {
+    "rows": 5,
+    "cols": 5
+  },
+  "words": [
+    {
+      "text": "ثلث",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "ثلاث",
+      "row": 1,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "ثالث",
+      "row": 1,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "الة",
+      "row": 2,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "ثلاثة",
+      "row": 4,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "اثث",
+    "اثل",
+    "ثال",
+    "ثلة",
+    "لثة"
+  ]
+}

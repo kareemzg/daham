@@ -1,0 +1,61 @@
+{
+  "id": "m15-16",
+  "mansion": 15,
+  "mansion_name": "الغفر",
+  "season": "autumn",
+  "index_in_mansion": 16,
+  "letters": [
+    "ا",
+    "ح",
+    "د",
+    "ا",
+    "ث"
+  ],
+  "grid": {
+    "rows": 5,
+    "cols": 6
+  },
+  "words": [
+    {
+      "text": "احدث",
+      "row": 0,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "حادث",
+      "row": 0,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "احداث",
+      "row": 2,
+      "col": 1,
+      "direction": "h"
+    },
+    {
+      "text": "احد",
+      "row": 2,
+      "col": 1,
+      "direction": "v"
+    },
+    {
+      "text": "حدث",
+      "row": 4,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "احاد",
+    "احث",
+    "ادا",
+    "حاث",
+    "حاد",
+    "حثا",
+    "حدا",
+    "حداث",
+    "دحا"
+  ]
+}

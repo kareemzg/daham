@@ -23,7 +23,6 @@ enum Result {
 	TOO_SHORT,  ## one letter or none: ignored entirely
 }
 
-const LEVEL_PATH := "res://data/levels/m04-12.json"
 const LANTERNS_MAX := 5
 const MOON_PHASES := 8
 const WRONG_STREAK_COST := 5
@@ -44,10 +43,15 @@ const PREVIEW_PILL_MIN := 366.0
 const PREVIEW_PILL_PAD := 72.0
 const WHEEL_MARGIN := 62.0
 const CHIP_HEIGHT := 92.0
+const GRID_MARGIN := 60.0
 const BUTTON_SIZE := 161.0
 
 const DISPLAY_FONT := preload("res://assets/fonts/arabic_display.tres")
 const UI_BOLD_FONT := preload("res://assets/fonts/arabic_ui_bold.tres")
+
+## Which level to play. Exported so the test scene can point at its own
+## fixture instead of whatever level generation happens to have produced.
+@export_file("*.json") var level_path: String = "res://data/levels/m01-01.json"
 
 var level: Level = null
 var lanterns: int = LANTERNS_MAX
@@ -83,15 +87,29 @@ var _hint_cost: GlossyPanel
 
 func _ready() -> void:
 	_sky = _make_sky()
-	level = Level.load_from(LEVEL_PATH)
-	if level == null:
+	_build_chrome()
+	wheel.word_previewed.connect(_on_word_previewed)
+	wheel.word_submitted.connect(_on_word_submitted)
+	resized.connect(_layout)
+
+	var first := Level.load_from(level_path)
+	if first == null:
 		push_error("Game: no level to play")
 		return
+	show_level(first)
+
+
+## Puts a level on the screen and clears everything that belongs to the last one.
+## This is the seam progression will use: the next level arrives through here.
+func show_level(new_level: Level) -> void:
+	level = new_level
 	for problem in level.validate():
 		push_error("Level %s: %s" % [level.id, problem])
 
-	grid.cell_size = CELL
-	grid.gap = CELL_GAP
+	_bonus_found.clear()
+	wrong_streak = 0
+	moon = 0
+
 	grid.setup(level)
 	wheel.body_radius = WHEEL_BODY
 	wheel.orbit_radius = WHEEL_ORBIT
@@ -107,11 +125,6 @@ func _ready() -> void:
 	]
 	preview.text = ""
 	toast.text = ""
-
-	_build_chrome()
-	wheel.word_previewed.connect(_on_word_previewed)
-	wheel.word_submitted.connect(_on_word_submitted)
-	resized.connect(_layout)
 	_layout()
 	_refresh_chrome()
 
@@ -275,15 +288,21 @@ func _layout() -> void:
 	# The grid gets whatever is left between the header and the preview, and
 	# sits in the middle of it. Chaining it straight to the preview instead
 	# would pin it to the bottom of that gap whenever the grid is short.
-	grid.cell_size = CELL * s
-	grid.gap = CELL_GAP * s
-	var grid_extent := grid.grid_size()
-	grid.size = grid_extent
 	var band_top := stars.position.y + stars.size.y + 12.0 * s + toast.size.y + 12.0 * s
 	var band_bottom := preview.position.y - 20.0 * s
+
+	# Cells shrink to fit. Generated grids run from four columns to eleven, and a
+	# fixed cell size pushed nearly half of them off the side of the screen.
+	var pitch := (CELL + CELL_GAP) * s
+	pitch = minf(pitch, (size.x - GRID_MARGIN * 2.0 * s) / float(level.cols))
+	pitch = minf(pitch, (band_bottom - band_top) / float(level.rows))
+	grid.gap = pitch * (CELL_GAP / (CELL + CELL_GAP))
+	grid.cell_size = pitch - grid.gap
+	var grid_extent := grid.grid_size()
+	grid.size = grid_extent
 	grid.position = Vector2(
 		(size.x - grid_extent.x) * 0.5,
-		maxf(band_top, band_top + (band_bottom - band_top - grid_extent.y) * 0.5)
+		band_top + maxf(0.0, (band_bottom - band_top - grid_extent.y) * 0.5)
 	)
 
 	# The toast never lands on the grid: a message over a cell hides the letter

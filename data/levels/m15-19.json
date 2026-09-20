@@ -1,0 +1,59 @@
+{
+  "id": "m15-19",
+  "mansion": 15,
+  "mansion_name": "الغفر",
+  "season": "autumn",
+  "index_in_mansion": 19,
+  "letters": [
+    "م",
+    "ح",
+    "م",
+    "ي",
+    "ة"
+  ],
+  "grid": {
+    "rows": 5,
+    "cols": 5
+  },
+  "words": [
+    {
+      "text": "محي",
+      "row": 0,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "حمية",
+      "row": 0,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "محمي",
+      "row": 1,
+      "col": 1,
+      "direction": "v"
+    },
+    {
+      "text": "محمية",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "حية",
+      "row": 4,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "حمة",
+    "حمم",
+    "حمي",
+    "حميم",
+    "محم",
+    "ميم",
+    "يمم"
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "id": "m07-15",
+  "mansion": 7,
+  "mansion_name": "الذراع",
+  "season": "spring",
+  "index_in_mansion": 15,
+  "letters": [
+    "ع",
+    "ي",
+    "و",
+    "ب"
+  ],
+  "grid": {
+    "rows": 3,
+    "cols": 5
+  },
+  "words": [
+    {
+      "text": "بيع",
+      "row": 0,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "وعي",
+      "row": 0,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "عيب",
+      "row": 0,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "عيوب",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "بيوع",
+    "وعب",
+    "وعيب"
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "id": "m04-06",
+  "mansion": 4,
+  "mansion_name": "الدبران",
+  "season": "spring",
+  "index_in_mansion": 6,
+  "letters": [
+    "ا",
+    "ج",
+    "ر",
+    "ي"
+  ],
+  "grid": {
+    "rows": 4,
+    "cols": 4
+  },
+  "words": [
+    {
+      "text": "جار",
+      "row": 0,
+      "col": 1,
+      "direction": "h"
+    },
+    {
+      "text": "اجر",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "راي",
+      "row": 1,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "اجري",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "اجير",
+    "ارج",
+    "ارجي",
+    "اري",
+    "اريج",
+    "اير",
+    "جاري",
+    "جرا",
+    "جري",
+    "جير",
+    "راج",
+    "راجي",
+    "رجا",
+    "رجي"
+  ]
+}

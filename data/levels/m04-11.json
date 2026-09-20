@@ -1,0 +1,59 @@
+{
+  "id": "m04-11",
+  "mansion": 4,
+  "mansion_name": "الدبران",
+  "season": "spring",
+  "index_in_mansion": 11,
+  "letters": [
+    "ت",
+    "س",
+    "ل",
+    "م"
+  ],
+  "grid": {
+    "rows": 4,
+    "cols": 4
+  },
+  "words": [
+    {
+      "text": "تلمس",
+      "row": 0,
+      "col": 1,
+      "direction": "v"
+    },
+    {
+      "text": "لمس",
+      "row": 1,
+      "col": 1,
+      "direction": "h"
+    },
+    {
+      "text": "سلم",
+      "row": 1,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "تسلم",
+      "row": 3,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "تسل",
+    "تسم",
+    "تلم",
+    "ستل",
+    "سلت",
+    "سمت",
+    "سمل",
+    "لتم",
+    "لستم",
+    "لسم",
+    "متل",
+    "مسل",
+    "ملت",
+    "ملس"
+  ]
+}

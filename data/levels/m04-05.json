@@ -1,0 +1,50 @@
+{
+  "id": "m04-05",
+  "mansion": 4,
+  "mansion_name": "الدبران",
+  "season": "spring",
+  "index_in_mansion": 5,
+  "letters": [
+    "ب",
+    "ش",
+    "ر",
+    "ى"
+  ],
+  "grid": {
+    "rows": 5,
+    "cols": 4
+  },
+  "words": [
+    {
+      "text": "ربى",
+      "row": 0,
+      "col": 1,
+      "direction": "h"
+    },
+    {
+      "text": "بشر",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "بشرى",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "شرب",
+      "row": 2,
+      "col": 1,
+      "direction": "v"
+    }
+  ],
+  "bonus": [
+    "برش",
+    "برى",
+    "رشى",
+    "شبر",
+    "شرى"
+  ]
+}

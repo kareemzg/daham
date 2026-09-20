@@ -1,0 +1,51 @@
+{
+  "id": "m04-18",
+  "mansion": 4,
+  "mansion_name": "الدبران",
+  "season": "spring",
+  "index_in_mansion": 18,
+  "letters": [
+    "ا",
+    "س",
+    "ر",
+    "ة"
+  ],
+  "grid": {
+    "rows": 4,
+    "cols": 4
+  },
+  "words": [
+    {
+      "text": "راس",
+      "row": 0,
+      "col": 1,
+      "direction": "h"
+    },
+    {
+      "text": "سارة",
+      "row": 0,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "سرا",
+      "row": 1,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "اسرة",
+      "row": 3,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "ارس",
+    "اسر",
+    "رسا",
+    "سار",
+    "سراة",
+    "سرة"
+  ]
+}

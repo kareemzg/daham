@@ -1,0 +1,65 @@
+{
+  "id": "m14-15",
+  "mansion": 14,
+  "mansion_name": "السماك",
+  "season": "summer",
+  "index_in_mansion": 15,
+  "letters": [
+    "س",
+    "ي",
+    "ر",
+    "ي",
+    "ن"
+  ],
+  "grid": {
+    "rows": 4,
+    "cols": 7
+  },
+  "words": [
+    {
+      "text": "سري",
+      "row": 0,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "يسير",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "سير",
+      "row": 0,
+      "col": 5,
+      "direction": "v"
+    },
+    {
+      "text": "سيرين",
+      "row": 1,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "يسر",
+      "row": 3,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "رسن",
+    "رسي",
+    "رين",
+    "ريني",
+    "سرن",
+    "سني",
+    "سيري",
+    "سين",
+    "نسر",
+    "نسي",
+    "نير",
+    "نيس",
+    "يسري"
+  ]
+}

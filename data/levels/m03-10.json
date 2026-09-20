@@ -1,0 +1,49 @@
+{
+  "id": "m03-10",
+  "mansion": 3,
+  "mansion_name": "الثريا",
+  "season": "spring",
+  "index_in_mansion": 10,
+  "letters": [
+    "ا",
+    "ش",
+    "ع",
+    "ة"
+  ],
+  "grid": {
+    "rows": 4,
+    "cols": 4
+  },
+  "words": [
+    {
+      "text": "عشا",
+      "row": 0,
+      "col": 1,
+      "direction": "h"
+    },
+    {
+      "text": "شاع",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "عاش",
+      "row": 1,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "اشعة",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "اشع",
+    "اعش",
+    "شاة",
+    "عشة"
+  ]
+}

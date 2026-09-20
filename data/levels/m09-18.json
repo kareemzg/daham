@@ -1,0 +1,58 @@
+{
+  "id": "m09-18",
+  "mansion": 9,
+  "mansion_name": "الطرف",
+  "season": "summer",
+  "index_in_mansion": 18,
+  "letters": [
+    "ت",
+    "ر",
+    "ت",
+    "د",
+    "ي"
+  ],
+  "grid": {
+    "rows": 5,
+    "cols": 5
+  },
+  "words": [
+    {
+      "text": "تري",
+      "row": 0,
+      "col": 1,
+      "direction": "v"
+    },
+    {
+      "text": "ترتدي",
+      "row": 1,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "تدير",
+      "row": 1,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "تردي",
+      "row": 1,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "دير",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "تتر",
+    "تتري",
+    "تدر",
+    "درت",
+    "دري",
+    "ردي"
+  ]
+}

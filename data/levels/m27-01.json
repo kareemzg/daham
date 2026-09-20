@@ -1,0 +1,74 @@
+{
+  "id": "m27-01",
+  "mansion": 27,
+  "mansion_name": "الفرغ المؤخر",
+  "season": "winter",
+  "index_in_mansion": 1,
+  "letters": [
+    "ا",
+    "ق",
+    "و",
+    "ي",
+    "ا",
+    "ء"
+  ],
+  "grid": {
+    "rows": 6,
+    "cols": 7
+  },
+  "words": [
+    {
+      "text": "اقوي",
+      "row": 0,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "اوي",
+      "row": 0,
+      "col": 3,
+      "direction": "h"
+    },
+    {
+      "text": "اقوياء",
+      "row": 2,
+      "col": 1,
+      "direction": "h"
+    },
+    {
+      "text": "ايوا",
+      "row": 2,
+      "col": 1,
+      "direction": "v"
+    },
+    {
+      "text": "ايا",
+      "row": 2,
+      "col": 5,
+      "direction": "v"
+    },
+    {
+      "text": "قوي",
+      "row": 4,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "اقو",
+    "اواق",
+    "اوق",
+    "ايواء",
+    "قاء",
+    "قوا",
+    "قيء",
+    "قيا",
+    "واق",
+    "واقي",
+    "وقاء",
+    "وقي",
+    "ياء",
+    "يقوا",
+    "يوق"
+  ]
+}

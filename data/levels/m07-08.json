@@ -1,0 +1,48 @@
+{
+  "id": "m07-08",
+  "mansion": 7,
+  "mansion_name": "الذراع",
+  "season": "spring",
+  "index_in_mansion": 8,
+  "letters": [
+    "ن",
+    "ب",
+    "ي",
+    "ذ"
+  ],
+  "grid": {
+    "rows": 3,
+    "cols": 6
+  },
+  "words": [
+    {
+      "text": "بين",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "بني",
+      "row": 0,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "نبي",
+      "row": 1,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "نبيذ",
+      "row": 2,
+      "col": 2,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "ذنب",
+    "نبذ",
+    "نيب"
+  ]
+}

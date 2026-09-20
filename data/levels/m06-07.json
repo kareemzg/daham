@@ -1,0 +1,56 @@
+{
+  "id": "m06-07",
+  "mansion": 6,
+  "mansion_name": "الهنعة",
+  "season": "spring",
+  "index_in_mansion": 7,
+  "letters": [
+    "ن",
+    "ا",
+    "د",
+    "ى"
+  ],
+  "grid": {
+    "rows": 4,
+    "cols": 5
+  },
+  "words": [
+    {
+      "text": "دان",
+      "row": 0,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "ادنى",
+      "row": 0,
+      "col": 1,
+      "direction": "v"
+    },
+    {
+      "text": "ادى",
+      "row": 1,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "نادى",
+      "row": 2,
+      "col": 1,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "ادن",
+    "اند",
+    "اندى",
+    "انى",
+    "دانى",
+    "دنا",
+    "دنى",
+    "ناد",
+    "ناى",
+    "ندا",
+    "ندى"
+  ]
+}

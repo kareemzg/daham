@@ -1,0 +1,64 @@
+{
+  "id": "m16-09",
+  "mansion": 16,
+  "mansion_name": "الزبانى",
+  "season": "autumn",
+  "index_in_mansion": 9,
+  "letters": [
+    "ف",
+    "ي",
+    "ز",
+    "ي",
+    "ا",
+    "ء"
+  ],
+  "grid": {
+    "rows": 5,
+    "cols": 6
+  },
+  "words": [
+    {
+      "text": "ياي",
+      "row": 0,
+      "col": 1,
+      "direction": "v"
+    },
+    {
+      "text": "ياء",
+      "row": 0,
+      "col": 5,
+      "direction": "v"
+    },
+    {
+      "text": "زيف",
+      "row": 1,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "فيزياء",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "فاز",
+      "row": 2,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "زيا",
+      "row": 4,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "ازف",
+    "افز",
+    "زاي",
+    "فاء",
+    "فيء"
+  ]
+}

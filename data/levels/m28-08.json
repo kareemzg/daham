@@ -1,0 +1,73 @@
+{
+  "id": "m28-08",
+  "mansion": 28,
+  "mansion_name": "بطن الحوت",
+  "season": "winter",
+  "index_in_mansion": 8,
+  "letters": [
+    "ا",
+    "ي",
+    "ج",
+    "ا",
+    "ب",
+    "ي"
+  ],
+  "grid": {
+    "rows": 4,
+    "cols": 6
+  },
+  "words": [
+    {
+      "text": "ايا",
+      "row": 0,
+      "col": 1,
+      "direction": "v"
+    },
+    {
+      "text": "ابا",
+      "row": 0,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "ايجابي",
+      "row": 1,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "ابي",
+      "row": 1,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "جيب",
+      "row": 1,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "باي",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "اجاب",
+    "اجيبي",
+    "اياب",
+    "اياي",
+    "ايب",
+    "ايجاب",
+    "باج",
+    "بيج",
+    "جاب",
+    "جابي",
+    "جبا",
+    "جبي",
+    "جيبي",
+    "ياي"
+  ]
+}

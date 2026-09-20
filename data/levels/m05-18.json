@@ -1,0 +1,60 @@
+{
+  "id": "m05-18",
+  "mansion": 5,
+  "mansion_name": "الهقعة",
+  "season": "spring",
+  "index_in_mansion": 18,
+  "letters": [
+    "ا",
+    "ق",
+    "ا",
+    "ل",
+    "ة"
+  ],
+  "grid": {
+    "rows": 5,
+    "cols": 5
+  },
+  "words": [
+    {
+      "text": "اقل",
+      "row": 0,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "قال",
+      "row": 1,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "اقالة",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "الا",
+      "row": 2,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "الة",
+      "row": 4,
+      "col": 2,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "اقال",
+    "الق",
+    "قالا",
+    "قالة",
+    "قلا",
+    "قلة",
+    "لاق",
+    "لقا"
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "id": "m15-08",
+  "mansion": 15,
+  "mansion_name": "الغفر",
+  "season": "autumn",
+  "index_in_mansion": 8,
+  "letters": [
+    "ت",
+    "و",
+    "ط",
+    "ي",
+    "د"
+  ],
+  "grid": {
+    "rows": 3,
+    "cols": 6
+  },
+  "words": [
+    {
+      "text": "دوي",
+      "row": 0,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "ودي",
+      "row": 0,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "يود",
+      "row": 0,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "دوت",
+      "row": 1,
+      "col": 3,
+      "direction": "h"
+    },
+    {
+      "text": "توطيد",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "تدو",
+    "توطد",
+    "توي",
+    "ديو",
+    "طود",
+    "طوي",
+    "وتد",
+    "وتدي",
+    "وطد",
+    "وطيد",
+    "يدو"
+  ]
+}

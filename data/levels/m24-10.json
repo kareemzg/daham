@@ -1,0 +1,69 @@
+{
+  "id": "m24-10",
+  "mansion": 24,
+  "mansion_name": "سعد السعود",
+  "season": "winter",
+  "index_in_mansion": 10,
+  "letters": [
+    "ت",
+    "ش",
+    "خ",
+    "ي",
+    "ص",
+    "ي"
+  ],
+  "grid": {
+    "rows": 6,
+    "cols": 8
+  },
+  "words": [
+    {
+      "text": "شخصي",
+      "row": 0,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "شيت",
+      "row": 0,
+      "col": 7,
+      "direction": "v"
+    },
+    {
+      "text": "تشخيصي",
+      "row": 1,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "تشخيص",
+      "row": 1,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "شيخ",
+      "row": 3,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "شخص",
+      "row": 5,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "تشخص",
+    "تيش",
+    "خشي",
+    "خصت",
+    "خصي",
+    "خيش",
+    "شخت",
+    "صيت",
+    "يتي",
+    "يخت"
+  ]
+}

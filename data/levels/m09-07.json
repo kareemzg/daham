@@ -1,0 +1,59 @@
+{
+  "id": "m09-07",
+  "mansion": 9,
+  "mansion_name": "الطرف",
+  "season": "summer",
+  "index_in_mansion": 7,
+  "letters": [
+    "ا",
+    "د",
+    "و",
+    "ا",
+    "ت"
+  ],
+  "grid": {
+    "rows": 3,
+    "cols": 7
+  },
+  "words": [
+    {
+      "text": "دوت",
+      "row": 0,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "ادوات",
+      "row": 0,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "ادت",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "اود",
+      "row": 0,
+      "col": 5,
+      "direction": "v"
+    },
+    {
+      "text": "واد",
+      "row": 1,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "اتا",
+    "ادا",
+    "ادو",
+    "اوت",
+    "اوتاد",
+    "تدو",
+    "وتد"
+  ]
+}

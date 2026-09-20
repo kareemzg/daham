@@ -1,0 +1,51 @@
+{
+  "id": "m01-02",
+  "mansion": 1,
+  "mansion_name": "الشرطان",
+  "season": "spring",
+  "index_in_mansion": 2,
+  "letters": [
+    "ر",
+    "ئ",
+    "ي",
+    "س"
+  ],
+  "grid": {
+    "rows": 3,
+    "cols": 5
+  },
+  "words": [
+    {
+      "text": "سير",
+      "row": 0,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "سري",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "سيئ",
+      "row": 0,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "رئيس",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    }
+  ],
+  "bonus": [
+    "رئس",
+    "رئي",
+    "رسي",
+    "يئس",
+    "يسئ",
+    "يسر"
+  ]
+}
