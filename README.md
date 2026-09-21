@@ -103,6 +103,13 @@ than at whatever speed the machine managed. Turn the frames into a GIF with:
 ffmpeg -framerate 30 -i tools/out/reel/f%08d.png -vf "scale=380:-1:flags=lanczos,split[a][b];[a]palettegen=stats_mode=diff[p];[b][p]paletteuse" -loop 0 tools/out/motion_reel.gif
 ```
 
+The twentieth star of a mansion has its own reel, because it is the longest
+moment in the game and the only one with words forming out of dust:
+
+```bash
+godot --path . --fixed-fps 30 --write-movie tools/out/finale/f.png res://scenes/dev/finale_reel.tscn
+```
+
 The reel re-implements nothing. It restores a part-played level and then calls
 the same methods a player's fingers would, so a motion that is wrong on screen
 is wrong in the recording too.

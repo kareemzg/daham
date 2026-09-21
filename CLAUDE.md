@@ -100,6 +100,7 @@ Targets iOS, Android, macOS, Windows, Linux, Steam. Desktop is a paid premium bu
 - Run the slice test before committing engine changes: `godot --path . --quit-after 900 res://scenes/dev/game_test.tscn`. It exits non-zero on failure and writes `tools/out/game_slice.png`.
 - Run the way-in test too: `godot --path . --quit-after 900 res://scenes/dev/shell_test.tscn`. It drives the title, the map and the moves between screens.
 - Look at the way in: `godot --path . --quit-after 900 res://scenes/dev/screen_shots.tscn` writes one PNG per screen to `tools/out/`.
+- Watch the twentieth star before believing it: `godot --path . --fixed-fps 30 --write-movie tools/out/finale/f.png res://scenes/dev/finale_reel.tscn`, then ffmpeg the frames. A still cannot show a name gathering out of dust.
 - Look at a window before believing it: `godot --path . --quit-after 600 res://scenes/dev/window_shots.tscn` writes one PNG per window to `tools/out/`. Layout maths can be right while a window still reads wrong.
 - Adding a `class_name` script? Run `godot --path . --headless --import` once, or the next run fails with "Identifier not declared" until the editor rescans.
 - Pushing synthetic input in a test: send the whole press-move-release burst without awaiting frames in between, or the machine's real mouse slips in and ends the drag.
