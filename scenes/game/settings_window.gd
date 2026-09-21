@@ -6,14 +6,12 @@ extends SkyWindow
 ## second place for them to fall out of step with what is actually stored.
 
 signal menu_requested
-signal close_requested
 signal changed(key: String, on: bool)
 
 const KEYS := ["sound", "music", "haptics"]
 const LABELS := ["المؤثرات الصوتية", "الموسيقى", "الاهتزاز"]
 
 var rows: Array[SkyToggle] = []
-var close_button: GlossyPanel
 var _language: Control
 
 
@@ -37,24 +35,7 @@ func configure_settings(display_font: Font, ui_font: Font) -> void:
 	)
 	(menu.get_meta("button") as Button).pressed.connect(func() -> void: menu_requested.emit())
 
-	# The corner cross, as the design draws it: a window you opened yourself
-	# closes without having to leave where you are.
-	close_button = GlossyPanel.new()
-	close_button.style = GlossyPanel.Style.BUTTON_CREAM
-	panel.add_child(close_button)
-	var cross := _label(ui_font, Color("6B5942"))
-	cross.text = "×"
-	close_button.add_child(cross)
-	close_button.set_meta("label", cross)
-	var button := Button.new()
-	button.flat = true
-	button.focus_mode = Control.FOCUS_ALL
-	button.tooltip_text = "إغلاق"
-	button.pressed.connect(func() -> void: close_requested.emit())
-	button.button_down.connect(func() -> void: close_button.set_pressed(true))
-	button.button_up.connect(func() -> void: close_button.set_pressed(false))
-	close_button.add_child(button)
-	close_button.set_meta("button", button)
+	add_close_cross()
 
 
 func _build_language_row() -> Control:
@@ -113,16 +94,3 @@ func relayout(s: float) -> void:
 	var value_width: float = value.get_minimum_size().x
 	value.position = Vector2(pad, 0.0)
 	value.size = Vector2(value_width, _language.size.y)
-
-	var side := 72.0 * s
-	close_button.position = Vector2(28.0 * s, 26.0 * s)
-	close_button.size = Vector2(side, side)
-	close_button.edge_override = 6.0 * s
-	close_button.radius_override = side * 0.5
-	var cross: Label = close_button.get_meta("label")
-	cross.position = Vector2.ZERO
-	cross.size = Vector2(side, close_button.face_height())
-	cross.add_theme_font_size_override("font_size", int(46.0 * s))
-	var button: Button = close_button.get_meta("button")
-	button.position = Vector2.ZERO
-	button.size = Vector2(side, side)

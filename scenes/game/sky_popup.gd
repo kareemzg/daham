@@ -7,6 +7,8 @@ extends Control
 ## layer behind swallows taps, so nothing underneath reacts while it is up.
 
 signal closed
+## Asked for by a corner cross or anything else that means "take this away".
+signal close_requested
 
 const DIM_COLOUR := Color("04121C")
 const DIM_ALPHA := 0.55

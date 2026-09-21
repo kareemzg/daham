@@ -31,6 +31,15 @@ Targets iOS, Android, macOS, Windows, Linux, Steam. Desktop is a paid premium bu
 - `scripts/mansions.gd` mirrors `tools/pipeline/mansions.py`. The table is in both because the map draws all twenty-eight and must not read five hundred and sixty level files to learn their names.
 - Amiri's ascenders and descenders run well past the point size. Size a label's box by the line the next one has to clear, not by the font size. This bit twice in one afternoon: the title landed on its subtitle, and the season on its count.
 
+## Tools and the shop
+- The four instruments live in `scripts/tools.gd`: names, what each reveals, prices, icons. One table, so a price can never differ between the window that sells a tool and the screen that spends it.
+- The hint button opens the shelf; it spends nothing by itself. Which tool to buy is the player's choice, not the cheapest by default.
+- A tool bought ahead from the shop is spent before any coin is. `Progress.tools` holds the counts.
+- The chart is the one tool that waits: it arms `WordGrid.picking` and stays armed until a cell is tapped, because it was paid for. `show_level()` disarms it, so a chart never survives into a level it was not bought for.
+- A price the player cannot afford is greyed, never hidden. Hiding it teaches them nothing about what the tool is or what it would take.
+- The shop sells for coins only. Real-money coin packs are a commercial decision nobody has made; the window says they belong to the phone build, because the desktop one is paid once.
+- The mansion card's meanings in `scripts/mansions.gd` are a first draft from the classical tradition, for Kareem to check, exactly as the story bible plans it. البلدة has no Latin name because it is named for being empty of bright stars: the blank there is the truth, and the line hides rather than showing nothing.
+
 ## Windows
 - Every window is a `SkyWindow`: a crest badge straddling the top edge, a title, optional prose, any rows it needs, then its buttons. Describe a window; never position one. The padding, type sizes and button heights live in that one file so four windows cannot drift apart.
 - Every window offers the way back to the main menu beside its own action. A player out of lanterns, facing a refill they cannot afford, must not be shut in a box. `menu_requested` carries it; no shell listens yet, so the window simply closes.

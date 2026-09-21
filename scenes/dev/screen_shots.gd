@@ -52,6 +52,18 @@ func _shoot() -> void:
 	shell.open_settings()
 	shell.settings_window.settle()
 	await _save("screen_settings")
+	shell.settings_window.visible = false
+
+	shell.open_shop()
+	shell.shop_window.settle()
+	await _save("screen_shop")
+	shell.shop_window.visible = false
+
+	shell.go_to(Shell.Screen.GAME)
+	await get_tree().create_timer(MeteorWipe.DURATION + 0.2).timeout
+	(shell.game.hint_button.get_meta("button") as Button).pressed.emit()
+	shell.game.hints_window.settle()
+	await _save("screen_hints")
 
 
 func _save(name: String) -> void:

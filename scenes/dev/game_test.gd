@@ -135,9 +135,16 @@ func _run() -> void:
 	var coins_before := game.coins
 	var revealed_before := game.grid.revealed_count()
 	(game.hint_button.get_meta("button") as Button).pressed.emit()
-	_check_equal("hint charges its cost", game.coins, coins_before - GameScreen.HINT_COST)
-	_check_equal("hint opens one letter", game.grid.revealed_count(), revealed_before + 1)
-	_check_equal("hint does not finish a word", game.grid.found_count(), 1)
+	# The button opens the shelf now; which tool to spend on is the player's.
+	_check("the hint button opens the shelf", game.hints_window.visible)
+	_check_equal("...and spends nothing by itself", game.coins, coins_before)
+	game.hints_window.rows[Tools.Kind.SPYGLASS].pressed.emit()
+	_check_equal(
+		"the spyglass charges its price",
+		game.coins, coins_before - Tools.PRICES[Tools.Kind.SPYGLASS]
+	)
+	_check_equal("...and opens one letter", game.grid.revealed_count(), revealed_before + 1)
+	_check_equal("...without finishing a word", game.grid.found_count(), 1)
 
 	print("=== finishing the level ===")
 	for word in ["كاتب", "كتب", "تاب", "بات"]:
@@ -182,6 +189,7 @@ func _run() -> void:
 	_check_full_moon()
 	await _check_windows()
 	_check_smooth_edges()
+	await _check_tools()
 
 	_finish()
 
@@ -557,6 +565,72 @@ func _tap_outside(window: SkyPopup) -> void:
 	click.pressed = true
 	click.position = Vector2(window.size.x * 0.5, window.size.y - 8.0)
 	window._gui_input(click)
+
+
+## The four tools, each driven the way a finger would drive it.
+func _check_tools() -> void:
+	print("=== the observer's four tools ===")
+	var fixture := Level.load_from("res://data/levels/sample.json")
+
+	game.show_level(fixture)
+	game.coins = 1000
+	var before: int = game.grid.revealed_count()
+	game.use_tool(Tools.Kind.ASTROLABE)
+	# Five words, none found, so five first letters. Two of them share a cell,
+	# so what matters is that it opened several and not one.
+	_check(
+		"the astrolabe opens a letter in every word (%s -> %s)"
+			% [before, game.grid.revealed_count()],
+		game.grid.revealed_count() >= before + 4
+	)
+
+	game.show_level(fixture)
+	_check_equal("a fresh level closes them again", game.grid.revealed_count(), 0)
+	game.use_tool(Tools.Kind.WORD)
+	_check_equal("the word tool finds a whole word", game.grid.found_count(), 1)
+
+	game.show_level(fixture)
+	game.use_tool(Tools.Kind.CHART)
+	_check("the chart waits for a cell", game.grid.picking)
+	# Through the grid's own input, not the signal: what disarms the chart is
+	# the tap landing on a cell, and emitting the signal would skip that.
+	var cell: Vector2i = fixture.cells().keys()[0]
+	var rect := game.grid.cell_rect(cell)
+	var click := InputEventMouseButton.new()
+	click.button_index = MOUSE_BUTTON_LEFT
+	click.pressed = true
+	click.position = rect.position + rect.size * 0.5
+	game.grid._gui_input(click)
+	_check("...and opens the one chosen", game.grid.is_revealed_at(cell))
+	_check("...then stops waiting", not game.grid.picking)
+	# A chart left armed must not survive into a level it was not bought for.
+	game.use_tool(Tools.Kind.CHART)
+	game.show_level(fixture)
+	_check("a new level disarms it", not game.grid.picking)
+
+	print("=== paying for a tool ===")
+	game.show_level(fixture)
+	game.coins = Tools.PRICES[Tools.Kind.WORD] - 1
+	game.tools = [0, 0, 0, 0]
+	var purse: int = game.coins
+	game._on_tool_chosen(Tools.Kind.WORD)
+	_check_equal("a tool you cannot afford takes nothing", game.coins, purse)
+	_check_equal("...and does nothing", game.grid.found_count(), 0)
+
+	# One bought ahead from the shop is spent before any coin is.
+	game.tools[Tools.Kind.WORD] = 1
+	game._on_tool_chosen(Tools.Kind.WORD)
+	_check_equal("one owned is spent first", game.tools[Tools.Kind.WORD], 0)
+	_check_equal("...leaving the coins alone", game.coins, purse)
+	_check_equal("...and still doing its work", game.grid.found_count(), 1)
+
+	var snapshot := game.capture()
+	_check_equal("the shelf is saved", snapshot.tools.size(), Tools.COUNT)
+	game.tools[Tools.Kind.SPYGLASS] = 3
+	snapshot = game.capture()
+	game.tools = [0, 0, 0, 0]
+	game.restore(snapshot)
+	_check_equal("...and comes back", game.tools[Tools.Kind.SPYGLASS], 3)
 
 
 func _drag_wheel(indices: Array) -> void:

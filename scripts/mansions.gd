@@ -24,6 +24,63 @@ const NAMES := [
 	"الفرغ المقدم", "الفرغ المؤخر", "بطن الحوت",
 ]
 
+## What each name means, one line apiece. A first draft from the classical
+## sources the story bible names, for Kareem to check against them: the tradition
+## is consistent on these, but a gloss is a translation and translations argue.
+const MEANINGS := [
+	"العلامتان اللتان تُشرطان أول السنة",
+	"بطن الحمل الصغير",
+	"الكثيرة، لازدحام نجومها",
+	"التابع، لأنه يتبع الثريا",
+	"أثر بروك البعير في الأرض",
+	"السمة تُوسم بها الإبل",
+	"ذراع الأسد المبسوطة",
+	"أنف الأسد",
+	"عينا الأسد ونظرته",
+	"جبهة الأسد",
+	"كاهل الأسد وشعر عنقه",
+	"انصراف البرد عند طلوعها",
+	"العوّاء يعوي خلف الأسد",
+	"الرافع، وهو الأعزل لا رمح معه",
+	"الغطاء، لخفاء نجومها",
+	"قرنا العقرب",
+	"إكليل جبهة العقرب",
+	"قلب العقرب",
+	"ذنب العقرب مرفوعاً بشوكته",
+	"النعام الوارد والصادر",
+	"الفرجة الخالية من النجوم",
+	"السعد الذي يذبح",
+	"السعد البالع",
+	"أسعد السعود",
+	"سعد الخيام",
+	"فم الدلو المقدَّم",
+	"فم الدلو المؤخَّر",
+	"بطن السمكة",
+]
+
+## The modern Latin name of the mansion's brightest star, where the tradition
+## agrees on one. البلدة has none: it is named for being empty of bright stars,
+## so an empty string there is the truth and not a gap.
+const LATIN := [
+	"Sheratan", "Botein", "Pleiades", "Aldebaran", "Meissa", "Alhena", "Pollux",
+	"Praesepe", "Alterf", "Regulus", "Zosma", "Denebola", "Zavijava", "Spica",
+	"Syrma", "Zubenelgenubi", "Acrab", "Antares", "Shaula", "Nunki", "",
+	"Algedi", "Albali", "Sadalsuud", "Sadachbia", "Markab", "Algenib", "Mirach",
+]
+
+## Seven placeholder figures, one per place in a season, in reference units from
+## the cluster's centre. The real shapes are a drawing job the story asks to be
+## redrawn from al-Sufi rather than copied, and nobody has done it.
+const SHAPES := [
+	[Vector2(-44, -28), Vector2(0, 0), Vector2(44, 22), Vector2(66, -17)],
+	[Vector2(-39, 17), Vector2(6, -22), Vector2(50, 6)],
+	[Vector2(-33, -17), Vector2(-6, 11), Vector2(28, -6), Vector2(55, 17), Vector2(17, -33)],
+	[Vector2(-55, 11), Vector2(-17, -22), Vector2(22, 6), Vector2(61, -17), Vector2(0, 33)],
+	[Vector2(-39, -22), Vector2(0, 6), Vector2(39, -11)],
+	[Vector2(-50, 6), Vector2(-11, -22), Vector2(28, 0), Vector2(55, 28)],
+	[Vector2(-33, 11), Vector2(11, -17), Vector2(50, 11)],
+]
+
 const COUNT := 28
 const TOTAL_LEVELS := COUNT * LEVELS_PER_MANSION
 
@@ -32,6 +89,25 @@ static func name_of(mansion: int) -> String:
 	if mansion < 1 or mansion > COUNT:
 		return ""
 	return NAMES[mansion - 1]
+
+
+static func meaning_of(mansion: int) -> String:
+	if mansion < 1 or mansion > COUNT:
+		return ""
+	return MEANINGS[mansion - 1]
+
+
+static func latin_of(mansion: int) -> String:
+	if mansion < 1 or mansion > COUNT:
+		return ""
+	return LATIN[mansion - 1]
+
+
+## The figure for a mansion, by its place in its season.
+static func shape_of(mansion: int) -> Array:
+	if mansion < 1 or mansion > COUNT:
+		return []
+	return SHAPES[(mansion - 1) % PER_SEASON]
 
 
 ## 0 for spring, 3 for winter.

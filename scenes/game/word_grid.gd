@@ -11,6 +11,8 @@ extends Control
 ## cell can be tweened on its own when its word lands.
 
 signal word_revealed(word: String)
+## A cell the player chose while the chart tool was waiting for one.
+signal cell_picked(cell: Vector2i)
 
 const LETTER_FONT := preload("res://assets/fonts/arabic_ui_bold.tres")
 ## Share of a cell's height taken by the hard edge it sits on.
@@ -26,12 +28,50 @@ var gap: float = 20.0:
 		gap = value
 		_place()
 
+## While this is on, a tap on an unopened cell reports it and turns itself off.
+## The grid ignores the mouse otherwise, so it never eats a drag meant for the
+## wheel.
+var picking: bool = false:
+	set(value):
+		picking = value
+		mouse_filter = (
+			Control.MOUSE_FILTER_STOP if picking else Control.MOUSE_FILTER_IGNORE
+		)
+		_show_pickable()
+
 var _level: Level = null
 var _cells: Dictionary = {}  # Vector2i -> String
 var _revealed: Dictionary = {}  # Vector2i -> true
 var _found: Dictionary = {}  # word -> true
 var _panels: Dictionary = {}  # Vector2i -> GlossyPanel
 var _labels: Dictionary = {}  # Vector2i -> Label
+
+
+func _gui_input(event: InputEvent) -> void:
+	if not picking or not (event is InputEventMouseButton):
+		return
+	var click := event as InputEventMouseButton
+	if not click.pressed or click.button_index != MOUSE_BUTTON_LEFT:
+		return
+	for cell: Vector2i in _cells:
+		if _revealed.has(cell):
+			continue
+		if cell_rect(cell).has_point(click.position):
+			accept_event()
+			picking = false
+			cell_picked.emit(cell)
+			return
+
+
+## Every cell still closed glows a little while the chart is waiting, so the
+## player can see what they are being asked to choose between.
+func _show_pickable() -> void:
+	for cell: Vector2i in _panels:
+		var panel: GlossyPanel = _panels[cell]
+		var closed := not _revealed.has(cell)
+		panel.modulate = (
+			Color(1.35, 1.25, 1.0) if picking and closed else Color(1, 1, 1)
+		)
 
 
 func _ready() -> void:

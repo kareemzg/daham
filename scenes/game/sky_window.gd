@@ -28,6 +28,8 @@ const BOTTOM_PAD := 40.0
 ## The round badge over the top edge, and the icon inside it.
 var crest: GlossyPanel
 var crest_icon: UiIcon
+## Present only when `add_close_cross()` was called.
+var close_button: GlossyPanel
 var title_label: Label
 var body_label: Label
 
@@ -137,6 +139,45 @@ func add_button(
 	return shell
 
 
+## The corner cross. A window you opened yourself closes without having to
+## leave where you are, and every such window wants the same one.
+func add_close_cross() -> GlossyPanel:
+	close_button = GlossyPanel.new()
+	close_button.style = GlossyPanel.Style.BUTTON_CREAM
+	panel.add_child(close_button)
+	var cross := _label(_ui_font, Color("6B5942"))
+	cross.text = "×"
+	close_button.add_child(cross)
+	close_button.set_meta("label", cross)
+	var button := Button.new()
+	button.flat = true
+	button.focus_mode = Control.FOCUS_ALL
+	button.tooltip_text = "إغلاق"
+	button.pressed.connect(func() -> void: close_requested.emit())
+	button.button_down.connect(func() -> void: close_button.set_pressed(true))
+	button.button_up.connect(func() -> void: close_button.set_pressed(false))
+	close_button.add_child(button)
+	close_button.set_meta("button", button)
+	return close_button
+
+
+func _layout_close_cross(s: float) -> void:
+	if close_button == null:
+		return
+	var side := 72.0 * s
+	close_button.position = Vector2(28.0 * s, 26.0 * s)
+	close_button.size = Vector2(side, side)
+	close_button.edge_override = 6.0 * s
+	close_button.radius_override = side * 0.5
+	var cross: Label = close_button.get_meta("label")
+	cross.position = Vector2.ZERO
+	cross.size = Vector2(side, close_button.face_height())
+	cross.add_theme_font_size_override("font_size", int(46.0 * s))
+	var button: Button = close_button.get_meta("button")
+	button.position = Vector2.ZERO
+	button.size = Vector2(side, side)
+
+
 ## The buttons, in the order they were added. A window that draws a way out but
 ## never wires it should fail a test, and that needs reaching them.
 func buttons() -> Array[GlossyPanel]:
@@ -204,6 +245,7 @@ func relayout(s: float) -> void:
 		(crest_side - icon_side) * 0.5, (crest.face_height() - icon_side) * 0.5
 	)
 
+	_layout_close_cross(s)
 	overhang = crest_side * 0.5
 	_place()
 

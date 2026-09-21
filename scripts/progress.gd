@@ -26,6 +26,9 @@ var moon: int = 0
 ## moment rather than a remaining duration, so the wait keeps running while
 ## the game is closed instead of pausing the moment the app is swiped away.
 var lantern_clock: int = 0
+## How many of each of the observer's tools the player owns, bought ahead from
+## the shop rather than one at a time. Indexed by `Tools.Kind`.
+var tools: Array[int] = [0, 0, 0, 0]
 var found: PackedStringArray = PackedStringArray()
 var bonus_found: PackedStringArray = PackedStringArray()
 ## Cells a hint opened that no finished word covers, as Vector2i(row, col).
@@ -55,6 +58,9 @@ static func read(path: String = DEFAULT_PATH) -> Progress:
 	progress.wrong_streak = int(data.get("wrong_streak", 0))
 	progress.moon = int(data.get("moon", 0))
 	progress.lantern_clock = int(data.get("lantern_clock", 0))
+	var owned: Array = data.get("tools", [])
+	for i in mini(owned.size(), progress.tools.size()):
+		progress.tools[i] = int(owned[i])
 	for word in data.get("found", []):
 		progress.found.append(str(word))
 	for word in data.get("bonus_found", []):
@@ -78,6 +84,7 @@ func write(path: String = DEFAULT_PATH) -> bool:
 		"wrong_streak": wrong_streak,
 		"moon": moon,
 		"lantern_clock": lantern_clock,
+		"tools": tools.duplicate(),
 		"found": Array(found),
 		"bonus_found": Array(bonus_found),
 		"revealed": cells,

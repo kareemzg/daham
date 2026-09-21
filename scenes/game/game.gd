@@ -34,7 +34,9 @@ const LANTERNS_MAX := 5
 const MOON_PHASES := 8
 const WRONG_STREAK_COST := 5
 const LEVEL_REWARD := 45
-const HINT_COST := 50
+## What the cheapest tool costs, for the price tag beside the wheel. The four
+## prices themselves live in `Tools`.
+const HINT_COST := Tools.PRICES[Tools.Kind.SPYGLASS]
 const MOON_REWARD := 30
 const LANTERN_REFILL_COST := 100
 ## How long one lantern takes to come back on its own.
@@ -99,6 +101,9 @@ var wipe: MeteorWipe
 var next_button: GlossyPanel
 var refill_button: GlossyPanel
 var restart_confirm_button: GlossyPanel
+var hints_window: ShelfWindow
+## How many of each tool the player owns, bought ahead from the shop.
+var tools: Array[int] = [0, 0, 0, 0]
 var _complete_stars: StarDots
 var _complete_reward: Control
 var _clock_strip: Control
@@ -134,6 +139,7 @@ func _ready() -> void:
 	_build_chrome()
 	wheel.word_previewed.connect(_on_word_previewed)
 	wheel.word_submitted.connect(_on_word_submitted)
+	grid.cell_picked.connect(_on_cell_picked)
 	resized.connect(_layout)
 
 	# Pick up where the player left off, in the middle of a level if that is
@@ -183,6 +189,8 @@ func show_level(new_level: Level) -> void:
 
 	_bonus_found.clear()
 	wrong_streak = 0
+	# A chart left armed must not survive into a level it was not bought for.
+	grid.picking = false
 	_hide_windows()
 
 	grid.setup(level)
@@ -302,6 +310,22 @@ func _build_windows() -> void:
 		_on_cancel_restart
 	)
 	_wire(_menu_button(restart_window, 78.0), _on_menu_pressed)
+
+	hints_window = ShelfWindow.new()
+	hints_window.configure_shelf(
+		DISPLAY_FONT, UI_BOLD_FONT, UiIcon.Kind.SPYGLASS, "التلميحات",
+		"أدوات الراصد. كلٌّ منها يكشف قدراً مختلفاً."
+	)
+	for kind in Tools.COUNT:
+		hints_window.add_item(
+			Tools.ICONS[kind], Tools.NAMES[kind], Tools.WHAT[kind], Tools.PRICES[kind]
+		)
+	hints_window.add_purse()
+	hints_window.visible = false
+	hints_window.dismiss_on_tap = true
+	add_child(hints_window)
+	hints_window.chosen.connect(_on_tool_chosen)
+	hints_window.close_requested.connect(func() -> void: hints_window.close())
 	# You opened this one yourself and cancelling is free, so tapping the dark
 	# outside it is the same as pressing cancel. The other two are asking you
 	# something, and a stray tap must not answer for you.
@@ -480,7 +504,9 @@ func _layout() -> void:
 
 
 func _layout_windows(s: float) -> void:
-	for window: SkyWindow in [complete_window, lanterns_window, restart_window]:
+	for window: SkyWindow in [
+		complete_window, lanterns_window, restart_window, hints_window
+	]:
 		window.position = Vector2.ZERO
 		window.size = size
 		# relayout() stacks the parts and sizes the panel, so it has to run
@@ -606,18 +632,82 @@ func _on_shuffle_pressed() -> void:
 	wheel.shuffle_letters()
 
 
+## The hint button opens the shelf rather than spending anything: there are
+## four tools now, and which one a player wants is their choice, not the
+## cheapest by default.
 func _on_hint_pressed() -> void:
-	var cell := grid.hint_cell()
-	if cell.x < 0:
-		_say("لا شيء يحتاج تلميحاً")
+	for kind in Tools.COUNT:
+		hints_window.rows[kind].set_owned(tools[kind])
+	hints_window.show_purse(coins)
+	_open(hints_window)
+
+
+func _on_tool_chosen(kind: int) -> void:
+	if kind < 0 or kind >= Tools.COUNT:
 		return
-	if coins < HINT_COST:
+	if tools[kind] > 0:
+		tools[kind] -= 1
+	elif coins >= Tools.PRICES[kind]:
+		coins -= Tools.PRICES[kind]
+	else:
 		_say("العملات لا تكفي")
 		return
-	coins -= HINT_COST
-	grid.reveal_cell(cell)
+	hints_window.close()
+	use_tool(kind)
+
+
+## Spends nothing: the paying happened above. Public so a test can drive a tool
+## without going through the window.
+func use_tool(kind: int) -> void:
+	if level == null:
+		return
+	match kind:
+		Tools.Kind.SPYGLASS:
+			var cell := grid.hint_cell()
+			if cell.x < 0:
+				_say("لا شيء يحتاج تلميحاً")
+			else:
+				grid.reveal_cell(cell)
+				_say("كُشف حرف")
+		Tools.Kind.ASTROLABE:
+			var opened := 0
+			for entry in level.words:
+				var text: String = entry["text"]
+				if grid.is_found(text):
+					continue
+				var cells := level.cells_of(entry)
+				if cells.is_empty() or grid.is_revealed_at(cells[0]):
+					continue
+				grid.reveal_cell(cells[0])
+				opened += 1
+			_say("كُشف أول حرف من %s كلمات" % Arabic.eastern_digits(opened))
+		Tools.Kind.CHART:
+			# The only tool that waits. It stays armed until a cell is chosen,
+			# because it was paid for and a player who looks away keeps it.
+			grid.picking = true
+			_say("اختر خانة")
+		Tools.Kind.WORD:
+			var revealed := false
+			for entry in level.words:
+				var text: String = entry["text"]
+				if not grid.is_found(text):
+					grid.reveal(text)
+					_say("كُشفت %s" % text)
+					revealed = true
+					break
+			if not revealed:
+				_say("لم تبقَ كلمة")
 	_refresh_chrome()
+	if grid.is_solved():
+		_finish_level()
+	else:
+		save()
+
+
+func _on_cell_picked(cell: Vector2i) -> void:
+	grid.reveal_cell(cell)
 	_say("كُشف حرف")
+	_refresh_chrome()
 	if grid.is_solved():
 		_finish_level()
 	else:
@@ -843,7 +933,9 @@ func _open(window: SkyWindow) -> void:
 
 
 func _hide_windows() -> void:
-	for window: SkyWindow in [complete_window, lanterns_window, restart_window]:
+	for window: SkyWindow in [
+		complete_window, lanterns_window, restart_window, hints_window
+	]:
 		if window != null:
 			window.visible = false
 
@@ -1016,6 +1108,7 @@ func capture() -> Progress:
 	snapshot.wrong_streak = wrong_streak
 	snapshot.moon = moon
 	snapshot.lantern_clock = _lantern_clock
+	snapshot.tools = tools.duplicate()
 	for word in level.word_texts():
 		if grid.is_found(word):
 			snapshot.found.append(word)
@@ -1035,6 +1128,7 @@ func restore(saved: Progress) -> void:
 	moon = saved.moon
 	_moon_shown = saved.moon
 	_lantern_clock = saved.lantern_clock
+	tools = saved.tools.duplicate()
 	# Lanterns keep coming back while the game is shut, so a returning player
 	# collects the wait they already served rather than starting it again.
 	_tick_lanterns()

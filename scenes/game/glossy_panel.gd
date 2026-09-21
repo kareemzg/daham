@@ -29,6 +29,7 @@ enum Style {
 	BUTTON_CREAM,
 	PILL_RIVER,  ## the drag preview strip
 	PANEL_NIGHT,  ## a card that sits ON the sky: dark face, teal rim
+	BUTTON_MUTED,  ## a price you cannot afford: shown, never hidden
 }
 
 const FACE_SHADER := preload("res://assets/ui/glossy_panel.gdshader")
@@ -164,6 +165,16 @@ static func preset(for_style: int) -> Dictionary:
 				"radius": 0.22,
 				"shadow_offset": 14.0, "shadow_blur": 26.0,
 				"shadow_color": Color(0, 0, 0, 0.45),
+			}
+		Style.BUTTON_MUTED:
+			return {
+				"face_top": Color("D9CCB4"), "face_bottom": Color("C2B49A"),
+				"border_color": Color("A2937C"), "border_width": 3.0,
+				"edge_color": Color("9A8C74"), "bottom_edge": 6.0,
+				"highlight": 0.14, "highlight_height": 0.3, "inner_shadow": 0.0,
+				"radius": 0.34,
+				"shadow_offset": 0.0, "shadow_blur": 0.0,
+				"shadow_color": Color(0, 0, 0, 0.0),
 			}
 		Style.BUTTON_CREAM:
 			return {
