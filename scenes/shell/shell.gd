@@ -166,6 +166,8 @@ func _refresh(which: int) -> void:
 		Screen.TITLE:
 			_refresh_title()
 		Screen.MAP:
+			# Whatever door the player left by, a finished level is behind them.
+			game.move_on_if_finished()
 			var saved := game.capture()
 			map.show_progress(saved.level_id, saved.coins, saved.lanterns, saved.moon)
 

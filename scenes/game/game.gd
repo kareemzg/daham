@@ -969,7 +969,29 @@ func restart_level() -> void:
 
 func _on_menu_pressed() -> void:
 	_hide_windows()
+	# Leaving a finished level is accepting it. Without this the screen keeps
+	# the solved grid, the map still points at the level just played, and
+	# carrying on reopens a level the player already finished. Only "next"
+	# advanced, and "next" is not the only door out of that window.
+	move_on_if_finished()
 	menu_requested.emit()
+
+
+## Steps to the next level when this one is done, wherever the player is
+## leaving from. False at the end of the year, and on a level still being
+## played, so calling it twice costs nothing.
+func move_on_if_finished() -> bool:
+	if level == null or not grid.is_solved():
+		return false
+	var next := next_level_id()
+	if next.is_empty():
+		return false
+	var upcoming := _level_by_id(next)
+	if upcoming == null:
+		return false
+	show_level(upcoming)
+	save()
+	return true
 
 
 ## The window that ends a run. It has no cross: the ways out of it are to refill

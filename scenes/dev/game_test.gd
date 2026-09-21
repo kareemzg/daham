@@ -190,6 +190,7 @@ func _run() -> void:
 	await _check_windows()
 	_check_smooth_edges()
 	await _check_tools()
+	_check_leaving_a_finished_level()
 
 	_finish()
 
@@ -631,6 +632,26 @@ func _check_tools() -> void:
 	game.tools = [0, 0, 0, 0]
 	game.restore(snapshot)
 	_check_equal("...and comes back", game.tools[Tools.Kind.SPYGLASS], 3)
+
+
+## Reported from play: finish a level, choose the map instead of "next", then
+## press carry on, and the same solved level comes back.
+##
+## Pressing "next" advances; leaving by any other door did not, so the screen
+## still held the level just solved and the map still pointed at it.
+func _check_leaving_a_finished_level() -> void:
+	print("=== leaving a finished level by the other door ===")
+	var fixture := Level.load_from("res://data/levels/sample.json")
+	game.show_level(fixture)
+	for word in ["كتاب", "كاتب", "كتب", "تاب", "بات"]:
+		game.submit(word)
+	_check("the level is solved", game.grid.is_solved())
+	_check("the window is up", game.complete_window.visible)
+
+	game._on_menu_pressed()
+	_check_equal("leaving it moves on to the next level", game.level.id, "m04-13")
+	_check("...which has still to be played", not game.grid.is_solved())
+	_check("...and no window is in the way", not game.complete_window.visible)
 
 
 func _drag_wheel(indices: Array) -> void:

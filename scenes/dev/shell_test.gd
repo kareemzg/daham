@@ -218,6 +218,31 @@ func _run() -> void:
 	await _arrive()
 	_check_equal("the way out lands on the map", shell.showing, Shell.Screen.MAP)
 
+	# The whole of the reported fault, end to end: finish a level, take the map
+	# instead of "next", then carry on. It used to reopen the level just solved.
+	print("=== finish a level, go to the map, then carry on ===")
+	shell.go_to(Shell.Screen.GAME)
+	await _arrive()
+	shell.game.show_level(Level.load_from("res://data/levels/sample.json"))
+	for word in ["كتاب", "كاتب", "كتب", "تاب", "بات"]:
+		shell.game.submit(word)
+	_check("the level is finished", shell.game.complete_window.visible)
+
+	var menu: GlossyPanel = null
+	for panel in shell.game.complete_window.buttons():
+		if (panel.get_meta("label") as Label).text == "القائمة الرئيسية":
+			menu = panel
+	_check("the window offers the map", menu != null)
+	(menu.get_meta("button") as Button).pressed.emit()
+	await _arrive()
+	_check_equal("it lands on the map", shell.showing, Shell.Screen.MAP)
+	_check_equal("the map has moved on", shell.map.current_index, 13)
+
+	_press(shell.map.play_button)
+	await _arrive()
+	_check_equal("carrying on opens the next level", shell.game.level.id, "m04-13")
+	_check("...which has still to be played", not shell.game.grid.is_solved())
+
 	_finish()
 
 
