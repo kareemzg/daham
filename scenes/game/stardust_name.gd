@@ -11,10 +11,21 @@ extends Control
 signal formed
 
 const DISPLAY_FONT := preload("res://assets/fonts/arabic_display.tres")
-const MOTES := 16
+## Dense enough that the dust reads as the letter itself coming apart, which is
+## what the reference does and sixteen motes never could.
+const MOTES := 200
 ## How long one letter takes to gather, and how long the glow takes to come up.
-const LETTER_SECONDS := 0.2
+const LETTER_SECONDS := 0.26
 const GLOW_SECONDS := 0.9
+## The band of the line box the letters actually sit in. The box is the whole
+## line, ascenders and descenders included, and dust spread over all of it would
+## sit well above and below the ink.
+const INK_TOP := 0.3
+const INK_BOTTOM := 0.82
+## How many letters' worth of time one letter takes to gather. Above one the
+## letters overlap, which is what gives the plume a length: without it only one
+## letter is ever in flight and the dust reads as a sprinkle, not a stream.
+const OVERLAP := 2.4
 
 var label: Label
 
@@ -22,56 +33,92 @@ var label: Label
 var progress: float = 0.0:
 	set(value):
 		progress = clampf(value, 0.0, 1.0)
-		if label != null:
-			label.visible_characters = int(round(progress * float(label.text.length())))
+		_reveal()
 		queue_redraw()
 
 ## Comes up once the name is whole.
 var glow: float = 0.0:
 	set(value):
 		glow = clampf(value, 0.0, 1.0)
+		_shine()
 		queue_redraw()
 
-var _halo: GradientTexture2D
+## Copies of the word behind it, a little larger and faint, added together.
+## A radial texture over each letter's box glows its empty corners too and comes
+## out a grey smudge; light shaped like the letters is what a glow is.
+var _glows: Array[Label] = []
 
 
 func _init() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	label = Label.new()
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.text_direction = Control.TEXT_DIRECTION_RTL
-	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	label.add_theme_font_override("font", DISPLAY_FONT)
+	# The dust and the halo are light, so they ADD to the sky rather than being
+	# laid over it. Mixed normally, gold at low opacity turns grey against the
+	# navy and the plume reads as ash instead of stars.
+	var lit := CanvasItemMaterial.new()
+	lit.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
+	material = lit
+
+	for i in 3:
+		var bloom := _make_label()
+		bloom.add_theme_color_override("font_color", Palette.GOLD_LIGHT)
+		add_child(bloom)
+		_glows.append(bloom)
+
+	label = _make_label()
+	# Its own material, or it would inherit the additive one above and the
+	# letters would blow out.
+	label.material = CanvasItemMaterial.new()
 	label.add_theme_color_override("font_color", Palette.GOLD_LIGHT)
-	label.visible_characters_behavior = TextServer.VC_CHARS_AFTER_SHAPING
-	label.visible_characters = 0
 	add_child(label)
-	_halo = _make_halo()
 
 
-func _make_halo() -> GradientTexture2D:
-	var ramp := Gradient.new()
-	ramp.offsets = PackedFloat32Array([0.0, 0.45, 1.0])
-	ramp.colors = PackedColorArray([
-		Color(Palette.GOLD_LIGHT, 0.5), Color(Palette.GOLD_LIGHT, 0.16),
-		Color(Palette.GOLD_LIGHT, 0.0),
-	])
-	var texture := GradientTexture2D.new()
-	texture.gradient = ramp
-	texture.fill = GradientTexture2D.FILL_RADIAL
-	texture.fill_from = Vector2(0.5, 0.5)
-	texture.fill_to = Vector2(1.0, 0.5)
-	texture.width = 128
-	texture.height = 128
-	return texture
+func _make_label() -> Label:
+	var made := Label.new()
+	made.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	made.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	made.text_direction = Control.TEXT_DIRECTION_RTL
+	made.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	made.add_theme_font_override("font", DISPLAY_FONT)
+	made.visible_characters_behavior = TextServer.VC_CHARS_AFTER_SHAPING
+	made.visible_characters = 0
+	return made
+
+
+## The glow copies follow the reveal exactly, so a letter starts glowing as it
+## lands rather than waiting for the rest of the name.
+func _reveal() -> void:
+	if label == null:
+		return
+	var shown := int(round(progress * float(label.text.length())))
+	label.visible_characters = shown
+	for bloom in _glows:
+		bloom.visible_characters = shown
+
+
+func _shine() -> void:
+	for i in _glows.size():
+		_glows[i].modulate.a = (0.1 + glow * 0.14) * (1.0 - float(i) * 0.28)
 
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_RESIZED:
-		label.position = Vector2.ZERO
-		label.size = size
+		_place()
 		queue_redraw()
+
+
+func _place() -> void:
+	if label == null:
+		return
+	label.position = Vector2.ZERO
+	label.size = size
+	for i in _glows.size():
+		var bloom := _glows[i]
+		bloom.position = Vector2.ZERO
+		bloom.size = size
+		bloom.pivot_offset = size * 0.5
+		# Each copy a little wider than the last, so their edges stack into a
+		# soft rim instead of one hard outline.
+		bloom.scale = Vector2.ONE * (1.0 + 0.016 * float(i + 1))
 
 
 ## Sets the words. It does NOT reset the gathering: a resize calls the layout,
@@ -79,11 +126,18 @@ func _notification(what: int) -> void:
 ## middle of forming.
 func setup(text: String, font_size: int) -> void:
 	label.text = text
+	for bloom in _glows:
+		bloom.text = text
 	set_font_size(font_size)
+	_reveal()
+	_shine()
 
 
 func set_font_size(font_size: int) -> void:
 	label.add_theme_font_size_override("font_size", font_size)
+	for bloom in _glows:
+		bloom.add_theme_font_size_override("font_size", font_size)
+	_place()
 	queue_redraw()
 
 
@@ -91,7 +145,6 @@ func set_font_size(font_size: int) -> void:
 func play() -> void:
 	progress = 0.0
 	glow = 0.0
-	label.visible_characters = 0
 	var seconds := maxf(float(label.text.length()) * LETTER_SECONDS, 0.4)
 	var tween := create_tween()
 	tween.tween_method(func(v: float) -> void: progress = v, 0.0, 1.0, seconds)
@@ -110,40 +163,25 @@ func _draw() -> void:
 	if label == null or label.text.is_empty() or size.x <= 0.0:
 		return
 	var count := label.text.length()
-	var span := 1.0 / float(count)
+	var step := 1.0 / (float(count) + OVERLAP - 1.0)
+	var s := size.x / 1080.0
 
 	for i in count:
 		var bounds := label.get_character_bounds(i)
 		if bounds.size.x <= 0.0:
 			continue
-		var centre := bounds.position + bounds.size * 0.5
-		var arrival := clampf((progress - float(i) * span) / span, 0.0, 1.0)
+		var arrival := clampf((progress - float(i) * step) / (step * OVERLAP), 0.0, 1.0)
 		if arrival <= 0.0:
 			continue
-		if arrival < 1.0:
-			_dust(i, centre, bounds.size, arrival)
-		elif glow > 0.0:
-			var reach := maxf(bounds.size.x, bounds.size.y * 0.5) * 2.4
-			var box := Rect2(centre - Vector2(reach, reach) * 0.5, Vector2(reach, reach))
-			draw_texture_rect(_halo, box, false, Color(1, 1, 1, glow * 0.85))
 
+		# A landed letter is drawn and glowing already; only the ones still on
+		# their way need dust.
+		if arrival >= 1.0:
+			continue
 
-## The motes for one letter, drawn from a seed so they do not crawl between
-## frames. They come in from a ring and settle onto the glyph.
-func _dust(index: int, centre: Vector2, letter: Vector2, arrival: float) -> void:
-	var rng := RandomNumberGenerator.new()
-	var reach := maxf(letter.x, letter.y) * 1.6
-	for m in MOTES:
-		rng.seed = hash(Vector2i(index, m))
-		var angle := rng.randf() * TAU
-		var away := reach * (0.6 + rng.randf() * 0.9)
-		var spot := centre + Vector2(cos(angle), sin(angle)) * away * (1.0 - arrival)
-		spot += Vector2(
-			rng.randf_range(-letter.x, letter.x), rng.randf_range(-letter.y, letter.y)
-		) * 0.35 * (1.0 - arrival)
-		# Bright as they gather, gone by the time the letter is whole.
-		var alpha := arrival * (1.0 - arrival) * 3.2
-		draw_circle(
-			spot, maxf(letter.y * 0.035, 1.0) * (0.6 + arrival * 0.8),
-			Color(Palette.GOLD_LIGHT, clampf(alpha, 0.0, 0.9)), true, -1.0, true
+		# The ink band of the letter, not its whole line box.
+		var ink := Rect2(
+			Vector2(bounds.position.x, bounds.position.y + bounds.size.y * INK_TOP),
+			Vector2(bounds.size.x, bounds.size.y * (INK_BOTTOM - INK_TOP))
 		)
+		Stardust.over_rect(self, ink, arrival, i, s, MOTES)

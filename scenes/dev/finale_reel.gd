@@ -45,6 +45,6 @@ func _play() -> void:
 
 	# The last word. Everything after this is the game's own.
 	_game.submit("اعتمد")
-	await _wait(6.2)
+	await _wait(6.8)
 
 	get_tree().quit()

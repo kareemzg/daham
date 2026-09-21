@@ -37,6 +37,9 @@ Targets iOS, Android, macOS, Windows, Linux, Steam. Desktop is a paid premium bu
 ## The twentieth star
 - Finishing a mansion replaces the level-complete window, it does not come after it. Two windows in a row on the same screen kill the moment the whole game is arranged around.
 - The order is the story's: the board goes, the stars light one by one, the lines come in from the right the way the language reads, then the name gathers out of stardust and glows. `MansionFinale` owns it; the card comes after.
+- The dust is light, so it is drawn with `BLEND_MODE_ADD` and the labels over it carry their own material. Mixed normally, gold at half opacity over the navy comes out a warm grey and the plume reads as ash.
+- A glow follows the letters, not their boxes. A radial texture over each character's cell lights its empty corners too and comes out a grey smudge; copies of the word itself, a little larger and faint, added together, are what a glow looks like.
+- Dust is expensive: the reel records at about half real time with two hundred motes a letter, and the recording is cut off past roughly fifteen seconds of wall clock. Keep the counts where a seven-second reel finishes.
 - The name is revealed with `visible_characters` after shaping, never by growing the string. Growing it reshapes the word on every letter and the ones already placed jump between their medial and final forms.
 - Setting a name does not reset its gathering. The layout used to call `setup()`, and `setup()` used to reset, so a resize in the middle of forming put the name back to dust.
 

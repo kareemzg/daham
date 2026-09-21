@@ -11,9 +11,11 @@ signal finished
 
 const UI_BOLD_FONT := preload("res://assets/fonts/arabic_ui_bold.tres")
 const STAR_SECONDS := 0.17
-const LINE_SECONDS := 0.55
+const LINE_SECONDS := 0.8
 ## How long the finished figure is left alone before the card is offered.
 const HOLD := 0.7
+## Motes for one joint of the figure.
+const LINE_MOTES := 120
 
 var name_view: StardustName
 
@@ -33,6 +35,10 @@ var _field := Rect2()
 func _init() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	visible = false
+	# Stars, the lines between them and the dust that writes them are all light.
+	var lit := CanvasItemMaterial.new()
+	lit.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
+	material = lit
 
 	name_view = StardustName.new()
 	add_child(name_view)
@@ -45,6 +51,7 @@ func _init() -> void:
 	_subtitle.text = "اكتملت نجومها العشرون"
 	_subtitle.add_theme_font_override("font", UI_BOLD_FONT)
 	_subtitle.add_theme_color_override("font_color", Palette.MUTED)
+	_subtitle.material = CanvasItemMaterial.new()
 	_subtitle.modulate.a = 0.0
 	add_child(_subtitle)
 
@@ -65,7 +72,8 @@ func relayout() -> void:
 	name_view.position = Vector2(0.0, size.y * 0.5)
 	name_view.size = Vector2(size.x, 170.0 * s)
 	name_view.set_font_size(int(150.0 * s))
-	_subtitle.position = Vector2(0.0, size.y * 0.5 + 180.0 * s)
+	# Clear of the name's box and of the glow around it, not touching it.
+	_subtitle.position = Vector2(0.0, size.y * 0.5 + 268.0 * s)
 	_subtitle.size = Vector2(size.x, 56.0 * s)
 	_subtitle.add_theme_font_size_override("font_size", int(36.0 * s))
 	queue_redraw()
@@ -135,7 +143,8 @@ func _draw() -> void:
 		return
 	var s := size.x / 1080.0
 
-	# Each joint reveals in turn, so the figure is written rather than switched on.
+	# Each joint is written in the same dust the name is, so the figure and its
+	# name are made of one thing.
 	var joints := points.size() - 1
 	for i in joints:
 		var share := clampf(_drawn * float(joints) - float(i), 0.0, 1.0)
@@ -145,6 +154,10 @@ func _draw() -> void:
 			points[i], points[i].lerp(points[i + 1], share),
 			Color(Palette.GOLD_LIGHT, 0.75), 5.0 * s, true
 		)
+		if share < 1.0:
+			Stardust.along_line(
+				self, points[i], points[i + 1], share, 4096 + i, s, LINE_MOTES
+			)
 
 	for i in points.size():
 		var arrival := clampf(_lit - float(i), 0.0, 1.0)
