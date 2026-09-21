@@ -103,7 +103,7 @@ func _draw() -> void:
 		# The size breathes with the brightness. Alpha alone reads as a fade;
 		# the two together read as a sparkle.
 		var radius := _radius[i] * scale * (0.85 + 0.15 * wave)
-		draw_circle(at, radius, Color(_tint[i], alpha))
+		draw_circle(at, radius, Color(_tint[i], alpha), true, -1.0, true)
 		if i < GLINT_COUNT:
 			_glint(at, radius * 3.6, Color(_tint[i], alpha * 0.55))
 

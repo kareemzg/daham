@@ -30,7 +30,9 @@ var button := Button.new()
 func _init() -> void:
 	_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	# RTL: LEFT is the start of the line, which puts the words at the far right
+	# of the row, opposite the switch, the way the design lays them out.
+	_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	_label.text_direction = Control.TEXT_DIRECTION_RTL
 	add_child(_label)
 
@@ -75,12 +77,16 @@ func _draw() -> void:
 		Rect2(Vector2.ZERO, size)
 	)
 
-	# The switch takes the left of the row and the words take the rest, so the
-	# label starts where the track ends rather than on top of it.
+	# The switch takes the far left; the words sit flush against the far right.
+	# The box is measured to the text rather than aligned inside a wide one: an
+	# RTL label leaves a ragged gap between its last glyph and its own edge, so
+	# aligning alone left the words short of the edge by a visible margin.
 	var left := pad
-	var text_left := left + track.x + 18.0 * s
-	_label.position = Vector2(text_left, 0.0)
-	_label.size = Vector2(maxf(size.x - text_left - pad, 0.0), size.y)
+	var text_width := minf(
+		_label.get_minimum_size().x, maxf(size.x - left - track.x - pad * 2.0, 0.0)
+	)
+	_label.position = Vector2(size.x - pad - text_width, 0.0)
+	_label.size = Vector2(text_width, size.y)
 
 	var top := (size.y - track.y) * 0.5
 	var radius := track.y * 0.5
@@ -93,7 +99,7 @@ func _draw() -> void:
 	# of the track, on at its end.
 	var knob_radius := radius - 4.0 * s
 	var knob_x := left + (knob_radius + 4.0 * s if on else track.x - knob_radius - 4.0 * s)
-	draw_circle(Vector2(knob_x, top + radius), knob_radius, Color("FFFBF0"))
+	draw_circle(Vector2(knob_x, top + radius), knob_radius, Color("FFFBF0"), true, -1.0, true)
 
 
 func _rounded(fill: Color, border: Color, radius: float) -> StyleBoxFlat:

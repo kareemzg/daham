@@ -28,6 +28,8 @@ enum Style {
 	BUTTON_RIVER,
 	BUTTON_CREAM,
 	PILL_RIVER,  ## the drag preview strip
+	PANEL_NIGHT,  ## a card that sits ON the sky: dark face, teal rim
+	BUTTON_MUTED,  ## a price you cannot afford: shown, never hidden
 }
 
 const FACE_SHADER := preload("res://assets/ui/glossy_panel.gdshader")
@@ -153,6 +155,27 @@ static func preset(for_style: int) -> Dictionary:
 				"shadow_offset": 22.0, "shadow_blur": 39.0,
 				"shadow_color": Color(0, 0, 0, 0.4),
 			}
+		Style.PANEL_NIGHT:
+			return {
+				"face_top": Color("12384D"), "face_bottom": Color("0A2230"),
+				"border_color": Color("2C5E73"), "border_width": 5.0,
+				"edge_color": Color("081B26"), "bottom_edge": 11.0,
+				"highlight": 0.0, "highlight_height": 0.0, "inner_shadow": 0.0,
+				"inner_top": 3.0, "inner_top_color": Color(Color("7FD0DA"), 0.35),
+				"radius": 0.22,
+				"shadow_offset": 14.0, "shadow_blur": 26.0,
+				"shadow_color": Color(0, 0, 0, 0.45),
+			}
+		Style.BUTTON_MUTED:
+			return {
+				"face_top": Color("D9CCB4"), "face_bottom": Color("C2B49A"),
+				"border_color": Color("A2937C"), "border_width": 3.0,
+				"edge_color": Color("9A8C74"), "bottom_edge": 6.0,
+				"highlight": 0.14, "highlight_height": 0.3, "inner_shadow": 0.0,
+				"radius": 0.34,
+				"shadow_offset": 0.0, "shadow_blur": 0.0,
+				"shadow_color": Color(0, 0, 0, 0.0),
+			}
 		Style.BUTTON_CREAM:
 			return {
 				"face_top": Color("FFFBF0"), "face_bottom": Color("F3E4C6"),
@@ -174,6 +197,57 @@ static func preset(for_style: int) -> Dictionary:
 				"shadow_color": Color(0, 0, 0, 0.4),
 			}
 	return preset(Style.TILE)
+
+
+## A button made of this panel: a label on it and a real `Button` on top, so the
+## control is reachable by keyboard and by a screen reader and not only by
+## tapping a drawing. The caller connects `get_meta("button").pressed`.
+static func make_button(style_preset: int, text: String, font: Font, ink: Color) -> GlossyPanel:
+	var shell := GlossyPanel.new()
+	shell.style = style_preset
+
+	var label := Label.new()
+	label.text = text
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.text_direction = Control.TEXT_DIRECTION_RTL
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	label.add_theme_font_override("font", font)
+	label.add_theme_color_override("font_color", ink)
+	shell.add_child(label)
+	shell.set_meta("label", label)
+
+	var button := Button.new()
+	button.flat = true
+	button.focus_mode = Control.FOCUS_ALL
+	button.tooltip_text = text
+	button.button_down.connect(func() -> void: shell.set_pressed(true))
+	button.button_up.connect(func() -> void: shell.set_pressed(false))
+	shell.add_child(button)
+	shell.set_meta("button", button)
+	return shell
+
+
+## The same, with an icon in place of words. `label_text` names it for a screen
+## reader, since there is nothing to read.
+static func make_round(icon_kind: int, label_text: String) -> GlossyPanel:
+	var shell := GlossyPanel.new()
+	shell.style = Style.BUTTON_CREAM
+
+	var icon := UiIcon.new()
+	icon.kind = icon_kind
+	shell.add_child(icon)
+	shell.set_meta("icon", icon)
+
+	var button := Button.new()
+	button.flat = true
+	button.focus_mode = Control.FOCUS_ALL
+	button.tooltip_text = label_text
+	button.button_down.connect(func() -> void: shell.set_pressed(true))
+	button.button_up.connect(func() -> void: shell.set_pressed(false))
+	shell.add_child(button)
+	shell.set_meta("button", button)
+	return shell
 
 
 func _init() -> void:

@@ -21,10 +21,56 @@ Targets iOS, Android, macOS, Windows, Linux, Steam. Desktop is a paid premium bu
 - Grid coordinates are logical: `row` grows down, `col` grows LEFTWARD, so column 0 is the rightmost. `WordGrid.cell_rect()` is the only place that turns a column into an x position.
 - A grid is valid only when every maximal run of two or more adjacent cells, across or down, is exactly one of the level's words. The layout search in `tools/pipeline/crossword.py` enforces it.
 
+## The board, and windows that are not phones
+- Everything is laid out against a board of 1080 by 1920. The project stretches the viewport sideways, so on a desktop window the shell fits that board inside the window and centres it rather than letting a screen read its own width: read that way, every screen came out three times too big with half of it off the edge.
+- The sky and the meteor fill the whole window; the screens sit on the board. A meteor stopping at the board's edge would read as a thing on a card rather than a thing in the sky.
+- A node that places its children from its own rect must place them again when that rect changes. The wheel set its radii before its size, placed its tiles against the size it had a moment earlier, and on a wide window drew the whole wheel outside the board. Fixed twice on purpose: the size is set first, and the wheel also re-places on `NOTIFICATION_RESIZED`, so a later caller cannot bring it back by setting things in another order.
+- Landscape is fitted, not designed. A real desktop arrangement, board one side and wheel the other, is still a design nobody has made.
+
+## Screens
+- `Shell` is the one place the game lives. It owns the sky, the meteor, and anything belonging to no single screen: the settings window and the mansion card. It is the project's main scene.
+- Screens draw no sky of their own. `GameScreen.draws_sky` is what turns its copy off, and the rule behind it is that the sky never transitions: two of them would flicker at the seam.
+- There is one settings window for the whole game, on the shell. The play screen's gear emits `settings_requested` instead of opening its own, because two windows would be two places for the switches to disagree about what is stored.
+- The collection is the reward the game keeps promising, not a menu. A mansion not reached shows «؟» where both its figure and its name would be, and only a finished one can be opened.
+- Lay a row out with a container when something else decides its width. Positioned by hand, a season header read its own width before the column had given it one, put the season's name off the right edge, and left only the count showing.
+- Two screens must not count the same progress differently. The map says "star twelve of twenty" counting the one being played, so the collection says the same.
+- The sky map is the main menu. Every window's «القائمة الرئيسية» lands there, and the title screen's second button opens it.
+- A mansion with no stars keeps its name back and shows «؟». Learning the name is the reward for finishing the mansion, so nothing may print it early.
+- The mansion figures on the map are placeholders: seven abstract clusters. The story calls for the real shapes redrawn from al-Sufi rather than copied, which is a drawing job nobody has done.
+- `scripts/mansions.gd` mirrors `tools/pipeline/mansions.py`. The table is in both because the map draws all twenty-eight and must not read five hundred and sixty level files to learn their names.
+- Amiri's ascenders and descenders run well past the point size. Size a label's box by the line the next one has to clear, not by the font size. This bit twice in one afternoon: the title landed on its subtitle, and the season on its count.
+
+## The twentieth star
+- Finishing a mansion replaces the level-complete window, it does not come after it. Two windows in a row on the same screen kill the moment the whole game is arranged around.
+- The order is the story's: the board goes, the stars light one by one, the lines come in from the right the way the language reads, then the name gathers out of stardust and glows. `MansionFinale` owns it; the card comes after.
+- The dust is light, so it is drawn with `BLEND_MODE_ADD` and the labels over it carry their own material. Mixed normally, gold at half opacity over the navy comes out a warm grey and the plume reads as ash.
+- A glow follows the letters, not their boxes. A radial texture over each character's cell lights its empty corners too and comes out a grey smudge; copies of the word itself, a little larger and faint, added together, are what a glow looks like.
+- Dust is expensive: the reel records at about half real time with two hundred motes a letter, and the recording is cut off past roughly fifteen seconds of wall clock. Keep the counts where a seven-second reel finishes.
+- The name is revealed with `visible_characters` after shaping, never by growing the string. Growing it reshapes the word on every letter and the ones already placed jump between their medial and final forms.
+- Setting a name does not reset its gathering. The layout used to call `setup()`, and `setup()` used to reset, so a resize in the middle of forming put the name back to dust.
+
+## The daily challenge
+- One level a day, the same one for everybody: `Daily.level_for()` walks the year in big steps from the date, so two days running are nowhere near each other.
+- It costs no lantern however badly it goes, and the window says so in so many words. `GameScreen.daily` is what holds that promise, along with writing nothing to the journey's save and moving to no next level.
+- A run only stands if the last day played was today or yesterday. The standing is worked out on reading rather than trusted from the saved number, so a player who comes back after a week sees a dark sky without anything having to run while they were away.
+- The shell keeps the journey aside while the challenge is played and puts it back after. Coins, lanterns and the run carry over; nothing else the challenge touched belongs to the journey.
+- The seven stars of بنات نعش are the gauge, not a bar beside one: four days close the bier, seven draw the whole figure.
+
+## Tools and the shop
+- The four instruments live in `scripts/tools.gd`: names, what each reveals, prices, icons. One table, so a price can never differ between the window that sells a tool and the screen that spends it.
+- The hint button opens the shelf; it spends nothing by itself. Which tool to buy is the player's choice, not the cheapest by default.
+- A tool bought ahead from the shop is spent before any coin is. `Progress.tools` holds the counts.
+- The chart is the one tool that waits: it arms `WordGrid.picking` and stays armed until a cell is tapped, because it was paid for. `show_level()` disarms it, so a chart never survives into a level it was not bought for.
+- A price the player cannot afford is greyed, never hidden. Hiding it teaches them nothing about what the tool is or what it would take.
+- The shop sells for coins only. Real-money coin packs are a commercial decision nobody has made; the window says they belong to the phone build, because the desktop one is paid once.
+- The mansion card's meanings in `scripts/mansions.gd` are a first draft from the classical tradition, for Kareem to check, exactly as the story bible plans it. البلدة has no Latin name because it is named for being empty of bright stars: the blank there is the truth, and the line hides rather than showing nothing.
+
 ## Windows
 - Every window is a `SkyWindow`: a crest badge straddling the top edge, a title, optional prose, any rows it needs, then its buttons. Describe a window; never position one. The padding, type sizes and button heights live in that one file so four windows cannot drift apart.
 - Every window offers the way back to the main menu beside its own action. A player out of lanterns, facing a refill they cannot afford, must not be shut in a box. `menu_requested` carries it; no shell listens yet, so the window simply closes.
 - Break a window's prose yourself with `\n`. A Label that wraps on its own refuses to be shorter than the height it works out at its own minimum width, and on a window's first layout that width is zero: it claimed twenty-seven lines for five words and centred them off the bottom of the panel. Every number was right and only the drawing was wrong, so a test has to check this on a freshly built screen.
+- Leaving a finished level is accepting it. "Next" is not the only door out of the completion window, so `move_on_if_finished()` runs on every exit: without it the screen kept the solved grid, the map still pointed at the level just played, and carrying on reopened a level the player had already finished.
+- A window the player opened and can simply leave closes when they tap the dark outside it: settings, the mansion card, the restart confirm. One that is asking them something does not, because a stray tap must not answer for them: the level-complete window and the out-of-lanterns one. `SkyPopup.dismiss_on_tap` carries the difference.
 - Windows are built after every other piece of chrome, so they cover the HUD. Built before, the chips and buttons would sit over the dim layer and stay bright and tappable while a modal window was up.
 - Starting a level over costs nothing. Skipping costs a lantern; restarting does not, and the confirm window says so, so it must stay true.
 - The lantern clock is a moment in time, not a remaining duration. A wait that only ticks while the app is open is a wait a player dodges by closing it.
@@ -44,6 +90,11 @@ Targets iOS, Android, macOS, Windows, Linux, Steam. Desktop is a paid premium bu
 - Panel presets are written against the 1080-wide reference and scaled at runtime, same as the layout numbers in `game.gd`.
 - Icons are SVG under `assets/ui/icons/`, drawn through `UiIcon`. Keep new ones to paths, strokes and gradients: Godot rasterises SVG with ThorVG, which ignores filters, masks and text. Set `svg/scale=5.0` and `mipmaps/generate=true` in the `.import` file.
 - Generating mipmaps is only half of it: the project sets `rendering/textures/canvas_textures/default_texture_filter=3` (Linear Mipmap) so they are actually used. On plain Linear, a 320px icon drawn at 46px samples four texels out of a much wider footprint and comes out looking chewed.
+- Godot's drawing calls take antialiasing as an argument and it defaults to OFF: `draw_circle(at, radius, colour, true, -1.0, true)`. Sixteen circles quietly defaulting their way into a sky of jagged stars is what "everything looks pixelated" turned out to mean. `_check_smooth_edges` in the slice test reads the source and fails on any hard-edged call, because nothing else can see it: the shapes are in the right places, in the right colours, and chewed at the edges.
+- Never put a separator beside an Eastern Arabic numeral. A middle dot between Arabic text and an Arabic-Indic number is pushed to the far side of the number by the bidi algorithm, and «٠» is itself a dot: «بنات نعش · ٤ من ٧» came out reading «٤٠». Use a space.
+- An RTL label also leaves a ragged gap between its last glyph and its own box edge, so alignment alone never sits text flush against an edge. Measure it with `get_minimum_size().x` and give it a box that fits, as the settings rows do.
+- `HORIZONTAL_ALIGNMENT_LEFT` and `_RIGHT` on a Label whose `text_direction` is RTL follow the reading order, not the screen: LEFT is the start of the line, which is the right-hand side. This put the mansion's name, the language row and every settings label on the wrong side of their rows before anyone noticed.
+- Angle-quote characters (`‹` `›`) are bidi-mirrored: inside an Arabic label each one renders as its opposite, so both season arrows pointed inward. Arrows are drawn as icons, never typed.
 - `draw_colored_polygon` has no antialiasing. Trace the same outline with an antialiased `draw_polyline` when the shape has a curved edge, as the moon phase does.
 - The game scripts are `@tool`, so `scenes/game/game.tscn` previews live in the editor. Nodes built in code get no `owner` and are never saved into the scene.
 
@@ -56,9 +107,14 @@ Targets iOS, Android, macOS, Windows, Linux, Steam. Desktop is a paid premium bu
 - Open the project with `godot -e --path .` from this folder, or via the Godot app. GDScript editing: VS Code with the `godot-tools` extension (`.vscode/` is configured).
 - Run the Arabic shaping test before touching text rendering: `godot --path . --quit-after 400 res://scenes/dev/shaping_test.tscn`. Check `tools/out/shaping_test.png`.
 - Run the slice test before committing engine changes: `godot --path . --quit-after 900 res://scenes/dev/game_test.tscn`. It exits non-zero on failure and writes `tools/out/game_slice.png`.
+- Run the way-in test too: `godot --path . --quit-after 900 res://scenes/dev/shell_test.tscn`. It drives the title, the map and the moves between screens.
+- Look at the way in: `godot --path . --quit-after 900 res://scenes/dev/screen_shots.tscn` writes one PNG per screen to `tools/out/`.
+- Watch the twentieth star before believing it: `godot --path . --fixed-fps 30 --write-movie tools/out/finale/f.png res://scenes/dev/finale_reel.tscn`, then ffmpeg the frames. A still cannot show a name gathering out of dust.
 - Look at a window before believing it: `godot --path . --quit-after 600 res://scenes/dev/window_shots.tscn` writes one PNG per window to `tools/out/`. Layout maths can be right while a window still reads wrong.
 - Adding a `class_name` script? Run `godot --path . --headless --import` once, or the next run fails with "Identifier not declared" until the editor rescans.
 - Pushing synthetic input in a test: send the whole press-move-release burst without awaiting frames in between, or the machine's real mouse slips in and ends the drag.
 - The project runs in low-processor mode; any test script that awaits `RenderingServer.frame_post_draw` must first set `OS.low_processor_usage_mode = false` or it stalls.
-- Export templates for 4.7.2 are installed in the user's Godot data folder; exporting needs export presets, which are not created yet.
+- Building: `godot --path . --headless --export-release "macOS"`, and likewise `Linux` and `Windows`. The presets live in `export_presets.cfg` and belong in the repo; `export_credentials.cfg` beside them holds passwords and is ignored.
+- A build excludes `scenes/dev/*`, `tools/*` and `docs/*`. The dictionary is a pipeline input, never read at runtime, and shipping it would add three quarters of a megabyte nothing opens. The levels are not excluded: check that after touching the filter.
+- Nothing is signed yet. macOS notarisation and Windows code signing are accounts and keys, not code.
 - Story reference: `docs/story-sky.md`. Palette, type and motion reference: `docs/claude-design-prompt.md` (its story sections are superseded).

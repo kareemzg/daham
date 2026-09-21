@@ -34,13 +34,64 @@ Check it before committing engine changes:
 godot --path . --quit-after 900 res://scenes/dev/game_test.tscn
 ```
 
-145 checks covering level data, Arabic normalisation, the drag path through real
+180 checks covering level data, Arabic normalisation, the drag path through real
 input events, the word rules, the lantern penalty, the hint and shuffle buttons,
 the save round-trip, what a quit leaves behind, the moon filling across levels,
-the four windows and the way out of each, and the on-screen layout. It exits non-zero on failure and writes
+the four windows and the way out of each, the observer's four tools, the
+on-screen layout, and a scan of the source for shapes drawn without
+antialiasing. It exits non-zero on failure and writes
 `tools/out/game_slice.png` to look at. Some checks read pixels back out of that
 frame, because layout maths can be right while nothing is painted, and a spent
 lantern has to actually look different from a lit one.
+
+## Building
+
+Three desktop presets are in `export_presets.cfg`, and the export templates for
+4.7.2 are installed:
+
+```bash
+godot --path . --headless --export-release "macOS" build/macos/SamaAlArab.zip
+```
+
+`Linux` and `Windows` are the other two preset names. Each build carries all
+561 levels and leaves out the dictionary, the pipeline and the dev scenes: the
+dictionary is only ever read by `tools/pipeline/`, and shipping it would add
+three quarters of a megabyte nothing reads.
+
+What is not done: nothing is signed. macOS needs a Developer ID and
+notarisation before it will open on another Mac without the right-click dance,
+and Windows wants a code-signing certificate or SmartScreen will warn. Both are
+accounts and keys rather than code, and the credentials file Godot writes
+beside the presets is git-ignored.
+
+## The way in
+
+`Shell` is the project's main scene and the one place the game lives: it owns
+the sky, the meteor, and the windows that belong to no single screen. Under it
+sit the title, the sky map, and the play screen.
+
+The sky map is what «القائمة الرئيسية» means. It shows one season of the lunar
+year at a time, its seven mansions scattered on a dotted thread: the finished
+ones drawn and named in gold, the current one ringed and part lit, the rest
+still dark and nameless. Learning a mansion's name is the reward for finishing
+it, so an untouched one shows only «؟».
+
+```bash
+godot --path . --quit-after 900 res://scenes/dev/shell_test.tscn
+```
+
+108 checks over the mansion table, where a save puts the player on the map, the
+moves between screens, and the single settings window the whole game shares.
+`res://scenes/dev/screen_shots.tscn` writes a PNG of each screen to look at.
+
+«بطاقات النجوم», the collection, is the other half of it: twenty-eight lines
+grouped by season, each one a question mark until its mansion is finished and
+then a card with the name, what the name means, and the modern name of its
+brightest star.
+
+The figures on the map are placeholders. The story asks for the real mansion
+shapes redrawn from al-Sufi rather than copied, and that drawing has not been
+done.
 
 ## Looking at the windows
 
@@ -70,6 +121,13 @@ than at whatever speed the machine managed. Turn the frames into a GIF with:
 
 ```bash
 ffmpeg -framerate 30 -i tools/out/reel/f%08d.png -vf "scale=380:-1:flags=lanczos,split[a][b];[a]palettegen=stats_mode=diff[p];[b][p]paletteuse" -loop 0 tools/out/motion_reel.gif
+```
+
+The twentieth star of a mansion has its own reel, because it is the longest
+moment in the game and the only one with words forming out of dust:
+
+```bash
+godot --path . --fixed-fps 30 --write-movie tools/out/finale/f.png res://scenes/dev/finale_reel.tscn
 ```
 
 The reel re-implements nothing. It restores a part-played level and then calls

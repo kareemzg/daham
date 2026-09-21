@@ -135,9 +135,16 @@ func _run() -> void:
 	var coins_before := game.coins
 	var revealed_before := game.grid.revealed_count()
 	(game.hint_button.get_meta("button") as Button).pressed.emit()
-	_check_equal("hint charges its cost", game.coins, coins_before - GameScreen.HINT_COST)
-	_check_equal("hint opens one letter", game.grid.revealed_count(), revealed_before + 1)
-	_check_equal("hint does not finish a word", game.grid.found_count(), 1)
+	# The button opens the shelf now; which tool to spend on is the player's.
+	_check("the hint button opens the shelf", game.hints_window.visible)
+	_check_equal("...and spends nothing by itself", game.coins, coins_before)
+	game.hints_window.rows[Tools.Kind.SPYGLASS].pressed.emit()
+	_check_equal(
+		"the spyglass charges its price",
+		game.coins, coins_before - Tools.PRICES[Tools.Kind.SPYGLASS]
+	)
+	_check_equal("...and opens one letter", game.grid.revealed_count(), revealed_before + 1)
+	_check_equal("...without finishing a word", game.grid.found_count(), 1)
 
 	print("=== finishing the level ===")
 	for word in ["كاتب", "كتب", "تاب", "بات"]:
@@ -181,6 +188,10 @@ func _run() -> void:
 	await _check_finish_save()
 	_check_full_moon()
 	await _check_windows()
+	_check_smooth_edges()
+	await _check_tools()
+	_check_leaving_a_finished_level()
+	_check_mansion_finale()
 
 	_finish()
 
@@ -387,7 +398,6 @@ func _check_windows() -> void:
 		"اكتمل المستوى": game.complete_window,
 		"نفدت الفوانيس": game.lanterns_window,
 		"إعادة المحاولة": game.restart_window,
-		"الإعدادات": game.settings_window,
 	}
 	for name in windows:
 		var window: SkyWindow = windows[name]
@@ -403,10 +413,7 @@ func _check_windows() -> void:
 	print("=== a window's words stay inside it ===")
 	for name in windows:
 		var window: SkyWindow = windows[name]
-		# Settings is a list of rows and carries no prose; the other three say
-		# something, and what they say has to be readable.
-		if name != "الإعدادات":
-			_check("%s says something" % name, window.body_label.visible)
+		_check("%s says something" % name, window.body_label.visible)
 		if not window.body_label.visible:
 			continue
 		var bottom: float = window.body_label.position.y + window.body_label.size.y
@@ -468,32 +475,270 @@ func _check_windows() -> void:
 	_check("a refill you cannot afford is refused", not game.refill_lanterns())
 	_check_equal("...and takes nothing", game.coins, GameScreen.LANTERN_REFILL_COST - 1)
 
-	print("=== the settings window remembers ===")
-	var settings_path := "user://settings_test.json"
-	GameSettings.clear(settings_path)
-	game.settings_path = settings_path
+	# The gear does not open a window here. The shell owns the one settings
+	# window, so two of them can never disagree about what is stored.
+	# A window you opened yourself closes when you tap the dark outside it. One
+	# that is asking you something does not: a stray tap must not answer for you.
+	print("=== tapping outside a window ===")
+	(game.restart_button.get_meta("button") as Button).pressed.emit()
+	game.restart_window.settle()
+	_check("the restart window is up", game.restart_window.visible)
+	_tap_outside(game.restart_window)
+	await get_tree().create_timer(SkyPopup.CLOSE_SECONDS + 0.08).timeout
+	_check("a tap outside cancels it", not game.restart_window.visible)
+
+	game.show_level(fixture)
+	game.lanterns = 1
+	for i in GameScreen.WRONG_STREAK_COST:
+		game.submit("باك")
+	game.lanterns_window.settle()
+	_check("the out-of-lanterns window is up", game.lanterns_window.visible)
+	_tap_outside(game.lanterns_window)
+	await get_tree().create_timer(SkyPopup.CLOSE_SECONDS + 0.08).timeout
+	_check("...and a tap outside will not dismiss it", game.lanterns_window.visible)
+	game.lanterns_window.visible = false
+	game.lanterns = GameScreen.LANTERNS_MAX
+
+	print("=== the gear asks the shell ===")
+	var asked_settings := [false]
+	game.settings_requested.connect(func() -> void: asked_settings[0] = true)
 	(game.settings_button.get_meta("button") as Button).pressed.emit()
-	_check("the settings window opened", game.settings_window.visible)
-	_check_equal("music starts on", game.settings.music, true)
-	game.settings_rows[1].button.pressed.emit()
-	_check_equal("the switch turned it off", game.settings.music, false)
-	_check("...and wrote it down", FileAccess.file_exists(settings_path))
-	var reloaded := GameSettings.read(settings_path)
-	_check_equal("...where it survives a quit", reloaded.music, false)
-	_check_equal("...leaving the rest alone", reloaded.sound, true)
-	GameSettings.clear(settings_path)
-	game.settings_path = ""
+	_check("the gear asks for settings", asked_settings[0])
 
 	print("=== the main menu button ===")
 	var asked := [false]
 	game.menu_requested.connect(func() -> void: asked[0] = true)
+	game.restart_window.settle()
 	var menu: GlossyPanel = null
-	for shell in game.settings_window.buttons():
+	for shell in game.restart_window.buttons():
 		if (shell.get_meta("label") as Label).text == "القائمة الرئيسية":
 			menu = shell
 	(menu.get_meta("button") as Button).pressed.emit()
 	_check("pressing it asks for the menu", asked[0])
-	_check("...and takes the window away", not game.settings_window.visible)
+	_check("...and takes the window away", not game.restart_window.visible)
+
+
+## Godot's drawing calls take antialiasing as an argument and it defaults to
+## off. Sixteen of them defaulted their way into a sky full of jagged stars, and
+## nothing on screen looked wrong in a way any other check could see: the shapes
+## were in the right places, with the right colours, and chewed at the edges.
+func _check_smooth_edges() -> void:
+	print("=== hand-drawn shapes ask for smooth edges ===")
+	var calls := ["draw_circle(", "draw_polyline(", "draw_arc(", "draw_line("]
+	var rough := PackedStringArray()
+	for path in _scripts_under("res://scenes"):
+		var text := FileAccess.get_file_as_string(path)
+		var line_number := 0
+		# A call wrapped over several lines is still one call: gather it until
+		# its brackets balance, or a smoothed one reads as a rough one.
+		var gathered := ""
+		var began := 0
+		for line in text.split("\n"):
+			line_number += 1
+			var trimmed := line.strip_edges()
+			if gathered.is_empty():
+				var starts := false
+				for call in calls:
+					if trimmed.begins_with(call):
+						starts = true
+				if not starts:
+					continue
+				gathered = trimmed
+				began = line_number
+			else:
+				gathered += trimmed
+			if gathered.count("(") > gathered.count(")"):
+				continue
+			if not gathered.ends_with("true)"):
+				rough.append("%s:%s" % [path.get_file(), began])
+			gathered = ""
+	_check(
+		"nothing is drawn with hard edges (%s)"
+			% ("none" if rough.is_empty() else ", ".join(rough)),
+		rough.is_empty()
+	)
+
+
+func _scripts_under(root: String) -> PackedStringArray:
+	var found := PackedStringArray()
+	var dir := DirAccess.open(root)
+	if dir == null:
+		return found
+	dir.list_dir_begin()
+	var entry := dir.get_next()
+	while entry != "":
+		var full := root.path_join(entry)
+		if dir.current_is_dir():
+			found.append_array(_scripts_under(full))
+		elif entry.ends_with(".gd"):
+			found.append(full)
+		entry = dir.get_next()
+	dir.list_dir_end()
+	return found
+
+
+## A click on the dim layer, well clear of the panel and of the crest that
+## straddles its top edge.
+func _tap_outside(window: SkyPopup) -> void:
+	var click := InputEventMouseButton.new()
+	click.button_index = MOUSE_BUTTON_LEFT
+	click.pressed = true
+	click.position = Vector2(window.size.x * 0.5, window.size.y - 8.0)
+	window._gui_input(click)
+
+
+## The four tools, each driven the way a finger would drive it.
+func _check_tools() -> void:
+	print("=== the observer's four tools ===")
+	var fixture := Level.load_from("res://data/levels/sample.json")
+
+	game.show_level(fixture)
+	game.coins = 1000
+	var before: int = game.grid.revealed_count()
+	game.use_tool(Tools.Kind.ASTROLABE)
+	# Five words, none found, so five first letters. Two of them share a cell,
+	# so what matters is that it opened several and not one.
+	_check(
+		"the astrolabe opens a letter in every word (%s -> %s)"
+			% [before, game.grid.revealed_count()],
+		game.grid.revealed_count() >= before + 4
+	)
+
+	game.show_level(fixture)
+	_check_equal("a fresh level closes them again", game.grid.revealed_count(), 0)
+	game.use_tool(Tools.Kind.WORD)
+	_check_equal("the word tool finds a whole word", game.grid.found_count(), 1)
+
+	game.show_level(fixture)
+	game.use_tool(Tools.Kind.CHART)
+	_check("the chart waits for a cell", game.grid.picking)
+	# Through the grid's own input, not the signal: what disarms the chart is
+	# the tap landing on a cell, and emitting the signal would skip that.
+	var cell: Vector2i = fixture.cells().keys()[0]
+	var rect := game.grid.cell_rect(cell)
+	var click := InputEventMouseButton.new()
+	click.button_index = MOUSE_BUTTON_LEFT
+	click.pressed = true
+	click.position = rect.position + rect.size * 0.5
+	game.grid._gui_input(click)
+	_check("...and opens the one chosen", game.grid.is_revealed_at(cell))
+	_check("...then stops waiting", not game.grid.picking)
+	# A chart left armed must not survive into a level it was not bought for.
+	game.use_tool(Tools.Kind.CHART)
+	game.show_level(fixture)
+	_check("a new level disarms it", not game.grid.picking)
+
+	print("=== paying for a tool ===")
+	game.show_level(fixture)
+	game.coins = Tools.PRICES[Tools.Kind.WORD] - 1
+	game.tools = [0, 0, 0, 0]
+	var purse: int = game.coins
+	game._on_tool_chosen(Tools.Kind.WORD)
+	_check_equal("a tool you cannot afford takes nothing", game.coins, purse)
+	_check_equal("...and does nothing", game.grid.found_count(), 0)
+
+	# One bought ahead from the shop is spent before any coin is.
+	game.tools[Tools.Kind.WORD] = 1
+	game._on_tool_chosen(Tools.Kind.WORD)
+	_check_equal("one owned is spent first", game.tools[Tools.Kind.WORD], 0)
+	_check_equal("...leaving the coins alone", game.coins, purse)
+	_check_equal("...and still doing its work", game.grid.found_count(), 1)
+
+	var snapshot := game.capture()
+	_check_equal("the shelf is saved", snapshot.tools.size(), Tools.COUNT)
+	game.tools[Tools.Kind.SPYGLASS] = 3
+	snapshot = game.capture()
+	game.tools = [0, 0, 0, 0]
+	game.restore(snapshot)
+	_check_equal("...and comes back", game.tools[Tools.Kind.SPYGLASS], 3)
+
+
+## Reported from play: finish a level, choose the map instead of "next", then
+## press carry on, and the same solved level comes back.
+##
+## Pressing "next" advances; leaving by any other door did not, so the screen
+## still held the level just solved and the map still pointed at it.
+func _check_leaving_a_finished_level() -> void:
+	print("=== leaving a finished level by the other door ===")
+	var fixture := Level.load_from("res://data/levels/sample.json")
+	game.show_level(fixture)
+	for word in ["كتاب", "كاتب", "كتب", "تاب", "بات"]:
+		game.submit(word)
+	_check("the level is solved", game.grid.is_solved())
+	_check("the window is up", game.complete_window.visible)
+
+	game._on_menu_pressed()
+	_check_equal("leaving it moves on to the next level", game.level.id, "m04-13")
+	_check("...which has still to be played", not game.grid.is_solved())
+	_check("...and no window is in the way", not game.complete_window.visible)
+
+
+## The twentieth star of a mansion, which the game is arranged around.
+func _check_mansion_finale() -> void:
+	print("=== the twentieth star ===")
+	var last := Level.load_from("res://data/levels/m04-20.json")
+	_check("the last level of a mansion loads", last != null)
+	if last == null:
+		return
+	_check_equal("it is the twentieth", last.index_in_mansion, GameScreen.STARS_PER_MANSION)
+
+	game.show_level(last)
+	var purse: int = game.coins
+	var guard := 0
+	while not game.grid.is_solved() and guard < 20:
+		game.use_tool(Tools.Kind.WORD)
+		guard += 1
+	_check("it was solved", game.grid.is_solved())
+	# The moment replaces the usual window rather than coming after it: two
+	# windows in a row on the same screen would kill it.
+	_check("the finale runs", game.finale.visible)
+	_check("...and the usual window stays away", not game.complete_window.visible)
+	_check_equal(
+		"a finished mansion pays more than a level",
+		game.coins, purse + GameScreen.LEVEL_REWARD + GameScreen.MANSION_REWARD
+	)
+
+	game.finale.settle(last.mansion)
+	game._show_mansion_card()
+	game.mansion_window.settle()
+	_check("the card opens after it", game.mansion_window.visible)
+	_check_equal("...naming the mansion", game._mansion_name.text, Mansions.name_of(4))
+	_check("...and what the name means",
+		game._mansion_line.meaning_text() == Mansions.meaning_of(4))
+
+	var asked := [false]
+	game.cards_requested.connect(func() -> void: asked[0] = true)
+	for shell in game.mansion_window.buttons():
+		if (shell.get_meta("label") as Label).text == "بطاقات النجوم":
+			(shell.get_meta("button") as Button).pressed.emit()
+	_check("it offers the collection", asked[0])
+
+	print("=== the name gathers out of stardust ===")
+	var name_view := game.finale.name_view
+	name_view.setup(Mansions.name_of(4), 100)
+	name_view.progress = 0.0
+	_check_equal("nothing shows at the start", name_view.label.visible_characters, 0)
+	name_view.progress = 0.5
+	_check(
+		"half way, half the letters (%s of %s)"
+			% [name_view.label.visible_characters, name_view.label.text.length()],
+		name_view.label.visible_characters > 0
+			and name_view.label.visible_characters < name_view.label.text.length()
+	)
+	# The layout used to call setup(), and setup() used to reset the gathering,
+	# so a resize in the middle of forming put the name back to dust.
+	game.finale.relayout()
+	_check_equal("a resize does not put it back to dust", name_view.progress, 0.5)
+	name_view.progress = 1.0
+	_check_equal(
+		"at the end every letter is there",
+		name_view.label.visible_characters, name_view.label.text.length()
+	)
+	# Revealed after shaping, so the glyphs do not change form as they arrive.
+	_check_equal(
+		"the letters are revealed after shaping",
+		name_view.label.visible_characters_behavior, TextServer.VC_CHARS_AFTER_SHAPING
+	)
 
 
 func _drag_wheel(indices: Array) -> void:

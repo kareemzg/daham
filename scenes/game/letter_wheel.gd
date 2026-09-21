@@ -94,6 +94,15 @@ func setup(letters: PackedStringArray) -> void:
 	_place()
 
 
+func _notification(what: int) -> void:
+	# The disc and the tiles are placed from the node's own rect, so they have
+	# to be placed again whenever that rect changes. Setting the radii alone
+	# placed them against the size the wheel had a moment earlier, and on a
+	# window of another shape they ended up outside the wheel entirely.
+	if what == NOTIFICATION_RESIZED:
+		_place()
+
+
 func _place() -> void:
 	if _disc == null or not is_instance_valid(_disc):
 		return

@@ -1,9 +1,14 @@
 # Godot
 .godot/
 *.tmp
-export_presets.cfg
+# Presets are the build itself and belong in the repo; the credentials file
+# beside them holds passwords and does not.
+export_credentials.cfg
 /android/
 /ios/
+
+# Exported builds
+build/
 
 # macOS
 .DS_Store

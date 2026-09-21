@@ -10,7 +10,7 @@ extends Control
 ##
 ## `@tool` so an icon shows itself in the Godot editor, not just at run time.
 
-enum Kind { LANTERN, COIN, MOON, HINT, SHUFFLE, SETTINGS, STAR, RESTART, HOME, CLOCK }
+enum Kind { LANTERN, COIN, MOON, HINT, SHUFFLE, SETTINGS, STAR, RESTART, HOME, CLOCK, CHEVRON_PREV, CHEVRON_NEXT, DIPPER, STAR_CARDS, SHOP, SPYGLASS, ASTROLABE, CHART, WORD_REVEAL }
 
 const COIN := preload("res://assets/ui/icons/coin.svg")
 const LANTERN_ON := preload("res://assets/ui/icons/lantern_on.svg")
@@ -24,6 +24,15 @@ const STAR_DIM := preload("res://assets/ui/icons/star_dim.svg")
 const RESTART := preload("res://assets/ui/icons/restart.svg")
 const HOME := preload("res://assets/ui/icons/home.svg")
 const CLOCK := preload("res://assets/ui/icons/clock.svg")
+const CHEVRON_PREV := preload("res://assets/ui/icons/chevron_prev.svg")
+const CHEVRON_NEXT := preload("res://assets/ui/icons/chevron_next.svg")
+const DIPPER := preload("res://assets/ui/icons/dipper.svg")
+const STAR_CARDS := preload("res://assets/ui/icons/star_cards.svg")
+const SHOP := preload("res://assets/ui/icons/shop.svg")
+const SPYGLASS := preload("res://assets/ui/icons/spyglass.svg")
+const ASTROLABE := preload("res://assets/ui/icons/astrolabe.svg")
+const CHART := preload("res://assets/ui/icons/chart.svg")
+const WORD_REVEAL := preload("res://assets/ui/icons/word_reveal.svg")
 
 @export var kind: Kind = Kind.COIN:
 	set(value):
@@ -68,6 +77,24 @@ func texture() -> Texture2D:
 			return HOME
 		Kind.CLOCK:
 			return CLOCK
+		Kind.CHEVRON_PREV:
+			return CHEVRON_PREV
+		Kind.CHEVRON_NEXT:
+			return CHEVRON_NEXT
+		Kind.DIPPER:
+			return DIPPER
+		Kind.STAR_CARDS:
+			return STAR_CARDS
+		Kind.SHOP:
+			return SHOP
+		Kind.SPYGLASS:
+			return SPYGLASS
+		Kind.ASTROLABE:
+			return ASTROLABE
+		Kind.CHART:
+			return CHART
+		Kind.WORD_REVEAL:
+			return WORD_REVEAL
 	return COIN
 
 
