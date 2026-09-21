@@ -25,6 +25,9 @@ Targets iOS, Android, macOS, Windows, Linux, Steam. Desktop is a paid premium bu
 - `Shell` is the one place the game lives. It owns the sky, the meteor, and anything belonging to no single screen: the settings window and the mansion card. It is the project's main scene.
 - Screens draw no sky of their own. `GameScreen.draws_sky` is what turns its copy off, and the rule behind it is that the sky never transitions: two of them would flicker at the seam.
 - There is one settings window for the whole game, on the shell. The play screen's gear emits `settings_requested` instead of opening its own, because two windows would be two places for the switches to disagree about what is stored.
+- The collection is the reward the game keeps promising, not a menu. A mansion not reached shows «؟» where both its figure and its name would be, and only a finished one can be opened.
+- Lay a row out with a container when something else decides its width. Positioned by hand, a season header read its own width before the column had given it one, put the season's name off the right edge, and left only the count showing.
+- Two screens must not count the same progress differently. The map says "star twelve of twenty" counting the one being played, so the collection says the same.
 - The sky map is the main menu. Every window's «القائمة الرئيسية» lands there, and the title screen's second button opens it.
 - A mansion with no stars keeps its name back and shows «؟». Learning the name is the reward for finishing the mansion, so nothing may print it early.
 - The mansion figures on the map are placeholders: seven abstract clusters. The story calls for the real shapes redrawn from al-Sufi rather than copied, which is a drawing job nobody has done.

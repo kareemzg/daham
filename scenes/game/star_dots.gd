@@ -25,6 +25,13 @@ var lit: int = 0:
 ## Two shapes for two places. The level-complete window shows small round stars
 ## with air between them; the sky map's card shows a bar of capsules that fills
 ## its width. The design draws them differently, so this does too.
+## The colour of a segment not yet earned. Cream on a cream panel, but the
+## collection's summary sits on the night sky and wants the darker one.
+var dim: Color = Color("D9CCB4"):
+	set(value):
+		dim = value
+		queue_redraw()
+
 var capsule: bool = false:
 	set(value):
 		capsule = value
@@ -63,7 +70,7 @@ func _draw() -> void:
 			draw_circle(Vector2(x, middle), radius, Palette.GOLD, true, -1.0, true)
 			draw_arc(Vector2(x, middle), radius, 0.0, TAU, 20, Palette.GOLD_DEEP, radius * 0.22, true)
 		else:
-			draw_circle(Vector2(x, middle), radius * 0.82, Color("D9CCB4"), true, -1.0, true)
+			draw_circle(Vector2(x, middle), radius * 0.82, dim, true, -1.0, true)
 
 
 ## Segments that share the width between them, each one fully rounded.
@@ -74,7 +81,7 @@ func _draw_capsules() -> void:
 	for i in count:
 		# Right to left: the first star of the mansion is the rightmost segment.
 		var x := size.x - width - float(i) * (width + gap)
-		var colour := Palette.GOLD if i < lit else Color("D9CCB4")
+		var colour := Palette.GOLD if i < lit else dim
 		draw_style_box(_capsule_box(colour, radius), Rect2(Vector2(x, 0.0), Vector2(width, size.y)))
 
 

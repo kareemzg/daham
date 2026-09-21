@@ -7,7 +7,7 @@ extends Control
 ## screen fades out and another fades in over the same stars, which is what
 ## makes the game read as one place instead of a stack of screens.
 
-enum Screen { TITLE, MAP, GAME }
+enum Screen { TITLE, MAP, GAME, CARDS }
 
 const GAME_SCENE := preload("res://scenes/game/game.tscn")
 const DISPLAY_FONT := preload("res://assets/fonts/arabic_display.tres")
@@ -22,6 +22,7 @@ var sky: SkyBackdrop
 var wipe: MeteorWipe
 var title: TitleScreen
 var map: SkyMap
+var cards: StarCardsScreen
 var game: GameScreen
 ## One settings window for the whole game. Two would be two places for the
 ## switches to disagree about what is actually stored.
@@ -56,6 +57,13 @@ func _ready() -> void:
 	map.settings_requested.connect(open_settings)
 	map.mansion_opened.connect(open_mansion)
 	map.shop_requested.connect(open_shop)
+	map.cards_requested.connect(func() -> void: go_to(Screen.CARDS))
+
+	cards = StarCardsScreen.new()
+	cards.visible = false
+	add_child(cards)
+	cards.back_requested.connect(func() -> void: go_to(Screen.MAP))
+	cards.mansion_opened.connect(open_mansion)
 
 	game = GAME_SCENE.instantiate()
 	game.draws_sky = false
@@ -132,6 +140,8 @@ func _screen(which: int) -> Control:
 			return title
 		Screen.MAP:
 			return map
+		Screen.CARDS:
+			return cards
 	return game
 
 
@@ -170,11 +180,22 @@ func _refresh(which: int) -> void:
 			game.move_on_if_finished()
 			var saved := game.capture()
 			map.show_progress(saved.level_id, saved.coins, saved.lanterns, saved.moon)
+		Screen.CARDS:
+			var here := place()
+			cards.show_progress(here.x, here.y)
 
 
 func _refresh_title() -> void:
-	var place := Mansions.parse(game.level.id if game != null and game.level != null else "")
-	title.show_place(place.x, place.y)
+	var here := place()
+	title.show_place(here.x, here.y)
+
+
+## Where the player is, as mansion and place in it. Read from the level the play
+## screen is holding, so every screen agrees however the player got there.
+func place() -> Vector2i:
+	if game == null or game.level == null:
+		return Vector2i.ZERO
+	return Mansions.parse(game.level.id)
 
 
 func open_settings() -> void:
@@ -203,7 +224,10 @@ func _on_setting_changed(key: String, on: bool) -> void:
 ## The per-star cards the story asks for, about two hundred and fifty of them,
 ## are still unwritten; this is the mansion's own line, which the game knows.
 func open_mansion(mansion: int) -> void:
-	var lit := map.stars_of(mansion)
+	var here := place()
+	var lit := Mansions.LEVELS_PER_MANSION if mansion < here.x else (
+		here.y - 1 if mansion == here.x else 0
+	)
 	mansion_window.set_title(Mansions.name_of(mansion))
 	mansion_window.set_body("%s · %s\nالنجمة %s من %s" % [
 		Mansions.season_name(Mansions.season_of(mansion)),
@@ -299,7 +323,7 @@ func _layout() -> void:
 		return
 	var s := _scale()
 	for node: Control in [
-		sky, title, map, game, wipe, settings_window, mansion_window, shop_window
+		sky, title, map, cards, game, wipe, settings_window, mansion_window, shop_window
 	]:
 		node.position = Vector2.ZERO
 		node.size = size

@@ -166,6 +166,35 @@ func _run() -> void:
 	_check("البلدة hides the Latin line", not (shell._star_line.get_meta("latin") as Label).visible)
 	shell.mansion_window.visible = false
 
+	print("=== the collection ===")
+	shell.go_to(Shell.Screen.CARDS)
+	await _arrive()
+	_check_equal("the map opens the collection", shell.showing, Shell.Screen.CARDS)
+	_check_equal("one line per mansion", shell.cards.rows.size(), Mansions.COUNT)
+	# The player is on the fourth mansion's twelfth star.
+	_check_equal("the third is a card", shell.cards.rows[2].state, CardRow.State.DONE)
+	_check_equal("the fourth is being played", shell.cards.rows[3].state, CardRow.State.NOW)
+	_check_equal("the fifth is not reached", shell.cards.rows[4].state, CardRow.State.LOCKED)
+	# Learning the name is the reward for finishing, so nothing may leak it.
+	_check(
+		"a mansion not reached keeps its name back",
+		not shell.cards.rows[4]._name.text.contains(Mansions.name_of(5))
+	)
+	_check("...and a card that is earned shows it",
+		shell.cards.rows[2]._name.text == Mansions.name_of(3))
+	_check("only an earned card can be opened", shell.cards.rows[4]._button.disabled)
+	_check("...and an earned one can", not shell.cards.rows[2]._button.disabled)
+
+	shell.cards.rows[2].pressed.emit()
+	shell.mansion_window.settle()
+	_check("tapping a card opens it", shell.mansion_window.visible)
+	_check_equal("...on that mansion", shell.mansion_window.title_label.text, Mansions.name_of(3))
+	shell.mansion_window.visible = false
+
+	_press(shell.cards.back_button)
+	await _arrive()
+	_check_equal("the way back lands on the map", shell.showing, Shell.Screen.MAP)
+
 	print("=== the shop ===")
 	shell.game.coins = 500
 	shell.game.tools = [0, 0, 0, 0]

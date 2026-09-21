@@ -59,6 +59,15 @@ func _shoot() -> void:
 	await _save("screen_shop")
 	shell.shop_window.visible = false
 
+	shell.go_to(Shell.Screen.CARDS)
+	await get_tree().create_timer(MeteorWipe.DURATION + 0.2).timeout
+	await _save("screen_cards")
+	# And further down, where nothing has been opened yet.
+	shell.cards._scroll.scroll_vertical = 1400
+	await _save("screen_cards_down")
+	shell.go_to(Shell.Screen.MAP)
+	await get_tree().create_timer(MeteorWipe.DURATION + 0.2).timeout
+
 	shell.go_to(Shell.Screen.GAME)
 	await get_tree().create_timer(MeteorWipe.DURATION + 0.2).timeout
 	(shell.game.hint_button.get_meta("button") as Button).pressed.emit()

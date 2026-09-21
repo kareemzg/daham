@@ -60,9 +60,14 @@ it, so an untouched one shows only «؟».
 godot --path . --quit-after 900 res://scenes/dev/shell_test.tscn
 ```
 
-68 checks over the mansion table, where a save puts the player on the map, the
+80 checks over the mansion table, where a save puts the player on the map, the
 moves between screens, and the single settings window the whole game shares.
 `res://scenes/dev/screen_shots.tscn` writes a PNG of each screen to look at.
+
+«بطاقات النجوم», the collection, is the other half of it: twenty-eight lines
+grouped by season, each one a question mark until its mansion is finished and
+then a card with the name, what the name means, and the modern name of its
+brightest star.
 
 The figures on the map are placeholders. The story asks for the real mansion
 shapes redrawn from al-Sufi rather than copied, and that drawing has not been
