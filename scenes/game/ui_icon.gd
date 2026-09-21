@@ -10,7 +10,7 @@ extends Control
 ##
 ## `@tool` so an icon shows itself in the Godot editor, not just at run time.
 
-enum Kind { LANTERN, COIN, MOON, HINT, SHUFFLE, SETTINGS, STAR, RESTART, HOME, CLOCK, CHEVRON_PREV, CHEVRON_NEXT }
+enum Kind { LANTERN, COIN, MOON, HINT, SHUFFLE, SETTINGS, STAR, RESTART, HOME, CLOCK, CHEVRON_PREV, CHEVRON_NEXT, DIPPER, STAR_CARDS, SHOP }
 
 const COIN := preload("res://assets/ui/icons/coin.svg")
 const LANTERN_ON := preload("res://assets/ui/icons/lantern_on.svg")
@@ -26,6 +26,9 @@ const HOME := preload("res://assets/ui/icons/home.svg")
 const CLOCK := preload("res://assets/ui/icons/clock.svg")
 const CHEVRON_PREV := preload("res://assets/ui/icons/chevron_prev.svg")
 const CHEVRON_NEXT := preload("res://assets/ui/icons/chevron_next.svg")
+const DIPPER := preload("res://assets/ui/icons/dipper.svg")
+const STAR_CARDS := preload("res://assets/ui/icons/star_cards.svg")
+const SHOP := preload("res://assets/ui/icons/shop.svg")
 
 @export var kind: Kind = Kind.COIN:
 	set(value):
@@ -74,6 +77,12 @@ func texture() -> Texture2D:
 			return CHEVRON_PREV
 		Kind.CHEVRON_NEXT:
 			return CHEVRON_NEXT
+		Kind.DIPPER:
+			return DIPPER
+		Kind.STAR_CARDS:
+			return STAR_CARDS
+		Kind.SHOP:
+			return SHOP
 	return COIN
 
 

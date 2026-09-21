@@ -143,9 +143,9 @@ func _build() -> void:
 	(play_button.get_meta("button") as Button).pressed.connect(
 		func() -> void: play_requested.emit())
 
-	_entry(UiIcon.Kind.CLOCK, "التحدي اليومي", daily_requested)
-	_entry(UiIcon.Kind.STAR, "بطاقات النجوم", cards_requested)
-	_entry(UiIcon.Kind.COIN, "المتجر", shop_requested)
+	_entry(UiIcon.Kind.DIPPER, "التحدي اليومي", daily_requested)
+	_entry(UiIcon.Kind.STAR_CARDS, "بطاقات النجوم", cards_requested)
+	_entry(UiIcon.Kind.SHOP, "المتجر", shop_requested)
 
 
 ## Drawn, not typed. The angle-quote characters are bidi-mirrored, so inside an
@@ -302,8 +302,8 @@ func _layout() -> void:
 
 	# Bottom-up, so nothing is pinned to one phone's height.
 	var floor_y := size.y - 60.0 * s
-	var entry_height := 190.0 * s
-	var entry_gap := 18.0 * s
+	var entry_height := 236.0 * s
+	var entry_gap := 25.0 * s
 	var entry_width := (size.x - margin * 2.0 - entry_gap * 2.0) / 3.0
 	var entry_top := floor_y - entry_height
 	for i in _entries.size():
@@ -312,7 +312,7 @@ func _layout() -> void:
 			entry_width, entry_height, s)
 
 	var card_height := 330.0 * s
-	var card_top := entry_top - 44.0 * s - card_height
+	var card_top := entry_top - 40.0 * s - card_height
 	_layout_card(Vector2(margin, card_top), size.x - margin * 2.0, card_height, s)
 
 	_field = Rect2(
@@ -391,19 +391,25 @@ func _place_entry(
 	panel.size = Vector2(width, height)
 	panel.edge_override = 10.0 * s
 	panel.radius_override = 44.0 * s
-	var face := panel.face_height()
+	# Straight off the design, scaled: ten units of air above the icon and nine
+	# below the last line, with the icon, the name and the number between them.
+	# The box follows the drawing's own shape. The seven stars of بنات نعش are
+	# more than twice as wide as they are tall, and a square box shrank them to
+	# a third of the size of the other two.
 	var icon: UiIcon = panel.get_meta("icon")
 	var art := 60.0 * s
-	icon.size = Vector2(art, art)
-	icon.position = Vector2((width - art) * 0.5, 26.0 * s)
+	var drawing := icon.texture()
+	var art_width := art * (float(drawing.get_width()) / float(maxi(drawing.get_height(), 1)))
+	icon.size = Vector2(art_width, art)
+	icon.position = Vector2((width - art_width) * 0.5, 28.0 * s)
 	var label: Label = panel.get_meta("label")
-	label.position = Vector2(4.0 * s, 96.0 * s)
-	label.size = Vector2(width - 8.0 * s, 40.0 * s)
-	label.add_theme_font_size_override("font_size", int(28.0 * s))
+	label.position = Vector2(4.0 * s, 99.0 * s)
+	label.size = Vector2(width - 8.0 * s, 46.0 * s)
+	label.add_theme_font_size_override("font_size", int(36.0 * s))
 	var note: Label = panel.get_meta("note")
-	note.position = Vector2(4.0 * s, 134.0 * s)
-	note.size = Vector2(width - 8.0 * s, 36.0 * s)
-	note.add_theme_font_size_override("font_size", int(26.0 * s))
+	note.position = Vector2(4.0 * s, 156.0 * s)
+	note.size = Vector2(width - 8.0 * s, 43.0 * s)
+	note.add_theme_font_size_override("font_size", int(33.0 * s))
 	var button: Button = panel.get_meta("button")
 	button.position = Vector2.ZERO
 	button.size = Vector2(width, height)

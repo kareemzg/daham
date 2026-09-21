@@ -157,8 +157,8 @@ static func preset(for_style: int) -> Dictionary:
 		Style.PANEL_NIGHT:
 			return {
 				"face_top": Color("12384D"), "face_bottom": Color("0A2230"),
-				"border_color": Color("2C5E73"), "border_width": 3.0,
-				"edge_color": Color("081B26"), "bottom_edge": 10.0,
+				"border_color": Color("2C5E73"), "border_width": 5.0,
+				"edge_color": Color("081B26"), "bottom_edge": 11.0,
 				"highlight": 0.0, "highlight_height": 0.0, "inner_shadow": 0.0,
 				"inner_top": 3.0, "inner_top_color": Color(Color("7FD0DA"), 0.35),
 				"radius": 0.22,
