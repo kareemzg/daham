@@ -10,11 +10,13 @@ config_version=5
 
 [application]
 
-config/name="Alshawi"
+config/name="Sama al-Arab"
 config/name_localized={
-"ar": "رحلة الشاوي"
+"ar": "سماء العرب"
 }
-config/description="Arabic word-puzzle game. Letter wheel plus crossword grid, set on the Euphrates."
+config/description="Arabic word game. A letter wheel and a crossword grid under a night sky:
+every word found lights a star, and a finished mansion writes its name in gold."
+config/version="0.1.0"
 run/main_scene="res://scenes/shell/shell.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
 run/low_processor_mode=true

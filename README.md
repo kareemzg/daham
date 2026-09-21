@@ -44,6 +44,26 @@ antialiasing. It exits non-zero on failure and writes
 frame, because layout maths can be right while nothing is painted, and a spent
 lantern has to actually look different from a lit one.
 
+## Building
+
+Three desktop presets are in `export_presets.cfg`, and the export templates for
+4.7.2 are installed:
+
+```bash
+godot --path . --headless --export-release "macOS" build/macos/SamaAlArab.zip
+```
+
+`Linux` and `Windows` are the other two preset names. Each build carries all
+561 levels and leaves out the dictionary, the pipeline and the dev scenes: the
+dictionary is only ever read by `tools/pipeline/`, and shipping it would add
+three quarters of a megabyte nothing reads.
+
+What is not done: nothing is signed. macOS needs a Developer ID and
+notarisation before it will open on another Mac without the right-click dance,
+and Windows wants a code-signing certificate or SmartScreen will warn. Both are
+accounts and keys rather than code, and the credentials file Godot writes
+beside the presets is git-ignored.
+
 ## The way in
 
 `Shell` is the project's main scene and the one place the game lives: it owns

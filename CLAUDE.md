@@ -114,5 +114,7 @@ Targets iOS, Android, macOS, Windows, Linux, Steam. Desktop is a paid premium bu
 - Adding a `class_name` script? Run `godot --path . --headless --import` once, or the next run fails with "Identifier not declared" until the editor rescans.
 - Pushing synthetic input in a test: send the whole press-move-release burst without awaiting frames in between, or the machine's real mouse slips in and ends the drag.
 - The project runs in low-processor mode; any test script that awaits `RenderingServer.frame_post_draw` must first set `OS.low_processor_usage_mode = false` or it stalls.
-- Export templates for 4.7.2 are installed in the user's Godot data folder; exporting needs export presets, which are not created yet.
+- Building: `godot --path . --headless --export-release "macOS"`, and likewise `Linux` and `Windows`. The presets live in `export_presets.cfg` and belong in the repo; `export_credentials.cfg` beside them holds passwords and is ignored.
+- A build excludes `scenes/dev/*`, `tools/*` and `docs/*`. The dictionary is a pipeline input, never read at runtime, and shipping it would add three quarters of a megabyte nothing opens. The levels are not excluded: check that after touching the filter.
+- Nothing is signed yet. macOS notarisation and Windows code signing are accounts and keys, not code.
 - Story reference: `docs/story-sky.md`. Palette, type and motion reference: `docs/claude-design-prompt.md` (its story sections are superseded).
