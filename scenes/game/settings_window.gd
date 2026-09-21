@@ -69,12 +69,14 @@ func _build_language_row() -> Control:
 	row.set_meta("tray", tray)
 	var name_label := _label(_ui_font, Color("4A3A2A"))
 	name_label.text = "اللغة"
-	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	# In a label whose direction is RTL these follow the reading order, not the
+	# screen: LEFT is the start of the line, which is the right-hand side.
+	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	row.add_child(name_label)
 	row.set_meta("name", name_label)
 	var value := _label(_ui_font, Color("6B5942"))
 	value.text = "العربية"
-	value.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	value.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	row.add_child(value)
 	row.set_meta("value", value)
 	add_row(row, 92.0, 14.0)
@@ -98,12 +100,14 @@ func relayout(s: float) -> void:
 	tray.position = Vector2.ZERO
 	tray.size = _language.size
 	var pad := 26.0 * s
+	# The setting's name takes the reading start, which is the right; its answer
+	# sits opposite. They were the other way round.
 	var name_label: Label = _language.get_meta("name")
-	name_label.position = Vector2(pad, 0.0)
+	name_label.position = Vector2(_language.size.x * 0.5, 0.0)
 	name_label.size = Vector2(_language.size.x * 0.5 - pad, _language.size.y)
 	name_label.add_theme_font_size_override("font_size", int(32.0 * s))
 	var value: Label = _language.get_meta("value")
-	value.position = Vector2(_language.size.x * 0.5, 0.0)
+	value.position = Vector2(pad, 0.0)
 	value.size = Vector2(_language.size.x * 0.5 - pad, _language.size.y)
 	value.add_theme_font_size_override("font_size", int(30.0 * s))
 

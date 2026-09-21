@@ -30,7 +30,9 @@ var button := Button.new()
 func _init() -> void:
 	_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	# RTL: LEFT is the start of the line, which puts the words at the far right
+	# of the row, opposite the switch, the way the design lays them out.
+	_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	_label.text_direction = Control.TEXT_DIRECTION_RTL
 	add_child(_label)
 

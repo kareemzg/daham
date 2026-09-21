@@ -25,6 +25,9 @@ signal shop_requested
 const REF_WIDTH := 1080.0
 const DISPLAY_FONT := preload("res://assets/fonts/arabic_display.tres")
 const DISPLAY_BOLD_FONT := preload("res://assets/fonts/arabic_display_bold.tres")
+## Amiri Bold is a naskh and reads light beside Plex Bold. This one is
+## emboldened on top of it, for the two names that have to carry a card.
+const DISPLAY_HEAVY_FONT := preload("res://assets/fonts/arabic_display_heavy.tres")
 const UI_BOLD_FONT := preload("res://assets/fonts/arabic_ui_bold.tres")
 
 ## Where each mansion of a season sits, as a fraction of the field's box.
@@ -94,7 +97,7 @@ func _build() -> void:
 	_back_button = _arrow(false, "الفصل السابق")
 	_forward_button = _arrow(true, "الفصل التالي")
 
-	_season_name = _label(DISPLAY_BOLD_FONT, Palette.CREAM)
+	_season_name = _label(DISPLAY_HEAVY_FONT, Palette.CREAM)
 	add_child(_season_name)
 	_season_count = _label(UI_BOLD_FONT, Color("8FAEBF"))
 	add_child(_season_count)
@@ -122,13 +125,16 @@ func _build() -> void:
 	_card = GlossyPanel.new()
 	_card.style = GlossyPanel.Style.CHIP
 	add_child(_card)
-	_card_name = _label(DISPLAY_FONT, Palette.TILE_INK)
-	_card_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_card_name = _label(DISPLAY_HEAVY_FONT, Palette.TILE_INK)
+	# In a label whose direction is RTL these two follow the reading order, not
+	# the screen: LEFT is the start of the line, which is the right-hand side.
+	_card_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	_card.add_child(_card_name)
 	_card_progress = _label(UI_BOLD_FONT, Color("6B5942"))
-	_card_progress.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	_card_progress.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_card.add_child(_card_progress)
 	_card_stars = StarDots.new()
+	_card_stars.capsule = true
 	_card.add_child(_card_stars)
 	play_button = GlossyPanel.make_button(
 		GlossyPanel.Style.BUTTON_EMBER, "واصل", UI_BOLD_FONT, Color("FFF4E8")
@@ -305,7 +311,7 @@ func _layout() -> void:
 			Vector2(size.x - margin - entry_width * float(i + 1) - entry_gap * float(i), entry_top),
 			entry_width, entry_height, s)
 
-	var card_height := 300.0 * s
+	var card_height := 330.0 * s
 	var card_top := entry_top - 44.0 * s - card_height
 	_layout_card(Vector2(margin, card_top), size.x - margin * 2.0, card_height, s)
 
@@ -337,18 +343,21 @@ func _layout_card(at: Vector2, width: float, height: float, s: float) -> void:
 	var pad := 34.0 * s
 	var inner := width - pad * 2.0
 
-	_card_name.position = Vector2(pad, 18.0 * s)
-	_card_name.size = Vector2(inner * 0.55, 62.0 * s)
+	# The name takes the reading start, which in Arabic is the right, and the
+	# count sits opposite it. They were the other way round.
+	_card_name.position = Vector2(pad + inner * 0.45, 20.0 * s)
+	_card_name.size = Vector2(inner * 0.55, 66.0 * s)
 	_card_name.add_theme_font_size_override("font_size", int(52.0 * s))
-	_card_progress.position = Vector2(pad + inner * 0.55, 18.0 * s)
-	_card_progress.size = Vector2(inner * 0.45, 62.0 * s)
+	_card_progress.position = Vector2(pad, 20.0 * s)
+	_card_progress.size = Vector2(inner * 0.45, 66.0 * s)
 	_card_progress.add_theme_font_size_override("font_size", int(32.0 * s))
 
-	_card_stars.position = Vector2(pad, 92.0 * s)
-	_card_stars.size = Vector2(inner, 22.0 * s)
+	# Clear of the name's box, not of its point size: Amiri hangs below both.
+	_card_stars.position = Vector2(pad, 124.0 * s)
+	_card_stars.size = Vector2(inner, 19.0 * s)
 
 	var button_height := 108.0 * s
-	play_button.position = Vector2(pad, 140.0 * s)
+	play_button.position = Vector2(pad, 180.0 * s)
 	play_button.edge_override = 14.0 * s
 	play_button.radius_override = button_height * 0.5
 	play_button.size = Vector2(inner, button_height + 14.0 * s)
