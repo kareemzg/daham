@@ -29,6 +29,10 @@ var lantern_clock: int = 0
 ## How many of each of the observer's tools the player owns, bought ahead from
 ## the shop rather than one at a time. Indexed by `Tools.Kind`.
 var tools: Array[int] = [0, 0, 0, 0]
+## The daily challenge: how many days of the current run are behind the
+## player, and the day the last one was played (days since the epoch).
+var daily_streak: int = 0
+var daily_day: int = 0
 var found: PackedStringArray = PackedStringArray()
 var bonus_found: PackedStringArray = PackedStringArray()
 ## Cells a hint opened that no finished word covers, as Vector2i(row, col).
@@ -58,6 +62,8 @@ static func read(path: String = DEFAULT_PATH) -> Progress:
 	progress.wrong_streak = int(data.get("wrong_streak", 0))
 	progress.moon = int(data.get("moon", 0))
 	progress.lantern_clock = int(data.get("lantern_clock", 0))
+	progress.daily_streak = int(data.get("daily_streak", 0))
+	progress.daily_day = int(data.get("daily_day", 0))
 	var owned: Array = data.get("tools", [])
 	for i in mini(owned.size(), progress.tools.size()):
 		progress.tools[i] = int(owned[i])
@@ -85,6 +91,8 @@ func write(path: String = DEFAULT_PATH) -> bool:
 		"moon": moon,
 		"lantern_clock": lantern_clock,
 		"tools": tools.duplicate(),
+		"daily_streak": daily_streak,
+		"daily_day": daily_day,
 		"found": Array(found),
 		"bonus_found": Array(bonus_found),
 		"revealed": cells,

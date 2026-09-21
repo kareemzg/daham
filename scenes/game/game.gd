@@ -20,6 +20,9 @@ signal menu_requested
 ## The gear. The shell owns the one settings window, because two of them would
 ## be two places for the switches to disagree about what is actually stored.
 signal settings_requested
+## The day's challenge is over. The shell pays for it and puts the journey
+## back, because none of it belongs to the journey's own progress.
+signal daily_finished
 
 enum Result {
 	CORRECT,  ## a grid word, found for the first time
@@ -104,6 +107,12 @@ var restart_confirm_button: GlossyPanel
 var hints_window: ShelfWindow
 ## How many of each tool the player owns, bought ahead from the shop.
 var tools: Array[int] = [0, 0, 0, 0]
+## True while this screen is playing the day's challenge instead of the
+## journey. Nothing is written to the journey's save, no lantern is spent
+## however badly it goes, and finishing reports rather than moving on.
+var daily: bool = false
+var daily_streak: int = 0
+var daily_day: int = 0
 var _complete_stars: StarDots
 var _complete_reward: Control
 var _clock_strip: Control
@@ -158,6 +167,11 @@ func _ready() -> void:
 	show_level(first)
 	if saved != null:
 		restore(saved)
+
+
+## Public so the shell can fetch the day's challenge without owning the path.
+func level_by_id(id: String) -> Level:
+	return _level_by_id(id)
 
 
 func _level_by_id(id: String) -> Level:
@@ -750,8 +764,11 @@ func submit(raw: String) -> int:
 			wrong_streak += 1
 			if wrong_streak >= WRONG_STREAK_COST:
 				wrong_streak = 0
-				lanterns = maxi(lanterns - 1, 0)
-				_say("انطفأ فانوس")
+				# The daily challenge costs no lantern, which is a promise its
+				# window makes in so many words.
+				if not daily:
+					lanterns = maxi(lanterns - 1, 0)
+				_say("انطفأ فانوس" if not daily else "خمس محاولات خاطئة")
 				# The clock starts on the first lantern lost, not on the last:
 				# a player who is down to four is already waiting for one back.
 				if _lantern_clock <= 0:
@@ -772,7 +789,7 @@ func submit(raw: String) -> int:
 	# would reopen the game on a solved grid with no window and no way forward.
 	if result != Result.TOO_SHORT and not finished:
 		save()
-	if spent_last:
+	if spent_last and not daily:
 		show_out_of_lanterns()
 	word_resolved.emit(word, result)
 	return result
@@ -981,7 +998,7 @@ func _on_menu_pressed() -> void:
 ## leaving from. False at the end of the year, and on a level still being
 ## played, so calling it twice costs nothing.
 func move_on_if_finished() -> bool:
-	if level == null or not grid.is_solved():
+	if daily or level == null or not grid.is_solved():
 		return false
 	var next := next_level_id()
 	if next.is_empty():
@@ -1092,6 +1109,11 @@ func _onwipe_swap() -> void:
 
 
 func _finish_level() -> void:
+	if daily:
+		# Nothing here belongs to the journey: no reward, no star, no save, and
+		# no next level. The shell settles the day and puts the journey back.
+		daily_finished.emit()
+		return
 	coins += LEVEL_REWARD
 	stars.light_next()
 	_refresh_chrome()
@@ -1131,6 +1153,8 @@ func capture() -> Progress:
 	snapshot.moon = moon
 	snapshot.lantern_clock = _lantern_clock
 	snapshot.tools = tools.duplicate()
+	snapshot.daily_streak = daily_streak
+	snapshot.daily_day = daily_day
 	for word in level.word_texts():
 		if grid.is_found(word):
 			snapshot.found.append(word)
@@ -1151,6 +1175,8 @@ func restore(saved: Progress) -> void:
 	_moon_shown = saved.moon
 	_lantern_clock = saved.lantern_clock
 	tools = saved.tools.duplicate()
+	daily_streak = saved.daily_streak
+	daily_day = saved.daily_day
 	# Lanterns keep coming back while the game is shut, so a returning player
 	# collects the wait they already served rather than starting it again.
 	_tick_lanterns()
@@ -1164,6 +1190,8 @@ func restore(saved: Progress) -> void:
 
 
 func save() -> void:
+	if daily:
+		return
 	if progress_path.is_empty() or level == null:
 		return
 	capture().write(progress_path)

@@ -59,6 +59,25 @@ func _shoot() -> void:
 	await _save("screen_shop")
 	shell.shop_window.visible = false
 
+	# Four days behind, today still to play; then today done; then the week.
+	shell.game.daily_streak = 4
+	shell.game.daily_day = Daily.today() - 1
+	shell.open_daily()
+	shell.daily_window.settle()
+	await _save("screen_daily")
+
+	shell.game.daily_streak = 5
+	shell.game.daily_day = Daily.today()
+	shell.open_daily()
+	shell.daily_window.settle()
+	await _save("screen_daily_done")
+
+	shell.game.daily_streak = 7
+	shell.open_daily()
+	shell.daily_window.settle()
+	await _save("screen_daily_week")
+	shell.daily_window.visible = false
+
 	shell.go_to(Shell.Screen.CARDS)
 	await get_tree().create_timer(MeteorWipe.DURATION + 0.2).timeout
 	await _save("screen_cards")

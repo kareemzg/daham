@@ -29,6 +29,9 @@ var game: GameScreen
 var settings_window: SettingsWindow
 var mansion_window: SkyWindow
 var shop_window: ShelfWindow
+var daily_window: DailyWindow
+## The journey's state, held while the day's challenge is played over it.
+var _journey: Progress = null
 var _figure: FigureView
 var _star_line: Control
 var settings: GameSettings = GameSettings.new()
@@ -58,6 +61,7 @@ func _ready() -> void:
 	map.mansion_opened.connect(open_mansion)
 	map.shop_requested.connect(open_shop)
 	map.cards_requested.connect(func() -> void: go_to(Screen.CARDS))
+	map.daily_requested.connect(open_daily)
 
 	cards = StarCardsScreen.new()
 	cards.visible = false
@@ -72,6 +76,7 @@ func _ready() -> void:
 	add_child(game)
 	game.menu_requested.connect(func() -> void: go_to(Screen.MAP))
 	game.settings_requested.connect(open_settings)
+	game.daily_finished.connect(_on_daily_finished)
 
 	settings_window = SettingsWindow.new()
 	settings_window.configure_settings(DISPLAY_FONT, UI_BOLD_FONT)
@@ -120,6 +125,14 @@ func _ready() -> void:
 	add_child(shop_window)
 	shop_window.chosen.connect(_on_shop_chosen)
 	shop_window.close_requested.connect(func() -> void: shop_window.close())
+
+	daily_window = DailyWindow.new()
+	daily_window.configure_daily(DISPLAY_FONT, UI_BOLD_FONT)
+	daily_window.visible = false
+	daily_window.dismiss_on_tap = true
+	add_child(daily_window)
+	daily_window.play_requested.connect(start_daily)
+	daily_window.close_requested.connect(func() -> void: daily_window.close())
 
 	wipe = MeteorWipe.new()
 	add_child(wipe)
@@ -244,6 +257,62 @@ func open_mansion(mansion: int) -> void:
 	mansion_window.open()
 
 
+## The daily challenge. A run only stands if the last one played was today or
+## yesterday, so the window works the standing out rather than trusting the
+## number it was saved with.
+func open_daily() -> void:
+	var day := Daily.today()
+	daily_window.show_state(
+		Daily.lit(game.daily_streak, game.daily_day, day),
+		Daily.played_today(game.daily_day, day),
+		Daily.seconds_left_today()
+	)
+	_layout()
+	daily_window.open()
+
+
+## Starts the day's level over the journey, keeping the journey aside.
+func start_daily() -> bool:
+	var level := game.level_by_id(Daily.level_for(Daily.today()))
+	if level == null:
+		return false
+	daily_window.close()
+	_journey = game.capture()
+	game.daily = true
+	game.show_level(level)
+	go_to(Screen.GAME)
+	return true
+
+
+## Settles the day and puts the journey back exactly where it was. Coins, the
+## lanterns and the run itself carry over; nothing else the challenge touched
+## belongs to the journey.
+func _on_daily_finished() -> void:
+	var day := Daily.today()
+	var standing := Daily.advanced(game.daily_streak, game.daily_day, day)
+	game.daily_streak = standing
+	game.daily_day = day
+	game.coins += Daily.DAY_REWARD
+	if standing >= Daily.STREAK_LENGTH:
+		game.coins += Daily.WEEK_REWARD
+		game.lanterns = mini(game.lanterns + 1, GameScreen.LANTERNS_MAX)
+
+	game.daily = false
+	if _journey != null:
+		var back := game.level_by_id(_journey.level_id)
+		if back != null:
+			_journey.coins = game.coins
+			_journey.lanterns = game.lanterns
+			_journey.daily_streak = game.daily_streak
+			_journey.daily_day = game.daily_day
+			game.show_level(back)
+			game.restore(_journey)
+		_journey = null
+	game.save()
+	go_to(Screen.MAP)
+	open_daily()
+
+
 func open_shop() -> void:
 	shop_window.show_purse(game.coins)
 	_layout()
@@ -323,7 +392,8 @@ func _layout() -> void:
 		return
 	var s := _scale()
 	for node: Control in [
-		sky, title, map, cards, game, wipe, settings_window, mansion_window, shop_window
+		sky, title, map, cards, game, wipe, settings_window, mansion_window,
+		shop_window, daily_window
 	]:
 		node.position = Vector2.ZERO
 		node.size = size
@@ -331,3 +401,4 @@ func _layout() -> void:
 	mansion_window.relayout(s)
 	_layout_star_line(s)
 	shop_window.relayout(s)
+	daily_window.relayout(s)

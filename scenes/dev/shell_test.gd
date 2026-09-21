@@ -272,6 +272,75 @@ func _run() -> void:
 	_check_equal("carrying on opens the next level", shell.game.level.id, "m04-13")
 	_check("...which has still to be played", not shell.game.grid.is_solved())
 
+	print("=== when a run of days stands, and when it does not ===")
+	var day := Daily.today()
+	_check_equal("a run never started is dark", Daily.lit(0, 0, day), 0)
+	_check_equal("one played today stands", Daily.lit(4, day, day), 4)
+	_check_equal("one played yesterday stands", Daily.lit(4, day - 1, day), 4)
+	# A day missed is the whole rule of a streak, and the window says so.
+	_check_equal("a day missed puts it out", Daily.lit(4, day - 2, day), 0)
+	_check_equal("finishing adds one", Daily.advanced(4, day - 1, day), 5)
+	_check_equal("the seventh begins a new week", Daily.advanced(7, day - 1, day), 1)
+	_check_equal("a broken run starts again at one", Daily.advanced(5, day - 9, day), 1)
+	_check_equal(
+		"the same day gives the same level", Daily.level_for(day), Daily.level_for(day)
+	)
+	_check(
+		"...a different day a different one",
+		Daily.level_for(day) != Daily.level_for(day + 1)
+	)
+	_check("...and it is a level that exists", shell.game.level_by_id(Daily.level_for(day)) != null)
+
+	print("=== playing the day's challenge ===")
+	var journey: String = shell.game.level.id
+	shell.game.daily_streak = 0
+	shell.game.daily_day = 0
+	shell.game.lanterns = 3
+	shell.open_daily()
+	shell.daily_window.settle()
+	_check("the map opens it", shell.daily_window.visible)
+
+	_check("the challenge starts", shell.start_daily())
+	await _arrive()
+	_check("the screen is on the challenge", shell.game.daily)
+	_check_equal("...and showing the game", shell.showing, Shell.Screen.GAME)
+
+	# The window promises this in so many words, so it has to hold.
+	var lanterns_before: int = shell.game.lanterns
+	shell.game.show_level(Level.load_from("res://data/levels/sample.json"))
+	for i in GameScreen.WRONG_STREAK_COST:
+		shell.game.submit("باك")
+	_check_equal("five wrong guesses cost no lantern", shell.game.lanterns, lanterns_before)
+
+	var purse: int = shell.game.coins
+	for word in ["كتاب", "كاتب", "كتب", "تاب", "بات"]:
+		shell.game.submit(word)
+	await _arrive()
+	_check_equal("finishing lights the first star", shell.game.daily_streak, 1)
+	_check_equal("...and pays the day", shell.game.coins, purse + Daily.DAY_REWARD)
+	_check("...and leaves the challenge behind", not shell.game.daily)
+	_check_equal("...and puts the journey back", shell.game.level.id, journey)
+	shell.daily_window.visible = false
+
+	print("=== the seventh day ===")
+	shell.game.daily_streak = 6
+	shell.game.daily_day = day - 1
+	shell.game.lanterns = 2
+	purse = shell.game.coins
+	_check("it starts again", shell.start_daily())
+	await _arrive()
+	shell.game.show_level(Level.load_from("res://data/levels/sample.json"))
+	for word in ["كتاب", "كاتب", "كتب", "تاب", "بات"]:
+		shell.game.submit(word)
+	await _arrive()
+	_check_equal("the week closes", shell.game.daily_streak, Daily.STREAK_LENGTH)
+	_check_equal(
+		"...and pays the week on top of the day",
+		shell.game.coins, purse + Daily.DAY_REWARD + Daily.WEEK_REWARD
+	)
+	_check_equal("...and returns a lantern", shell.game.lanterns, 3)
+	shell.daily_window.visible = false
+
 	_finish()
 
 

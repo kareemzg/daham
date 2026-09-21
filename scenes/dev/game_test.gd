@@ -523,16 +523,34 @@ func _check_windows() -> void:
 ## were in the right places, with the right colours, and chewed at the edges.
 func _check_smooth_edges() -> void:
 	print("=== hand-drawn shapes ask for smooth edges ===")
+	var calls := ["draw_circle(", "draw_polyline(", "draw_arc(", "draw_line("]
 	var rough := PackedStringArray()
 	for path in _scripts_under("res://scenes"):
 		var text := FileAccess.get_file_as_string(path)
 		var line_number := 0
+		# A call wrapped over several lines is still one call: gather it until
+		# its brackets balance, or a smoothed one reads as a rough one.
+		var gathered := ""
+		var began := 0
 		for line in text.split("\n"):
 			line_number += 1
 			var trimmed := line.strip_edges()
-			for call in ["draw_circle(", "draw_polyline(", "draw_arc(", "draw_line("]:
-				if trimmed.begins_with(call) and not trimmed.ends_with("true)"):
-					rough.append("%s:%s" % [path.get_file(), line_number])
+			if gathered.is_empty():
+				var starts := false
+				for call in calls:
+					if trimmed.begins_with(call):
+						starts = true
+				if not starts:
+					continue
+				gathered = trimmed
+				began = line_number
+			else:
+				gathered += trimmed
+			if gathered.count("(") > gathered.count(")"):
+				continue
+			if not gathered.ends_with("true)"):
+				rough.append("%s:%s" % [path.get_file(), began])
+			gathered = ""
 	_check(
 		"nothing is drawn with hard edges (%s)"
 			% ("none" if rough.is_empty() else ", ".join(rough)),

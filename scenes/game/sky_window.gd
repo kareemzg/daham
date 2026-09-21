@@ -240,10 +240,18 @@ func relayout(s: float) -> void:
 	crest.edge_override = 10.0 * s
 	crest.radius_override = crest_side * 0.5
 	var icon_side := CREST_ICON * s
-	crest_icon.size = Vector2(icon_side, icon_side)
-	crest_icon.position = Vector2(
-		(crest_side - icon_side) * 0.5, (crest.face_height() - icon_side) * 0.5
+	var drawing := crest_icon.texture()
+	var aspect := float(drawing.get_width()) / float(maxi(drawing.get_height(), 1))
+	# A wide drawing keeps its width and gives up height, so it fills the badge
+	# instead of being letterboxed into a squiggle.
+	var icon_size := (
+		Vector2(icon_side * 1.5, icon_side * 1.5 / aspect) if aspect > 1.4
+		else Vector2(icon_side, icon_side)
 	)
+	crest_icon.size = icon_size
+	crest_icon.position = (
+		Vector2(crest_side, crest.face_height()) - icon_size
+	) * 0.5
 
 	_layout_close_cross(s)
 	overhang = crest_side * 0.5

@@ -34,6 +34,13 @@ Targets iOS, Android, macOS, Windows, Linux, Steam. Desktop is a paid premium bu
 - `scripts/mansions.gd` mirrors `tools/pipeline/mansions.py`. The table is in both because the map draws all twenty-eight and must not read five hundred and sixty level files to learn their names.
 - Amiri's ascenders and descenders run well past the point size. Size a label's box by the line the next one has to clear, not by the font size. This bit twice in one afternoon: the title landed on its subtitle, and the season on its count.
 
+## The daily challenge
+- One level a day, the same one for everybody: `Daily.level_for()` walks the year in big steps from the date, so two days running are nowhere near each other.
+- It costs no lantern however badly it goes, and the window says so in so many words. `GameScreen.daily` is what holds that promise, along with writing nothing to the journey's save and moving to no next level.
+- A run only stands if the last day played was today or yesterday. The standing is worked out on reading rather than trusted from the saved number, so a player who comes back after a week sees a dark sky without anything having to run while they were away.
+- The shell keeps the journey aside while the challenge is played and puts it back after. Coins, lanterns and the run carry over; nothing else the challenge touched belongs to the journey.
+- The seven stars of بنات نعش are the gauge, not a bar beside one: four days close the bier, seven draw the whole figure.
+
 ## Tools and the shop
 - The four instruments live in `scripts/tools.gd`: names, what each reveals, prices, icons. One table, so a price can never differ between the window that sells a tool and the screen that spends it.
 - The hint button opens the shelf; it spends nothing by itself. Which tool to buy is the player's choice, not the cheapest by default.
@@ -69,6 +76,7 @@ Targets iOS, Android, macOS, Windows, Linux, Steam. Desktop is a paid premium bu
 - Icons are SVG under `assets/ui/icons/`, drawn through `UiIcon`. Keep new ones to paths, strokes and gradients: Godot rasterises SVG with ThorVG, which ignores filters, masks and text. Set `svg/scale=5.0` and `mipmaps/generate=true` in the `.import` file.
 - Generating mipmaps is only half of it: the project sets `rendering/textures/canvas_textures/default_texture_filter=3` (Linear Mipmap) so they are actually used. On plain Linear, a 320px icon drawn at 46px samples four texels out of a much wider footprint and comes out looking chewed.
 - Godot's drawing calls take antialiasing as an argument and it defaults to OFF: `draw_circle(at, radius, colour, true, -1.0, true)`. Sixteen circles quietly defaulting their way into a sky of jagged stars is what "everything looks pixelated" turned out to mean. `_check_smooth_edges` in the slice test reads the source and fails on any hard-edged call, because nothing else can see it: the shapes are in the right places, in the right colours, and chewed at the edges.
+- Never put a separator beside an Eastern Arabic numeral. A middle dot between Arabic text and an Arabic-Indic number is pushed to the far side of the number by the bidi algorithm, and «٠» is itself a dot: «بنات نعش · ٤ من ٧» came out reading «٤٠». Use a space.
 - An RTL label also leaves a ragged gap between its last glyph and its own box edge, so alignment alone never sits text flush against an edge. Measure it with `get_minimum_size().x` and give it a box that fits, as the settings rows do.
 - `HORIZONTAL_ALIGNMENT_LEFT` and `_RIGHT` on a Label whose `text_direction` is RTL follow the reading order, not the screen: LEFT is the start of the line, which is the right-hand side. This put the mansion's name, the language row and every settings label on the wrong side of their rows before anyone noticed.
 - Angle-quote characters (`‹` `›`) are bidi-mirrored: inside an Arabic label each one renders as its opposite, so both season arrows pointed inward. Arrows are drawn as icons, never typed.
