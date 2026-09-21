@@ -467,6 +467,28 @@ func _check_windows() -> void:
 
 	# The gear does not open a window here. The shell owns the one settings
 	# window, so two of them can never disagree about what is stored.
+	# A window you opened yourself closes when you tap the dark outside it. One
+	# that is asking you something does not: a stray tap must not answer for you.
+	print("=== tapping outside a window ===")
+	(game.restart_button.get_meta("button") as Button).pressed.emit()
+	game.restart_window.settle()
+	_check("the restart window is up", game.restart_window.visible)
+	_tap_outside(game.restart_window)
+	await get_tree().create_timer(SkyPopup.CLOSE_SECONDS + 0.08).timeout
+	_check("a tap outside cancels it", not game.restart_window.visible)
+
+	game.show_level(fixture)
+	game.lanterns = 1
+	for i in GameScreen.WRONG_STREAK_COST:
+		game.submit("باك")
+	game.lanterns_window.settle()
+	_check("the out-of-lanterns window is up", game.lanterns_window.visible)
+	_tap_outside(game.lanterns_window)
+	await get_tree().create_timer(SkyPopup.CLOSE_SECONDS + 0.08).timeout
+	_check("...and a tap outside will not dismiss it", game.lanterns_window.visible)
+	game.lanterns_window.visible = false
+	game.lanterns = GameScreen.LANTERNS_MAX
+
 	print("=== the gear asks the shell ===")
 	var asked_settings := [false]
 	game.settings_requested.connect(func() -> void: asked_settings[0] = true)
@@ -525,6 +547,16 @@ func _scripts_under(root: String) -> PackedStringArray:
 		entry = dir.get_next()
 	dir.list_dir_end()
 	return found
+
+
+## A click on the dim layer, well clear of the panel and of the crest that
+## straddles its top edge.
+func _tap_outside(window: SkyPopup) -> void:
+	var click := InputEventMouseButton.new()
+	click.button_index = MOUSE_BUTTON_LEFT
+	click.pressed = true
+	click.position = Vector2(window.size.x * 0.5, window.size.y - 8.0)
+	window._gui_input(click)
 
 
 func _drag_wheel(indices: Array) -> void:

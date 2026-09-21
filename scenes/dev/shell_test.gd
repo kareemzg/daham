@@ -55,6 +55,15 @@ func _arrive() -> void:
 	await get_tree().create_timer(MeteorWipe.DURATION + 0.2).timeout
 
 
+## A click on the dim layer, clear of the panel and of the crest above it.
+func _tap_outside(window: SkyPopup) -> void:
+	var click := InputEventMouseButton.new()
+	click.button_index = MOUSE_BUTTON_LEFT
+	click.pressed = true
+	click.position = Vector2(window.size.x * 0.5, window.size.y - 8.0)
+	window._gui_input(click)
+
+
 func _run() -> void:
 	print("=== the mansion table ===")
 	_check_equal("twenty-eight mansions", Mansions.NAMES.size(), Mansions.COUNT)
@@ -136,6 +145,22 @@ func _run() -> void:
 	_check("the play screen's gear opens it too", shell.settings_window.visible)
 	_check_equal("...showing what was just stored", shell.settings_window.rows[1].on, false)
 	shell.settings_window.visible = false
+
+	# Both of these are windows the player opened and can simply leave.
+	print("=== tapping outside a window closes it ===")
+	shell.map.mansion_opened.emit(3)
+	shell.mansion_window.settle()
+	_check("the mansion card is up", shell.mansion_window.visible)
+	_tap_outside(shell.mansion_window)
+	await get_tree().create_timer(SkyPopup.CLOSE_SECONDS + 0.08).timeout
+	_check("a tap outside closes it", not shell.mansion_window.visible)
+
+	_press(shell.map.settings_button)
+	shell.settings_window.settle()
+	_check("settings is up", shell.settings_window.visible)
+	_tap_outside(shell.settings_window)
+	await get_tree().create_timer(SkyPopup.CLOSE_SECONDS + 0.08).timeout
+	_check("...and a tap outside closes that too", not shell.settings_window.visible)
 
 	print("=== the map goes to the game, and the game comes back ===")
 	_press(shell.map.play_button)

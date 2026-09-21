@@ -100,16 +100,19 @@ func relayout(s: float) -> void:
 	tray.position = Vector2.ZERO
 	tray.size = _language.size
 	var pad := 26.0 * s
-	# The setting's name takes the reading start, which is the right; its answer
-	# sits opposite. They were the other way round.
+	# The setting's name sits flush against the far right, its answer against
+	# the far left, both measured to their text for the same reason the switch
+	# rows are: an RTL label leaves a gap between its last glyph and its box.
 	var name_label: Label = _language.get_meta("name")
-	name_label.position = Vector2(_language.size.x * 0.5, 0.0)
-	name_label.size = Vector2(_language.size.x * 0.5 - pad, _language.size.y)
 	name_label.add_theme_font_size_override("font_size", int(32.0 * s))
+	var name_width: float = name_label.get_minimum_size().x
+	name_label.position = Vector2(_language.size.x - pad - name_width, 0.0)
+	name_label.size = Vector2(name_width, _language.size.y)
 	var value: Label = _language.get_meta("value")
-	value.position = Vector2(pad, 0.0)
-	value.size = Vector2(_language.size.x * 0.5 - pad, _language.size.y)
 	value.add_theme_font_size_override("font_size", int(30.0 * s))
+	var value_width: float = value.get_minimum_size().x
+	value.position = Vector2(pad, 0.0)
+	value.size = Vector2(value_width, _language.size.y)
 
 	var side := 72.0 * s
 	close_button.position = Vector2(28.0 * s, 26.0 * s)

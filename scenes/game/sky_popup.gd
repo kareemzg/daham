@@ -26,6 +26,12 @@ var _halo := TextureRect.new()
 var _halo_texture: GradientTexture2D
 
 
+## Whether tapping the dark outside the panel closes the window. True for a
+## window you opened yourself and can simply leave; false for one that is asking
+## you something, where dismissing it by accident would skip the answer.
+var dismiss_on_tap: bool = false
+
+
 func _init() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	visible = false
@@ -77,6 +83,24 @@ func _place() -> void:
 	_halo.size = reach
 	_halo.position = (size - reach) * 0.5
 	_halo.pivot_offset = reach * 0.5
+
+
+func _gui_input(event: InputEvent) -> void:
+	if not dismiss_on_tap or panel == null:
+		return
+	if not (event is InputEventMouseButton):
+		return
+	var click := event as InputEventMouseButton
+	if not click.pressed or click.button_index != MOUSE_BUTTON_LEFT:
+		return
+	# The crest straddles the panel's top edge, so the window is taller than its
+	# panel and a tap on the badge must not read as a tap outside.
+	var reach := Rect2(
+		panel.position - Vector2(0.0, overhang), panel.size + Vector2(0.0, overhang)
+	)
+	if not reach.has_point(click.position):
+		accept_event()
+		close()
 
 
 func open() -> void:

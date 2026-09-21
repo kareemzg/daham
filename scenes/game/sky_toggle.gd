@@ -77,12 +77,16 @@ func _draw() -> void:
 		Rect2(Vector2.ZERO, size)
 	)
 
-	# The switch takes the left of the row and the words take the rest, so the
-	# label starts where the track ends rather than on top of it.
+	# The switch takes the far left; the words sit flush against the far right.
+	# The box is measured to the text rather than aligned inside a wide one: an
+	# RTL label leaves a ragged gap between its last glyph and its own edge, so
+	# aligning alone left the words short of the edge by a visible margin.
 	var left := pad
-	var text_left := left + track.x + 18.0 * s
-	_label.position = Vector2(text_left, 0.0)
-	_label.size = Vector2(maxf(size.x - text_left - pad, 0.0), size.y)
+	var text_width := minf(
+		_label.get_minimum_size().x, maxf(size.x - left - track.x - pad * 2.0, 0.0)
+	)
+	_label.position = Vector2(size.x - pad - text_width, 0.0)
+	_label.size = Vector2(text_width, size.y)
 
 	var top := (size.y - track.y) * 0.5
 	var radius := track.y * 0.5

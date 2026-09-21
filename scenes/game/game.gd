@@ -302,6 +302,11 @@ func _build_windows() -> void:
 		_on_cancel_restart
 	)
 	_wire(_menu_button(restart_window, 78.0), _on_menu_pressed)
+	# You opened this one yourself and cancelling is free, so tapping the dark
+	# outside it is the same as pressing cancel. The other two are asking you
+	# something, and a stray tap must not answer for you.
+	restart_window.dismiss_on_tap = true
+
 
 func _new_window() -> SkyWindow:
 	var window := SkyWindow.new()

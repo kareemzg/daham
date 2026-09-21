@@ -34,7 +34,7 @@ Check it before committing engine changes:
 godot --path . --quit-after 900 res://scenes/dev/game_test.tscn
 ```
 
-140 checks covering level data, Arabic normalisation, the drag path through real
+144 checks covering level data, Arabic normalisation, the drag path through real
 input events, the word rules, the lantern penalty, the hint and shuffle buttons,
 the save round-trip, what a quit leaves behind, the moon filling across levels,
 the four windows and the way out of each, the on-screen layout, and a scan of the
@@ -59,7 +59,7 @@ it, so an untouched one shows only «؟».
 godot --path . --quit-after 900 res://scenes/dev/shell_test.tscn
 ```
 
-45 checks over the mansion table, where a save puts the player on the map, the
+49 checks over the mansion table, where a save puts the player on the map, the
 moves between screens, and the single settings window the whole game shares.
 `res://scenes/dev/screen_shots.tscn` writes a PNG of each screen to look at.
 

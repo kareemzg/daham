@@ -64,6 +64,8 @@ func _ready() -> void:
 	settings_window = SettingsWindow.new()
 	settings_window.configure_settings(DISPLAY_FONT, UI_BOLD_FONT)
 	settings_window.visible = false
+	# Opened by the player and closed the same way: a tap on the dark outside.
+	settings_window.dismiss_on_tap = true
 	add_child(settings_window)
 	settings_window.changed.connect(_on_setting_changed)
 	settings_window.close_requested.connect(func() -> void: settings_window.close())
@@ -76,6 +78,7 @@ func _ready() -> void:
 	mansion_window.configure(DISPLAY_FONT, UI_BOLD_FONT)
 	mansion_window.set_crest(UiIcon.Kind.STAR)
 	mansion_window.visible = false
+	mansion_window.dismiss_on_tap = true
 	add_child(mansion_window)
 	var back := mansion_window.add_button(
 		GlossyPanel.Style.BUTTON_CREAM, "عودة إلى الخريطة", UiIcon.Kind.HOME, 92.0
