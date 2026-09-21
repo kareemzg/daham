@@ -153,17 +153,17 @@ func _run() -> void:
 	_check_equal("it is الثريا", shell.mansion_window.title_label.text, "الثريا")
 	_check_equal(
 		"...with what the name means",
-		(shell._star_line.get_meta("meaning") as Label).text, Mansions.meaning_of(3)
+		shell._star_line.meaning_text(), Mansions.meaning_of(3)
 	)
 	_check_equal(
 		"...and the modern name of its brightest star",
-		(shell._star_line.get_meta("latin") as Label).text, "Pleiades"
+		shell._star_line.latin_label().text, "Pleiades"
 	)
 	_check_equal("...and its figure", shell._figure.shape.size(), Mansions.shape_of(3).size())
 	# البلدة is named for being empty of bright stars, so it has no Latin name
 	# and the line must disappear rather than sit there blank.
 	shell.open_mansion(21)
-	_check("البلدة hides the Latin line", not (shell._star_line.get_meta("latin") as Label).visible)
+	_check("البلدة hides the Latin line", not shell._star_line.latin_label().visible)
 	shell.mansion_window.visible = false
 
 	print("=== the collection ===")

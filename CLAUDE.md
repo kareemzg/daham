@@ -34,6 +34,12 @@ Targets iOS, Android, macOS, Windows, Linux, Steam. Desktop is a paid premium bu
 - `scripts/mansions.gd` mirrors `tools/pipeline/mansions.py`. The table is in both because the map draws all twenty-eight and must not read five hundred and sixty level files to learn their names.
 - Amiri's ascenders and descenders run well past the point size. Size a label's box by the line the next one has to clear, not by the font size. This bit twice in one afternoon: the title landed on its subtitle, and the season on its count.
 
+## The twentieth star
+- Finishing a mansion replaces the level-complete window, it does not come after it. Two windows in a row on the same screen kill the moment the whole game is arranged around.
+- The order is the story's: the board goes, the stars light one by one, the lines come in from the right the way the language reads, then the name gathers out of stardust and glows. `MansionFinale` owns it; the card comes after.
+- The name is revealed with `visible_characters` after shaping, never by growing the string. Growing it reshapes the word on every letter and the ones already placed jump between their medial and final forms.
+- Setting a name does not reset its gathering. The layout used to call `setup()`, and `setup()` used to reset, so a resize in the middle of forming put the name back to dust.
+
 ## The daily challenge
 - One level a day, the same one for everybody: `Daily.level_for()` walks the year in big steps from the date, so two days running are nowhere near each other.
 - It costs no lantern however badly it goes, and the window says so in so many words. `GameScreen.daily` is what holds that promise, along with writing nothing to the journey's save and moving to no next level.

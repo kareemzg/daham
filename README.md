@@ -34,7 +34,7 @@ Check it before committing engine changes:
 godot --path . --quit-after 900 res://scenes/dev/game_test.tscn
 ```
 
-165 checks covering level data, Arabic normalisation, the drag path through real
+180 checks covering level data, Arabic normalisation, the drag path through real
 input events, the word rules, the lantern penalty, the hint and shuffle buttons,
 the save round-trip, what a quit leaves behind, the moon filling across levels,
 the four windows and the way out of each, the observer's four tools, the

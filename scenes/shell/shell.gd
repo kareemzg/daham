@@ -33,7 +33,7 @@ var daily_window: DailyWindow
 ## The journey's state, held while the day's challenge is played over it.
 var _journey: Progress = null
 var _figure: FigureView
-var _star_line: Control
+var _star_line: StarLine
 var settings: GameSettings = GameSettings.new()
 
 var showing: int = Screen.TITLE
@@ -77,6 +77,7 @@ func _ready() -> void:
 	game.menu_requested.connect(func() -> void: go_to(Screen.MAP))
 	game.settings_requested.connect(open_settings)
 	game.daily_finished.connect(_on_daily_finished)
+	game.cards_requested.connect(func() -> void: go_to(Screen.CARDS))
 
 	settings_window = SettingsWindow.new()
 	settings_window.configure_settings(DISPLAY_FONT, UI_BOLD_FONT)
@@ -249,10 +250,7 @@ func open_mansion(mansion: int) -> void:
 		Arabic.eastern_digits(Mansions.LEVELS_PER_MANSION),
 	])
 	_figure.shape = Mansions.shape_of(mansion)
-	(_star_line.get_meta("meaning") as Label).text = Mansions.meaning_of(mansion)
-	var latin: Label = _star_line.get_meta("latin")
-	latin.text = Mansions.latin_of(mansion)
-	latin.visible = not latin.text.is_empty()
+	_star_line.show_mansion(mansion)
 	_layout()
 	mansion_window.open()
 
@@ -337,54 +335,16 @@ func _on_shop_chosen(index: int) -> void:
 	map.show_progress(game.level.id, game.coins, game.lanterns, game.moon)
 
 
-func _build_star_line() -> Control:
-	var strip := Control.new()
-	strip.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var tray := Panel.new()
-	tray.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	tray.add_theme_stylebox_override(
-		"panel", Palette.card(Color(Palette.TILE_BORDER, 0.22), Color(0, 0, 0, 0), 30, 0)
-	)
-	strip.add_child(tray)
-	strip.set_meta("tray", tray)
-	var meaning := Label.new()
-	meaning.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	meaning.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	meaning.text_direction = Control.TEXT_DIRECTION_RTL
-	meaning.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	meaning.add_theme_font_override("font", UI_BOLD_FONT)
-	meaning.add_theme_color_override("font_color", Color("4A3A2A"))
-	strip.add_child(meaning)
-	strip.set_meta("meaning", meaning)
-	# The Latin name is Latin: it runs the other way, and forcing it into the
-	# paragraph's direction puts its letters in the wrong order.
-	var latin := Label.new()
-	latin.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	latin.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	latin.text_direction = Control.TEXT_DIRECTION_LTR
-	latin.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	latin.add_theme_font_override("font", UI_BOLD_FONT)
-	latin.add_theme_color_override("font_color", Color("8A7A62"))
-	strip.add_child(latin)
-	strip.set_meta("latin", latin)
-	mansion_window.add_row(strip, 104.0, 14.0)
-	return strip
+func _build_star_line() -> StarLine:
+	var line := StarLine.new()
+	line.configure()
+	mansion_window.add_row(line, StarLine.HEIGHT, 14.0)
+	return line
 
 
 func _layout_star_line(s: float) -> void:
-	if _star_line == null:
-		return
-	var tray: Panel = _star_line.get_meta("tray")
-	tray.position = Vector2.ZERO
-	tray.size = _star_line.size
-	var meaning: Label = _star_line.get_meta("meaning")
-	meaning.position = Vector2(16.0 * s, 8.0 * s)
-	meaning.size = Vector2(_star_line.size.x - 32.0 * s, 48.0 * s)
-	meaning.add_theme_font_size_override("font_size", int(32.0 * s))
-	var latin: Label = _star_line.get_meta("latin")
-	latin.position = Vector2(16.0 * s, 56.0 * s)
-	latin.size = Vector2(_star_line.size.x - 32.0 * s, 40.0 * s)
-	latin.add_theme_font_size_override("font_size", int(26.0 * s))
+	if _star_line != null:
+		_star_line.relayout(s)
 
 
 func _layout() -> void:

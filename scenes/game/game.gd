@@ -23,6 +23,8 @@ signal settings_requested
 ## The day's challenge is over. The shell pays for it and puts the journey
 ## back, because none of it belongs to the journey's own progress.
 signal daily_finished
+## Asked for from the card a finished mansion opens.
+signal cards_requested
 
 enum Result {
 	CORRECT,  ## a grid word, found for the first time
@@ -41,6 +43,9 @@ const LEVEL_REWARD := 45
 ## prices themselves live in `Tools`.
 const HINT_COST := Tools.PRICES[Tools.Kind.SPYGLASS]
 const MOON_REWARD := 30
+## The twentieth star of a mansion. It happens once in twenty levels, so it
+## has to be felt: about nine levels' worth.
+const MANSION_REWARD := 400
 const LANTERN_REFILL_COST := 100
 ## How long one lantern takes to come back on its own.
 const LANTERN_REGEN_SECONDS := 1800
@@ -105,6 +110,13 @@ var next_button: GlossyPanel
 var refill_button: GlossyPanel
 var restart_confirm_button: GlossyPanel
 var hints_window: ShelfWindow
+var finale: MansionFinale
+var mansion_window: SkyWindow
+var next_mansion_button: GlossyPanel
+var _mansion_name: Label
+var _mansion_figure: FigureView
+var _mansion_line: StarLine
+var _mansion_reward: Control
 ## How many of each tool the player owns, bought ahead from the shop.
 var tools: Array[int] = [0, 0, 0, 0]
 ## True while this screen is playing the day's challenge instead of the
@@ -205,6 +217,8 @@ func show_level(new_level: Level) -> void:
 	wrong_streak = 0
 	# A chart left armed must not survive into a level it was not bought for.
 	grid.picking = false
+	if finale != null:
+		finale.visible = false
 	_hide_windows()
 
 	grid.setup(level)
@@ -267,6 +281,12 @@ func _build_chrome() -> void:
 	# Furthest out first: the gear at the very edge, restart inboard of it.
 	settings_button = hud.add_utility(UiIcon.Kind.SETTINGS, _on_settings_pressed, "الإعدادات")
 	restart_button = hud.add_utility(UiIcon.Kind.RESTART, _on_restart_pressed, "إعادة المحاولة")
+
+	# The finale is a moment on the sky, above the board and under the windows:
+	# the card it ends with has to cover it.
+	finale = MansionFinale.new()
+	add_child(finale)
+	finale.finished.connect(_show_mansion_card)
 
 	# The windows are built after every piece of chrome, so a window covers the
 	# HUD. Built before, the chips and buttons would sit over the dim layer and
@@ -340,6 +360,33 @@ func _build_windows() -> void:
 	add_child(hints_window)
 	hints_window.chosen.connect(_on_tool_chosen)
 	hints_window.close_requested.connect(func() -> void: hints_window.close())
+
+	mansion_window = _new_window()
+	mansion_window.set_crest(UiIcon.Kind.STAR)
+	mansion_window.set_title("اكتملت المنزلة")
+	mansion_window.set_body("")
+	_mansion_name = _make_label(DISPLAY_FONT, Palette.GOLD_DEEP)
+	mansion_window.add_row(_mansion_name, 74.0, 6.0)
+	_mansion_figure = FigureView.new()
+	mansion_window.add_row(_mansion_figure, 190.0, 12.0)
+	_mansion_line = StarLine.new()
+	_mansion_line.configure()
+	mansion_window.add_row(_mansion_line, StarLine.HEIGHT, 12.0)
+	_mansion_reward = _build_reward_row(mansion_window)
+	# No separator beside the number, so the middle dot cannot read as a zero.
+	(_mansion_reward.get_meta("label") as Label).text = (
+		"انضمّت إلى بطاقاتك %s" % Arabic.eastern_digits(MANSION_REWARD)
+	)
+	next_mansion_button = mansion_window.add_button(
+		GlossyPanel.Style.BUTTON_EMBER, "إلى المنزلة التالية"
+	)
+	_wire(next_mansion_button, _on_next_pressed)
+	_wire(
+		mansion_window.add_button(
+			GlossyPanel.Style.BUTTON_CREAM, "بطاقات النجوم", UiIcon.Kind.STAR_CARDS, 92.0
+		),
+		func() -> void: cards_requested.emit()
+	)
 	# You opened this one yourself and cancelling is free, so tapping the dark
 	# outside it is the same as pressing cancel. The other two are asking you
 	# something, and a stray tap must not answer for you.
@@ -519,7 +566,7 @@ func _layout() -> void:
 
 func _layout_windows(s: float) -> void:
 	for window: SkyWindow in [
-		complete_window, lanterns_window, restart_window, hints_window
+		complete_window, lanterns_window, restart_window, hints_window, mansion_window
 	]:
 		window.position = Vector2.ZERO
 		window.size = size
@@ -528,6 +575,11 @@ func _layout_windows(s: float) -> void:
 		window.relayout(s)
 
 	_layout_pair_row(_complete_reward, s, 150.0, 62.0, 44.0)
+	_layout_pair_row(_mansion_reward, s, 440.0, 52.0, 30.0)
+	_mansion_name.add_theme_font_size_override("font_size", int(62.0 * s))
+	_mansion_line.relayout(s)
+	finale.position = Vector2.ZERO
+	finale.size = size
 	_layout_pair_row(_clock_strip, s, 330.0, 44.0, 30.0)
 
 ## A tray with a label and an icon centred inside it as one pair: the reward in
@@ -951,7 +1003,7 @@ func _open(window: SkyWindow) -> void:
 
 func _hide_windows() -> void:
 	for window: SkyWindow in [
-		complete_window, lanterns_window, restart_window, hints_window
+		complete_window, lanterns_window, restart_window, hints_window, mansion_window
 	]:
 		if window != null:
 			window.visible = false
@@ -1092,7 +1144,8 @@ func _on_next_pressed() -> void:
 	if _pending_level == null:
 		_say("المستوى التالي غير موجود")
 		return
-	complete_window.close()
+	_hide_windows()
+	finale.visible = false
 	wipe.play()
 	_fade_content(0.0, MeteorWipe.DURATION * 0.45)
 
@@ -1117,6 +1170,9 @@ func _finish_level() -> void:
 	coins += LEVEL_REWARD
 	stars.light_next()
 	_refresh_chrome()
+	if level.index_in_mansion >= STARS_PER_MANSION:
+		_finish_mansion()
+		return
 	complete_window.set_body("%s · النجمة %s من %s" % [
 		level.mansion_name,
 		Arabic.eastern_digits(level.index_in_mansion),
@@ -1127,18 +1183,54 @@ func _finish_level() -> void:
 		"+%s" % Arabic.eastern_digits(LEVEL_REWARD)
 	)
 	_open(complete_window)
-	# The save now points at the next level with a clean slate, so closing the
-	# game here and reopening it starts the next one rather than replaying this.
-	# Moving the screen there needs the level-complete screen first.
-	var next := next_level_id()
-	if not next.is_empty() and not progress_path.is_empty():
-		var ahead := Progress.new()
-		ahead.level_id = next
-		ahead.coins = coins
-		ahead.lanterns = lanterns
-		ahead.moon = moon
-		ahead.write(progress_path)
+	_save_ahead()
 	level_solved.emit()
+
+
+## The save points at the next level with a clean slate, so closing the game at
+## the completion window and reopening it starts the next one rather than
+## replaying this one.
+func _save_ahead() -> void:
+	var next := next_level_id()
+	if next.is_empty() or progress_path.is_empty():
+		return
+	var ahead := Progress.new()
+	ahead.level_id = next
+	ahead.coins = coins
+	ahead.lanterns = lanterns
+	ahead.moon = moon
+	ahead.tools = tools.duplicate()
+	ahead.daily_streak = daily_streak
+	ahead.daily_day = daily_day
+	ahead.write(progress_path)
+
+
+## The twentieth star of a mansion: the board goes, the figure writes itself,
+## and the name gathers out of stardust. The card comes after, not over it.
+func _finish_mansion() -> void:
+	coins += MANSION_REWARD
+	_refresh_chrome()
+	_save_ahead()
+	level_solved.emit()
+	_fade_content(0.0, 0.45)
+	finale.position = Vector2.ZERO
+	finale.size = size
+	finale.play(level.mansion)
+
+
+func _show_mansion_card() -> void:
+	if level == null:
+		return
+	var mansion := level.mansion
+	_mansion_name.text = Mansions.name_of(mansion)
+	# The season first, so the middle dot never lands beside the number.
+	mansion_window.set_body("%s · المنزلة %s" % [
+		Mansions.season_name(Mansions.season_of(mansion)),
+		Arabic.eastern_digits(mansion),
+	])
+	_mansion_figure.shape = Mansions.shape_of(mansion)
+	_mansion_line.show_mansion(mansion)
+	_open(mansion_window)
 
 
 # --- saving ------------------------------------------------------------------

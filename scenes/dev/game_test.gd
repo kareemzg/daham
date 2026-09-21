@@ -191,6 +191,7 @@ func _run() -> void:
 	_check_smooth_edges()
 	await _check_tools()
 	_check_leaving_a_finished_level()
+	_check_mansion_finale()
 
 	_finish()
 
@@ -670,6 +671,74 @@ func _check_leaving_a_finished_level() -> void:
 	_check_equal("leaving it moves on to the next level", game.level.id, "m04-13")
 	_check("...which has still to be played", not game.grid.is_solved())
 	_check("...and no window is in the way", not game.complete_window.visible)
+
+
+## The twentieth star of a mansion, which the game is arranged around.
+func _check_mansion_finale() -> void:
+	print("=== the twentieth star ===")
+	var last := Level.load_from("res://data/levels/m04-20.json")
+	_check("the last level of a mansion loads", last != null)
+	if last == null:
+		return
+	_check_equal("it is the twentieth", last.index_in_mansion, GameScreen.STARS_PER_MANSION)
+
+	game.show_level(last)
+	var purse: int = game.coins
+	var guard := 0
+	while not game.grid.is_solved() and guard < 20:
+		game.use_tool(Tools.Kind.WORD)
+		guard += 1
+	_check("it was solved", game.grid.is_solved())
+	# The moment replaces the usual window rather than coming after it: two
+	# windows in a row on the same screen would kill it.
+	_check("the finale runs", game.finale.visible)
+	_check("...and the usual window stays away", not game.complete_window.visible)
+	_check_equal(
+		"a finished mansion pays more than a level",
+		game.coins, purse + GameScreen.LEVEL_REWARD + GameScreen.MANSION_REWARD
+	)
+
+	game.finale.settle(last.mansion)
+	game._show_mansion_card()
+	game.mansion_window.settle()
+	_check("the card opens after it", game.mansion_window.visible)
+	_check_equal("...naming the mansion", game._mansion_name.text, Mansions.name_of(4))
+	_check("...and what the name means",
+		game._mansion_line.meaning_text() == Mansions.meaning_of(4))
+
+	var asked := [false]
+	game.cards_requested.connect(func() -> void: asked[0] = true)
+	for shell in game.mansion_window.buttons():
+		if (shell.get_meta("label") as Label).text == "بطاقات النجوم":
+			(shell.get_meta("button") as Button).pressed.emit()
+	_check("it offers the collection", asked[0])
+
+	print("=== the name gathers out of stardust ===")
+	var name_view := game.finale.name_view
+	name_view.setup(Mansions.name_of(4), 100)
+	name_view.progress = 0.0
+	_check_equal("nothing shows at the start", name_view.label.visible_characters, 0)
+	name_view.progress = 0.5
+	_check(
+		"half way, half the letters (%s of %s)"
+			% [name_view.label.visible_characters, name_view.label.text.length()],
+		name_view.label.visible_characters > 0
+			and name_view.label.visible_characters < name_view.label.text.length()
+	)
+	# The layout used to call setup(), and setup() used to reset the gathering,
+	# so a resize in the middle of forming put the name back to dust.
+	game.finale.relayout()
+	_check_equal("a resize does not put it back to dust", name_view.progress, 0.5)
+	name_view.progress = 1.0
+	_check_equal(
+		"at the end every letter is there",
+		name_view.label.visible_characters, name_view.label.text.length()
+	)
+	# Revealed after shaping, so the glyphs do not change form as they arrive.
+	_check_equal(
+		"the letters are revealed after shaping",
+		name_view.label.visible_characters_behavior, TextServer.VC_CHARS_AFTER_SHAPING
+	)
 
 
 func _drag_wheel(indices: Array) -> void:

@@ -89,6 +89,38 @@ func _shoot() -> void:
 
 	shell.go_to(Shell.Screen.GAME)
 	await get_tree().create_timer(MeteorWipe.DURATION + 0.2).timeout
+
+	# The twentieth star, at three moments.
+	var finale := shell.game.finale
+	finale.position = Vector2.ZERO
+	finale.size = shell.game.size
+	finale.settle(4)
+	finale._lit = 3.0
+	finale._drawn = 0.35
+	finale.name_view.progress = 0.0
+	finale.name_view.glow = 0.0
+	finale._subtitle.modulate.a = 0.0
+	for node in shell.game._content_nodes():
+		node.modulate.a = 0.0
+	await _save("screen_mansion_drawing")
+
+	finale._lit = 5.0
+	finale._drawn = 1.0
+	finale.name_view.progress = 0.55
+	await _save("screen_mansion_forming")
+
+	finale.settle(4)
+	finale._subtitle.modulate.a = 1.0
+	await _save("screen_mansion_named")
+
+	shell.game._show_mansion_card()
+	shell.game.mansion_window.settle()
+	await _save("screen_mansion_card")
+	shell.game.mansion_window.visible = false
+	finale.visible = false
+	for node in shell.game._content_nodes():
+		node.modulate.a = 1.0
+
 	(shell.game.hint_button.get_meta("button") as Button).pressed.emit()
 	shell.game.hints_window.settle()
 	await _save("screen_hints")
