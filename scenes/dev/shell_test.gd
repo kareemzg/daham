@@ -272,6 +272,40 @@ func _run() -> void:
 	_check_equal("carrying on opens the next level", shell.game.level.id, "m04-13")
 	_check("...which has still to be played", not shell.game.grid.is_solved())
 
+	# The game targets desktop as well as phones, and the project stretches the
+	# viewport sideways on a wide window. Everything is laid out against a
+	# portrait board, so the board is fitted and centred rather than stretched.
+	print("=== a window of another shape ===")
+	var was := shell.size
+	# What a 1440 by 900 desktop window becomes in canvas units.
+	shell.size = Vector2(3072.0, 1920.0)
+	shell._layout()
+	var area := shell.board()
+	_check(
+		"the board keeps its shape (%0.3f)" % (area.size.x / area.size.y),
+		absf(area.size.x / area.size.y - 1080.0 / 1920.0) < 0.002
+	)
+	_check("...and fits inside the window", area.size.x <= 3072.0 and area.size.y <= 1920.0)
+	_check(
+		"...and is centred", absf(area.position.x + area.size.x * 0.5 - 1536.0) < 1.5
+	)
+	_check_equal("the play screen sits on it", shell.game.size, area.size)
+
+	# The wheel places its disc and tiles from its own rect. They used to be
+	# placed from the rect it had a moment before, and on a wide window the
+	# whole wheel was drawn outside the board.
+	var worst := 0.0
+	for child in shell.game.wheel.get_children():
+		var part := child as Control
+		if part == null:
+			continue
+		worst = maxf(worst, -part.position.x)
+		worst = maxf(worst, part.position.x + part.size.x - shell.game.wheel.size.x)
+	_check("the wheel's parts stay on the wheel (worst %0.1f)" % worst, worst <= 1.0)
+
+	shell.size = was
+	shell._layout()
+
 	print("=== when a run of days stands, and when it does not ===")
 	var day := Daily.today()
 	_check_equal("a run never started is dark", Daily.lit(0, 0, day), 0)

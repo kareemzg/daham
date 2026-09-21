@@ -508,12 +508,14 @@ func _layout() -> void:
 	# Laid out bottom-up. The wheel is the fixed point, because it has to sit
 	# under a thumb; everything else stacks upward from it. A Label refuses to
 	# be shorter than its text, so read its height back instead of assuming it.
+	# Size first, then the radii: the wheel places its tiles from its own rect,
+	# and a radius set against last frame's size puts them somewhere else.
+	var span := WHEEL_BODY * s * 2.0
+	wheel.size = Vector2(span, span)
+	wheel.position = Vector2((size.x - span) * 0.5, size.y - span - WHEEL_MARGIN * s)
 	wheel.body_radius = WHEEL_BODY * s
 	wheel.orbit_radius = WHEEL_ORBIT * s
 	wheel.tile_radius = TILE_RADIUS * s
-	var span := wheel.body_radius * 2.0
-	wheel.size = Vector2(span, span)
-	wheel.position = Vector2((size.x - span) * 0.5, size.y - span - WHEEL_MARGIN * s)
 
 	preview.add_theme_font_size_override("font_size", int(PREVIEW_SIZE * s))
 	preview.size = Vector2(size.x, PREVIEW_SIZE * s)

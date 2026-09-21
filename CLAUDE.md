@@ -21,6 +21,12 @@ Targets iOS, Android, macOS, Windows, Linux, Steam. Desktop is a paid premium bu
 - Grid coordinates are logical: `row` grows down, `col` grows LEFTWARD, so column 0 is the rightmost. `WordGrid.cell_rect()` is the only place that turns a column into an x position.
 - A grid is valid only when every maximal run of two or more adjacent cells, across or down, is exactly one of the level's words. The layout search in `tools/pipeline/crossword.py` enforces it.
 
+## The board, and windows that are not phones
+- Everything is laid out against a board of 1080 by 1920. The project stretches the viewport sideways, so on a desktop window the shell fits that board inside the window and centres it rather than letting a screen read its own width: read that way, every screen came out three times too big with half of it off the edge.
+- The sky and the meteor fill the whole window; the screens sit on the board. A meteor stopping at the board's edge would read as a thing on a card rather than a thing in the sky.
+- A node that places its children from its own rect must place them again when that rect changes. The wheel set its radii before its size, placed its tiles against the size it had a moment earlier, and on a wide window drew the whole wheel outside the board. Fixed twice on purpose: the size is set first, and the wheel also re-places on `NOTIFICATION_RESIZED`, so a later caller cannot bring it back by setting things in another order.
+- Landscape is fitted, not designed. A real desktop arrangement, board one side and wheel the other, is still a design nobody has made.
+
 ## Screens
 - `Shell` is the one place the game lives. It owns the sky, the meteor, and anything belonging to no single screen: the settings window and the mansion card. It is the project's main scene.
 - Screens draw no sky of their own. `GameScreen.draws_sky` is what turns its copy off, and the rule behind it is that the sky never transitions: two of them would flicker at the seam.

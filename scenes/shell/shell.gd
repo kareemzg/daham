@@ -144,8 +144,22 @@ func _ready() -> void:
 	_layout()
 
 
+## The screens are laid out against a 1080 by 1920 board. On a window of
+## another shape the board is fitted inside it and centred rather than stretched
+## to fill: the project's own stretch grows the viewport sideways, and a screen
+## that read its own width came out three times too big on a desktop window with
+## half of it off the edge.
+const BOARD := Vector2(1080.0, 1920.0)
+
+
 func _scale() -> float:
-	return maxf(size.x, 1.0) / 1080.0
+	return maxf(minf(size.x / BOARD.x, size.y / BOARD.y), 0.01)
+
+
+## Where the board sits inside the window, and how big it is.
+func board() -> Rect2:
+	var area := BOARD * _scale()
+	return Rect2(((size - area) * 0.5).floor(), area)
 
 
 func _screen(which: int) -> Control:
@@ -348,13 +362,26 @@ func _layout_star_line(s: float) -> void:
 
 
 func _layout() -> void:
-	if sky == null or size.x <= 0.0:
+	# A window with no size yet would give every screen a board a few pixels
+	# across, and the screens would lay themselves out against that.
+	if sky == null or size.x < 2.0 or size.y < 2.0:
 		return
 	var s := _scale()
-	for node: Control in [
-		sky, title, map, cards, game, wipe, settings_window, mansion_window,
-		shop_window, daily_window
-	]:
+	var area := board()
+
+	# The sky and the meteor fill the window: the sky is the room the game is
+	# played in, and a meteor that stopped at the board's edge would read as a
+	# thing on a card rather than a thing in the sky.
+	for node: Control in [sky, wipe]:
+		node.position = Vector2.ZERO
+		node.size = size
+
+	for node: Control in [title, map, cards, game]:
+		node.position = area.position
+		node.size = area.size
+
+	# Windows centre on the whole window, so they are never off to one side.
+	for node: Control in [settings_window, mansion_window, shop_window, daily_window]:
 		node.position = Vector2.ZERO
 		node.size = size
 	settings_window.relayout(s)

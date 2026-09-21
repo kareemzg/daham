@@ -60,7 +60,7 @@ it, so an untouched one shows only «؟».
 godot --path . --quit-after 900 res://scenes/dev/shell_test.tscn
 ```
 
-103 checks over the mansion table, where a save puts the player on the map, the
+108 checks over the mansion table, where a save puts the player on the map, the
 moves between screens, and the single settings window the whole game shares.
 `res://scenes/dev/screen_shots.tscn` writes a PNG of each screen to look at.
 
