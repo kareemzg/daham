@@ -90,6 +90,15 @@ Targets iOS, Android, macOS, Windows, Linux, Steam. Desktop is a paid premium bu
 - The hint opens the next letter instead of selling one, and `_hint_cost` is hidden with it: a price tag over a button that charges nothing is a lie.
 - The rhymes are `saj` in `data/mansion-lore.json`, hand-written and never generated, read through `Mansions.saj_of()`. `AnwaPanel.break_saj()` puts two clauses on a line, because a Label left to wrap itself is the twenty-seven-lines bug.
 
+## القِران — the night the moon lodges in your mansion
+- Not a schedule and not a hash: `Qiran` works out from the date which of the twenty-eight the moon is in, because the moon crosses about 13.18° a night against a mansion's 12.857°. Twenty lines of arithmetic, no data file. Two nights are pinned in the test against the same formulae worked by hand, so a change to the constants cannot pass quietly.
+- The moon does **not** move exactly one mansion a night. It runs from about 11.8° a day at apogee to 15.4° at perigee, so it now and then lingers a night or skips one. A test that demanded one a night was wrong about the sky, not about the code.
+- When the moon lodges in a mansion the player has already lit, that mansion opens tonight **without lanterns**. That is the whole offer and it needs no coins: it is worth most on the night a player has none left, which is also the night the sky is darkest.
+- A conjunction night is played *aside*, exactly like the daily challenge: no star, no coin, no save, no next level. `GameScreen.aside` is `daily or qiran` and every guard that used to name the daily now names it.
+- Most nights the moon is somewhere the player has not reached — a build carries one season of four, so it is open roughly one night in five. The window says so plainly, keeps the name and the figure back exactly as the map does, and names the soonest night that is theirs.
+- The visit never opens on the tenth or the twentieth. The verse and the rhyme belong to the night a mansion was first finished, not to a visit.
+- The map's entry row divides by however many entries there are. It was hard-coded to three for as long as there were three, and adding a fourth put one off the edge and crashed the notes array — both in one change.
+
 ## The daily challenge
 - One level a day, the same one for everybody: `Daily.level_for()` walks the year in big steps from the date, so two days running are nowhere near each other.
 - It costs no lantern however badly it goes, and the window says so in so many words. `GameScreen.daily` is what holds that promise, along with writing nothing to the journey's save and moving to no next level.

@@ -23,6 +23,10 @@ signal settings_requested
 ## The day's challenge is over. The shell pays for it and puts the journey
 ## back, because none of it belongs to the journey's own progress.
 signal daily_finished
+
+## A conjunction night is over. The shell puts the journey back, exactly as it
+## does after the daily challenge.
+signal qiran_finished
 ## Asked for from the card a finished mansion opens.
 signal cards_requested
 
@@ -183,6 +187,16 @@ var tools: Array[int] = [0, 0, 0, 0]
 ## journey. Nothing is written to the journey's save, no lantern is spent
 ## however badly it goes, and finishing reports rather than moving on.
 var daily: bool = false
+## True while the screen is playing a conjunction night: the mansion the moon
+## lodges in, opened without lanterns because the player already lit it.
+var qiran: bool = false
+
+## Anything that is not the journey. Neither the daily challenge nor a
+## conjunction night spends a lantern, writes a save, lights a star or moves to
+## a next level — the shell keeps the journey aside and puts it back after.
+var aside: bool:
+	get:
+		return daily or qiran
 var daily_streak: int = 0
 var daily_day: int = 0
 var _complete_stars: StarDots
@@ -356,7 +370,7 @@ func show_level(new_level: Level) -> void:
 ## on that mansion. Only where somebody has settled that line: a mansion whose
 ## verse is half-copied or unattributed plays its crossword as usual.
 func _begin_bayt() -> void:
-	if daily or level.index_in_mansion != BAYT_STAR:
+	if aside or level.index_in_mansion != BAYT_STAR:
 		return
 	var verse := Mansions.verse_of(level.mansion)
 	if verse.is_empty():
@@ -1131,9 +1145,9 @@ func submit(raw: String) -> int:
 				wrong_streak = 0
 				# The daily challenge costs no lantern, which is a promise its
 				# window makes in so many words.
-				if not daily:
+				if not aside:
 					lanterns = maxi(lanterns - 1, 0)
-				_say("انطفأ فانوس" if not daily else "خمس محاولات خاطئة")
+				_say("انطفأ فانوس" if not aside else "خمس محاولات خاطئة")
 				# The clock starts on the first lantern lost, not on the last:
 				# a player who is down to four is already waiting for one back.
 				if _lantern_clock <= 0:
@@ -1154,7 +1168,7 @@ func submit(raw: String) -> int:
 	# would reopen the game on a solved grid with no window and no way forward.
 	if result != Result.TOO_SHORT and not finished:
 		save()
-	if spent_last and not daily:
+	if spent_last and not aside:
 		show_out_of_lanterns()
 	word_resolved.emit(word, result)
 	return result
@@ -1380,7 +1394,7 @@ func _on_menu_pressed() -> void:
 ## leaving from. False at the end of the year, and on a level still being
 ## played, so calling it twice costs nothing.
 func move_on_if_finished() -> bool:
-	if daily or level == null or not grid.is_solved():
+	if aside or level == null or not grid.is_solved():
 		return false
 	var next := next_level_id()
 	if next.is_empty():
@@ -1499,6 +1513,12 @@ func _finish_level() -> void:
 		# Nothing here belongs to the journey: no reward, no star, no save, and
 		# no next level. The shell settles the day and puts the journey back.
 		daily_finished.emit()
+		return
+	if qiran:
+		# A visit, not a level. The mansion was finished long ago, so there is
+		# no star to light and no coin to pay; what the night gives is that it
+		# can be played at all when the lanterns are out.
+		qiran_finished.emit()
 		return
 	coins += LEVEL_REWARD
 	stars.light_next()
@@ -1663,7 +1683,7 @@ func restore(saved: Progress) -> void:
 
 
 func save() -> void:
-	if daily:
+	if aside:
 		return
 	if progress_path.is_empty() or level == null:
 		return

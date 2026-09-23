@@ -448,6 +448,8 @@ func _run() -> void:
 
 	await _check_darkness()
 
+	await _check_qiran()
+
 	_check_separators()
 
 	_finish()
@@ -456,6 +458,115 @@ func _run() -> void:
 ## Same rule as the slice test, over the screens this one builds: the title
 ## carries «المنزلة ٤ — الدبران · النجمة ١٢ من ٢٠», and the map its own lines.
 ## Every screen the shell made is still a child here, shown or hidden.
+## The moon lodges in a new mansion every night, and the arithmetic says which.
+func _check_qiran() -> void:
+	print("=== the moon lodges in a mansion every night ===")
+	# Two nights worked out by hand against the same formulae, so a change to
+	# the constants cannot pass quietly.
+	var night_in_saad := _day_of(2026, 9, 23)
+	var night_in_sharatan := _day_of(2026, 9, 28)
+	_check_equal("23 Sep 2026 is سعد السعود", Qiran.mansion_on(night_in_saad), 24)
+	_check_equal("28 Sep 2026 is الشرطان", Qiran.mansion_on(night_in_sharatan), 1)
+	_check_equal("...and the moon is all but full then (%d%%)"
+		% int(round(Qiran.illumination(night_in_sharatan) * 100.0)),
+		int(round(Qiran.illumination(night_in_sharatan) * 100.0)), 97)
+	_check("...and emptying, not filling", not Qiran.waxing(night_in_sharatan))
+
+	# The whole reason they are called the moon's mansions. Not quite one a
+	# night: the moon runs from about 11.8° a day at its furthest to 15.4° at
+	# its nearest, against a mansion of 12.86°, so it now and then lingers a
+	# night or skips one. What must hold is that it works its way round.
+	var lingered := 0
+	var longest := 0
+	var run := 0
+	var visited := {}
+	for ahead in 28:
+		var here := Qiran.mansion_on(night_in_saad + ahead)
+		if ahead > 0 and here == Qiran.mansion_on(night_in_saad + ahead - 1):
+			lingered += 1
+			run += 1
+			longest = maxi(longest, run)
+		else:
+			run = 0
+		visited[here] = true
+	_check("it moves on nearly every night (%d lingered of 28)" % lingered, lingered <= 3)
+	_check("...and never for more than one night over (%d)" % longest, longest <= 1)
+	_check("...and works round the year (%d of 28)" % visited.size(), visited.size() >= 26)
+
+	print("=== but only a mansion you have lit opens ===")
+	# The save this test runs on sits at m04-12, so three mansions are finished.
+	_check_equal("three mansions are behind the player", shell.mansions_reached(), 3)
+	_check("سعد السعود is not one of them",
+		not Qiran.open_tonight(night_in_saad, 3))
+	_check("الشرطان is", Qiran.open_tonight(night_in_sharatan, 3))
+	var soon := Qiran.next_open(night_in_saad, 3)
+	_check_equal("...and it is the next one the player can take",
+		int(soon.get("mansion", 0)), 1)
+	_check_equal("...five nights off", int(soon.get("nights", -1)), 5)
+	_check("a player who has finished nothing is told so",
+		Qiran.next_open(night_in_saad, 0).is_empty())
+
+	# The night's level is never the verse or the rhyme: those belong to the
+	# night the mansion was first finished.
+	for ahead in 28:
+		var id := Qiran.level_for(night_in_saad + ahead, 1)
+		var index := Mansions.parse(id).y
+		if index == 10 or index == 20:
+			_check("the visit never opens on the verse or the rhyme (%s)" % id, false)
+			break
+
+	print("=== a night played aside changes nothing ===")
+	shell.open_qiran(night_in_saad)
+	_check("the window is up", shell.qiran_window.visible)
+	_check("...and offers no night, only the way out",
+		shell.qiran_window._play_label.text == "أكملِ الرحلة")
+	_check("...which is a button that works",
+		not shell.qiran_window._play_button.disabled)
+	_check("...and pressing it starts no night", not shell.start_qiran(night_in_saad))
+	_check("...and keeps the name back", shell.qiran_window._where.text == "منزلةٌ لم تبلغْها")
+	_check("...showing no figure either", not shell.qiran_window.figure.visible)
+	shell.qiran_window.visible = false
+
+	shell.open_qiran(night_in_sharatan)
+	_check("on its own night the mansion is named",
+		shell.qiran_window._where.text == Mansions.name_of(1))
+	_check("...and the figure is shown", shell.qiran_window.figure.visible)
+	_check("...and it can be entered", not shell.qiran_window._play_button.disabled)
+
+	var journey := shell.game.level.id
+	var purse: int = shell.game.coins
+	var lamps: int = shell.game.lanterns
+	_check("the night starts", shell.start_qiran(night_in_sharatan))
+	await _arrive()
+	_check("it is a conjunction night", shell.game.qiran)
+	_check("...in tonight's mansion (%s)" % shell.game.level.id,
+		Mansions.parse(shell.game.level.id).x == 1)
+
+	# Five wrong guesses, which on the journey would cost a lantern.
+	for i in GameScreen.WRONG_STREAK_COST:
+		shell.game.submit("ززز")
+	_check_equal("no lantern is spent, however badly it goes",
+		shell.game.lanterns, lamps)
+
+	shell.game.qiran_finished.emit()
+	await _arrive()
+	_check_equal("the journey comes back where it was", shell.game.level.id, journey)
+	_check_equal("...with its coins untouched", shell.game.coins, purse)
+	_check_equal("...and its lanterns", shell.game.lanterns, lamps)
+	_check("...and the night is over", not shell.game.qiran)
+	shell.qiran_window.visible = false
+	shell.go_to(Shell.Screen.MAP)
+	await _arrive()
+
+
+## Days since the epoch, the way `Daily.today()` counts them.
+func _day_of(year: int, month: int, day: int) -> int:
+	return int(Time.get_unix_time_from_datetime_dict({
+		"year": year, "month": month, "day": day,
+		"hour": 0, "minute": 0, "second": 0,
+	}) / 86400.0)
+
+
 ## There is no losing in this game, only light that lessens.
 func _check_darkness() -> void:
 	print("=== the lanterns take the light with them ===")

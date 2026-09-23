@@ -30,6 +30,8 @@ var settings_window: SettingsWindow
 var mansion_window: SkyWindow
 var shop_window: ShelfWindow
 var daily_window: DailyWindow
+## Which mansion the moon is in tonight, and whether it is the player's.
+var qiran_window: QiranWindow
 ## Asked once, the first time the lanterns run out. See `_ask_about_notice()`.
 var notify_window: SkyWindow
 var _owed_notice_question: bool = false
@@ -65,6 +67,7 @@ func _ready() -> void:
 	map.shop_requested.connect(open_shop)
 	map.cards_requested.connect(func() -> void: go_to(Screen.CARDS))
 	map.daily_requested.connect(open_daily)
+	map.qiran_requested.connect(open_qiran)
 
 	cards = StarCardsScreen.new()
 	cards.visible = false
@@ -80,6 +83,7 @@ func _ready() -> void:
 	game.menu_requested.connect(func() -> void: go_to(Screen.MAP))
 	game.settings_requested.connect(open_settings)
 	game.daily_finished.connect(_on_daily_finished)
+	game.qiran_finished.connect(_on_qiran_finished)
 	game.cards_requested.connect(func() -> void: go_to(Screen.CARDS))
 	# The sky is the shell's, so the darkness the lanterns cause has to come
 	# across as a message. It follows the player between screens, because it
@@ -169,6 +173,19 @@ func _ready() -> void:
 	add_child(daily_window)
 	daily_window.play_requested.connect(start_daily)
 	daily_window.close_requested.connect(func() -> void: daily_window.close())
+
+	qiran_window = QiranWindow.new()
+	qiran_window.configure_qiran(DISPLAY_FONT, UI_BOLD_FONT)
+	qiran_window.visible = false
+	qiran_window.dismiss_on_tap = true
+	add_child(qiran_window)
+	# On a night that is not the player's the same button reads «أكملِ الرحلة»
+	# and does that: a button the player can press and that does nothing is
+	# worse than one that is greyed.
+	qiran_window.play_requested.connect(func() -> void:
+		if not start_qiran():
+			qiran_window.close())
+	qiran_window.close_requested.connect(func() -> void: qiran_window.close())
 
 	wipe = MeteorWipe.new()
 	add_child(wipe)
@@ -358,6 +375,52 @@ func open_daily() -> void:
 	daily_window.open()
 
 
+## How many mansions the player has finished, which is what decides whether
+## tonight's conjunction is theirs to enter.
+func mansions_reached() -> int:
+	if game.level == null:
+		return 0
+	return maxi(Mansions.parse(game.level.id).x - 1, 0)
+
+
+## `day` is days since the epoch, as `Daily.today()` counts them. It is a
+## parameter so a test can stand on a night the sky is not on tonight; nothing
+## in the game passes it.
+func open_qiran(day: int = -1) -> void:
+	if day < 0:
+		day = Daily.today()
+	qiran_window.show_night(day, mansions_reached())
+	_layout()
+	qiran_window.open()
+
+
+## A night in the mansion the moon lodges in. The journey is kept aside exactly
+## as it is for the daily challenge; the difference is that nothing is paid and
+## nothing is owed, because the only thing on offer is that the mansion opens
+## at all when the lanterns are out.
+func start_qiran(day: int = -1) -> bool:
+	if day < 0:
+		day = Daily.today()
+	if not Qiran.open_tonight(day, mansions_reached()):
+		return false
+	var level := game.level_by_id(Qiran.level_for(day, Qiran.mansion_on(day)))
+	if level == null:
+		return false
+	qiran_window.close()
+	_journey = game.capture()
+	game.qiran = true
+	game.show_level(level)
+	go_to(Screen.GAME)
+	return true
+
+
+func _on_qiran_finished() -> void:
+	game.qiran = false
+	_put_journey_back()
+	go_to(Screen.MAP)
+	open_qiran()
+
+
 ## Starts the day's level over the journey, keeping the journey aside.
 func start_daily() -> bool:
 	var level := game.level_by_id(Daily.level_for(Daily.today()))
@@ -385,19 +448,26 @@ func _on_daily_finished() -> void:
 		game.lanterns = mini(game.lanterns + 1, GameScreen.LANTERNS_MAX)
 
 	game.daily = false
-	if _journey != null:
-		var back := game.level_by_id(_journey.level_id)
-		if back != null:
-			_journey.coins = game.coins
-			_journey.lanterns = game.lanterns
-			_journey.daily_streak = game.daily_streak
-			_journey.daily_day = game.daily_day
-			game.show_level(back)
-			game.restore(_journey)
-		_journey = null
-	game.save()
+	_put_journey_back()
 	go_to(Screen.MAP)
 	open_daily()
+
+
+## Puts the journey back exactly where it was. Coins, the lanterns and the run
+## carry over from whatever was played aside; nothing else does.
+func _put_journey_back() -> void:
+	if _journey == null:
+		return
+	var back := game.level_by_id(_journey.level_id)
+	if back != null:
+		_journey.coins = game.coins
+		_journey.lanterns = game.lanterns
+		_journey.daily_streak = game.daily_streak
+		_journey.daily_day = game.daily_day
+		game.show_level(back)
+		game.restore(_journey)
+	_journey = null
+	game.save()
 
 
 func open_shop() -> void:
@@ -457,7 +527,8 @@ func _layout() -> void:
 
 	# Windows centre on the whole window, so they are never off to one side.
 	for node: Control in [
-		settings_window, mansion_window, shop_window, daily_window, notify_window
+		settings_window, mansion_window, shop_window, daily_window, notify_window,
+		qiran_window,
 	]:
 		node.position = Vector2.ZERO
 		node.size = size
@@ -466,4 +537,5 @@ func _layout() -> void:
 	_layout_star_line(s)
 	shop_window.relayout(s)
 	daily_window.relayout(s)
+	qiran_window.relayout(s)
 	notify_window.relayout(s)

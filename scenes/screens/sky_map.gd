@@ -19,6 +19,7 @@ signal play_requested
 signal settings_requested
 signal mansion_opened(mansion: int)
 signal daily_requested
+signal qiran_requested
 signal cards_requested
 signal shop_requested
 
@@ -144,6 +145,7 @@ func _build() -> void:
 		func() -> void: play_requested.emit())
 
 	_entry(UiIcon.Kind.DIPPER, "التحدي اليومي", daily_requested)
+	_entry(UiIcon.Kind.MOON, "القِران", qiran_requested)
 	_entry(UiIcon.Kind.STAR_CARDS, "بطاقات النجوم", cards_requested)
 	_entry(UiIcon.Kind.SHOP, "المتجر", shop_requested)
 
@@ -258,8 +260,19 @@ func _refresh() -> void:
 	# The numbers under each entry. The daily streak is not tracked yet, so it
 	# reads zero rather than borrowing the design's example.
 	var finished := current_mansion - 1
+	# In the order the entries were added: the day, the night, the cards, the
+	# shop. One short line each, and the conjunction's is the only one the sky
+	# decides.
+	var day := Daily.today()
+	var soon := Qiran.next_open(day, finished)
+	var tonight := "—"
+	if Qiran.open_tonight(day, finished):
+		tonight = "الليلة"
+	elif not soon.is_empty():
+		tonight = "بعد %s ليال" % Arabic.eastern_digits(int(soon["nights"]))
 	var notes := [
 		"%s من %s" % [Arabic.eastern_digits(0), Arabic.eastern_digits(7)],
+		tonight,
 		Arabic.eastern_digits(finished),
 		"منظار · أسطرلاب",
 	]
@@ -304,7 +317,12 @@ func _layout() -> void:
 	var floor_y := size.y - 60.0 * s
 	var entry_height := 236.0 * s
 	var entry_gap := 25.0 * s
-	var entry_width := (size.x - margin * 2.0 - entry_gap * 2.0) / 3.0
+	# Divided by however many there are. It was three for as long as there were
+	# three, and adding a fourth put it off the edge.
+	var count := maxf(float(_entries.size()), 1.0)
+	var entry_width := (
+		size.x - margin * 2.0 - entry_gap * (count - 1.0)
+	) / count
 	var entry_top := floor_y - entry_height
 	for i in _entries.size():
 		_place_entry(_entries[i],

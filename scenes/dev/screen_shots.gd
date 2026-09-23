@@ -78,6 +78,21 @@ func _shoot() -> void:
 	await _save("screen_daily_week")
 	shell.daily_window.visible = false
 
+	# The conjunction, on a night that is the player's and on one that is not.
+	# Both are real nights: 28 Sep 2026 puts the moon in الشرطان, 23 Sep in
+	# سعد السعود, which this save has not reached.
+	shell.open_qiran(int(Time.get_unix_time_from_datetime_dict({
+		"year": 2026, "month": 9, "day": 28,
+		"hour": 0, "minute": 0, "second": 0}) / 86400.0))
+	shell.qiran_window.settle()
+	await _save("screen_qiran_open")
+	shell.open_qiran(int(Time.get_unix_time_from_datetime_dict({
+		"year": 2026, "month": 9, "day": 23,
+		"hour": 0, "minute": 0, "second": 0}) / 86400.0))
+	shell.qiran_window.settle()
+	await _save("screen_qiran_far")
+	shell.qiran_window.visible = false
+
 	shell.go_to(Shell.Screen.CARDS)
 	await get_tree().create_timer(MeteorWipe.DURATION + 0.2).timeout
 	await _save("screen_cards")
