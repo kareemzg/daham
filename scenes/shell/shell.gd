@@ -34,6 +34,9 @@ var daily_window: DailyWindow
 var qiran_window: QiranWindow
 ## The way in, over everything, once in a player's life.
 var cold_open: ColdOpen
+## The workbench for reaching any moment without playing to it. Null in a
+## release build, where `AdminPanel.attach()` declines to make one.
+var admin: AdminPanel
 ## Asked once, the first time the lanterns run out. See `_ask_about_notice()`.
 var notify_window: SkyWindow
 var _owed_notice_question: bool = false
@@ -206,6 +209,8 @@ func _ready() -> void:
 	_refresh_title()
 	_layout()
 	_open_cold()
+	# Debug builds only; it returns null in a release and nothing is built.
+	admin = AdminPanel.attach(self)
 
 
 ## A first run opens on the dark sky rather than on the title. Everything else

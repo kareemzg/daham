@@ -68,6 +68,13 @@ func _shoot() -> void:
 
 	await _save("screen_title")
 
+	# The workbench, open. Debug builds only, so this shot exists and the
+	# release the player gets has no such thing in it.
+	if shell.admin != null:
+		shell.admin._sheet.visible = true
+		await _save("screen_admin")
+		shell.admin._sheet.visible = false
+
 	shell.go_to(Shell.Screen.MAP)
 	await get_tree().create_timer(MeteorWipe.DURATION + 0.2).timeout
 	await _save("screen_map")

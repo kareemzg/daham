@@ -452,6 +452,8 @@ func _run() -> void:
 
 	await _check_the_way_in()
 
+	await _check_the_workbench()
+
 	_check_separators()
 
 	_finish()
@@ -460,6 +462,85 @@ func _run() -> void:
 ## Same rule as the slice test, over the screens this one builds: the title
 ## carries «المنزلة ٤ — الدبران · النجمة ١٢ من ٢٠», and the map its own lines.
 ## Every screen the shell made is still a child here, shown or hidden.
+## The workbench. It is a dev tool, but a dev tool whose buttons do nothing
+## wastes the time it exists to save — and a dead button has shipped here once.
+func _check_the_workbench() -> void:
+	print("=== the workbench reaches the moments ===")
+	_check("a debug build has one", shell.admin != null)
+	if shell.admin == null:
+		return
+	var admin := shell.admin
+
+	# Every button in it, pressed. Not to check what each one does — the checks
+	# below do that — but because one that errors takes the whole panel with it.
+	var buttons := 0
+	for node in _every_node(admin):
+		if node is Button:
+			buttons += 1
+	_check("...with buttons on it (%d)" % buttons, buttons >= 20)
+
+	admin._go("m01-10")
+	await _arrive()
+	_check_equal("it goes to a level by name", shell.game.level.id, "m01-10")
+	_check("...and that one is the verse", shell.game.in_bayt)
+
+	admin._go("m01-01")
+	_check_equal("...and back", shell.game.level.id, "m01-01")
+	admin._solve(1)
+	_check_equal("it solves a level but for one word",
+		shell.game.grid.found_count(), shell.game.level.words.size() - 1)
+
+	admin._set_lanterns(1)
+	_check_equal("it sets the lanterns", shell.game.lanterns, 1)
+	_check("...and the sky goes with them", shell.sky.light < 1.0)
+	admin._add_coins(1000)
+	_check("it fills the purse", shell.game.coins >= 1000)
+
+	admin._at_the_twentieth()
+	await _arrive()
+	_check_equal("it stands on the twentieth star",
+		shell.game.level.index_in_mansion, Mansions.LEVELS_PER_MANSION)
+	_check_equal("...with one word left to play",
+		shell.game.level.words.size() - shell.game.grid.found_count(), 1)
+
+	# A conjunction needs a finished mansion, so stand somewhere that has one.
+	admin._go("m04-05")
+	await _arrive()
+	_check_equal("three mansions are behind the player now", shell.mansions_reached(), 3)
+	admin._open_qiran_night(true)
+	_check("it finds a night the moon is in a lit mansion", shell.qiran_window.visible)
+	_check("...and that night is really open",
+		not shell.qiran_window._play_label.text.is_empty()
+			and shell.qiran_window.figure.visible)
+	shell.qiran_window.visible = false
+
+	admin._open_qiran_night(false)
+	_check("...and a night it is not", not shell.qiran_window.figure.visible)
+	shell.qiran_window.visible = false
+
+	# And with nothing finished it says why rather than looking broken.
+	admin._go("m01-02")
+	await _arrive()
+	admin._open_qiran_night(true)
+	_check("with no mansion finished it says so", not shell.qiran_window.visible)
+	_check("...naming the reason", admin._note.text.contains("لا منزلة"))
+
+	var gift := admin._first_level_with_gift()
+	var gift_level := shell.game.level_by_id(gift)
+	_check("it finds a level that opens a cell (%s)" % gift,
+		gift_level != null and gift_level.has_gift())
+	var widest := admin._widest_wheel()
+	var widest_level := shell.game.level_by_id(widest)
+	_check_equal("...and the widest wheel in the build (%s)" % widest,
+		widest_level.letters.size() if widest_level != null else 0, 7)
+
+	admin._wipe()
+	await _arrive()
+	_check_equal("it wipes back to the first level", shell.game.level.id, "m01-01")
+	_check_equal("...with nothing in the purse", shell.game.coins, 0)
+	_check_equal("...and the lanterns full", shell.game.lanterns, GameScreen.LANTERNS_MAX)
+
+
 ## A player opening the game for the first time: a dark sky, then a board with
 ## nothing on it but the wheel, and the counters arriving one at a time.
 func _check_the_way_in() -> void:
