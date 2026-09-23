@@ -1,7 +1,7 @@
 extends Control
 ## Drives the way in and checks it.
 ##
-##   godot --path . --quit-after 900 res://scenes/dev/shell_test.tscn
+##   godot --path . res://scenes/dev/shell_test.tscn
 ##
 ## Exits 0 when every check passes, 1 otherwise, so it can gate a commit.
 
@@ -446,7 +446,41 @@ func _run() -> void:
 	_check_equal("...and returns a lantern", shell.game.lanterns, 3)
 	shell.daily_window.visible = false
 
+	_check_separators()
+
 	_finish()
+
+
+## Same rule as the slice test, over the screens this one builds: the title
+## carries «المنزلة ٤ — الدبران · النجمة ١٢ من ٢٠», and the map its own lines.
+## Every screen the shell made is still a child here, shown or hidden.
+func _check_separators() -> void:
+	print("=== no dot beside a number ===")
+	var bad := PackedStringArray()
+	for node in _every_node(self):
+		var texts := PackedStringArray()
+		if node is Label:
+			texts.append((node as Label).text)
+		elif node is Button:
+			texts.append((node as Button).text)
+		if node is Control:
+			texts.append((node as Control).tooltip_text)
+		for text in texts:
+			var hit := Arabic.dot_beside_digit(text)
+			if not hit.is_empty():
+				bad.append("%s «%s»" % [node.name, hit])
+	_check(
+		"no dot lands beside a digit (%s)"
+			% ("none" if bad.is_empty() else ", ".join(bad)),
+		bad.is_empty()
+	)
+
+
+func _every_node(root: Node) -> Array[Node]:
+	var out: Array[Node] = [root]
+	for child in root.get_children():
+		out.append_array(_every_node(child))
+	return out
 
 
 func _finish() -> void:

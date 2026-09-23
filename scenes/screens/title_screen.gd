@@ -69,7 +69,7 @@ func _build() -> void:
 	_round_button(UiIcon.Kind.COIN, "المتجر", shop_requested)
 
 	_version = _label(UI_BOLD_FONT, Color("5E7A8C"))
-	_version.text = "نسخة ٠٫١ · عنوان مؤقّت"
+	_version.text = "نسخة ٠٫١ — عنوان مؤقّت"
 	add_child(_version)
 
 
@@ -100,7 +100,7 @@ func show_place(mansion: int, index_in_mansion: int) -> void:
 		_where.text = "سماء جديدة"
 		(play_button.get_meta("label") as Label).text = "ابدأ"
 		return
-	_where.text = "المنزلة %s · %s · النجمة %s من %s" % [
+	_where.text = "المنزلة %s — %s · النجمة %s من %s" % [
 		Arabic.eastern_digits(mansion),
 		Mansions.name_of(mansion),
 		Arabic.eastern_digits(index_in_mansion),

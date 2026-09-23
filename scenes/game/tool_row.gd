@@ -70,7 +70,7 @@ func configure(kind: int, title: String, what: String, cost: int) -> void:
 	var button := Button.new()
 	button.flat = true
 	button.focus_mode = Control.FOCUS_ALL
-	button.tooltip_text = "%s · %s" % [title, Arabic.eastern_digits(cost)]
+	button.tooltip_text = "%s — %s" % [title, Arabic.eastern_digits(cost)]
 	button.pressed.connect(func() -> void: pressed.emit())
 	button.button_down.connect(func() -> void: price.set_pressed(true))
 	button.button_up.connect(func() -> void: price.set_pressed(false))

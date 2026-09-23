@@ -31,10 +31,10 @@ moon meter and star band, on the sample level `data/levels/m04-12.json`.
 Check it before committing engine changes:
 
 ```bash
-godot --path . --quit-after 900 res://scenes/dev/game_test.tscn
+godot --path . res://scenes/dev/game_test.tscn
 ```
 
-180 checks covering level data, Arabic normalisation, the drag path through real
+221 checks covering level data, Arabic normalisation, the drag path through real
 input events, the word rules, the lantern penalty, the hint and shuffle buttons,
 the save round-trip, what a quit leaves behind, the moon filling across levels,
 the four windows and the way out of each, the observer's four tools, the
@@ -99,10 +99,10 @@ still dark and nameless. Learning a mansion's name is the reward for finishing
 it, so an untouched one shows only «؟».
 
 ```bash
-godot --path . --quit-after 900 res://scenes/dev/shell_test.tscn
+godot --path . res://scenes/dev/shell_test.tscn
 ```
 
-108 checks over the mansion table, where a save puts the player on the map, the
+128 checks over the mansion table, where a save puts the player on the map, the
 moves between screens, and the single settings window the whole game shares.
 `res://scenes/dev/screen_shots.tscn` writes a PNG of each screen to look at.
 
