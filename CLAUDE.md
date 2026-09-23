@@ -142,6 +142,7 @@ Targets iOS, Android, macOS, Windows, Linux, Steam. Desktop is a paid premium bu
 - A found bonus word is never written on screen after the drag ends. The player just spelled it; what they need to see is its effect.
 
 ## Look
+- `GlossyPanel.make_button()` anchors its Button to the panel, so a caller cannot ship one with no hit area. It used to leave sizing to the caller; every caller did it by hand and the first that forgot put a dead button on the first screen a player ever sees. No test caught it because the tests emitted the signal — emitting the signal is not testing the button.
 - Every tile, chip, button, well and the wheel disc is a `GlossyPanel`: one `ColorRect` carrying `assets/ui/glossy_panel.gdshader`. Add a preset there rather than drawing a new shape.
 - A `StyleBoxFlat` cannot hold a gradient, which is why the shader exists. Do not go back to flat boxes for anything the player sees.
 - A shadow belongs in the panel's own shadow quad, which hangs outside the node's rect. Never grow a node to make room for a shadow: the layout reads those rects.

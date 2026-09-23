@@ -483,6 +483,14 @@ func _check_the_way_in() -> void:
 		fresh.sky.light < GameScreen.LANTERN_LIGHT[0])
 	_check_equal("...on the first level of the first mansion",
 		fresh.game.level.id, "m01-01")
+	# Tapped, not called: the first button a player ever presses shipped with
+	# no hit area, because `make_button` left sizing to the caller and this
+	# caller forgot. Checking the signal fires is not checking the button works.
+	var hit: Button = fresh.cold_open.begin_button.get_meta("button")
+	_check("the button that begins it has a hit area (%0.0f x %0.0f)"
+		% [hit.size.x, hit.size.y], hit.size.x > 100.0 and hit.size.y > 40.0)
+	_check("...and so does the one that skips it",
+		fresh.cold_open.skip_button.size.x > 100.0)
 
 	fresh.cold_open.begin_requested.emit()
 	await get_tree().create_timer(MeteorWipe.DURATION + 0.25).timeout

@@ -116,6 +116,9 @@ func _layout() -> void:
 	var label: Label = begin_button.get_meta("label")
 	label.position = Vector2.ZERO
 	label.size = begin_button.size
+	var button: Button = begin_button.get_meta("button")
+	button.position = Vector2.ZERO
+	button.size = begin_button.size
 	label.add_theme_font_size_override("font_size", int(42.0 * s))
 
 	var skip_shell: Control = get_meta("skip_shell")
