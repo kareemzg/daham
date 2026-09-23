@@ -109,6 +109,22 @@ func _shoot() -> void:
 	shell.game.lanterns = 3
 	shell.game._refresh_chrome()
 
+	# The tenth star: the mansion's line, scattered and half put back.
+	var verse := Level.load_from("res://data/levels/m01-10.json")
+	if verse != null:
+		shell.game.progress_path = ""
+		shell.game.show_level(verse)
+		await _save("screen_bayt")
+		for i in 5:
+			shell.game.bayt.reveal_next()
+		await _save("screen_bayt_half")
+		var guard := 0
+		while not shell.game.bayt.solved and guard < 40:
+			shell.game.bayt.reveal_next()
+			guard += 1
+		shell.game.complete_window.visible = false
+		await _save("screen_bayt_done")
+
 	# The rhyme, which comes before the twentieth star is drawn. Driven through
 	# `_begin_anwa()` rather than posed, so the shot is the real screen.
 	var last := Level.load_from("res://data/levels/m04-20.json")

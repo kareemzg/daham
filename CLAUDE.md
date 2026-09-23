@@ -73,6 +73,15 @@ Targets iOS, Android, macOS, Windows, Linux, Steam. Desktop is a paid premium bu
 - A lantern comes back in ten minutes, not the half hour it was. The darkness is the pressure now; a wait long enough to send the player away is a different kind of pressure and not the one this game wants. The out-of-lanterns window reads the number off `LANTERN_REGEN_SECONDS` rather than spelling it in prose, so the two can never disagree.
 - The notification is asked about once, the first time the lanterns run out — not at a first launch, where the question would mean nothing. It waits for the out-of-lanterns window to close, because two windows at once is one of them unread. `GameSettings.notify` and `notify_asked` hold the answer; scheduling the notification needs a platform plugin the project does not carry, so what is stored is the promise.
 
+## The tenth star, a line of verse
+- Once in every mansion the grid stands aside for the line the tradition hangs on that mansion. `BAYT_STAR` is the tenth, so a mansion reads as nine crosswords, a breath, nine more, then the rhyme and the sky drawing.
+- It is tapped, not dragged, and the wheel is not merely idle but **absent**: a disc sitting under a board nobody drags on would be furniture. `show_level()` puts the wheel, the preview, its pill and the shuffle button back, because a mode that hides chrome must be the thing that shows it again.
+- A tap sends a word to the *next* empty place, not to its right one. That is the whole puzzle: the order. A tap on a placed word sends it back.
+- When every place is full the line is read. The words that sit where they belong stay and only the rest return — a player who has half the order right should be told which half. Nothing is lost: a wrong arrangement costs no lantern, because what is being asked for is a reading and not a guess.
+- The poet is the reward, so «؟» stands where the name will go until the line is right. This is the same rule as a mansion's name on the map.
+- `verse` in `data/mansion-lore.json` is the line split into a poet and two hemistichs; `bayt` beside it is Kareem's hand-written prose and stays untouched. A mansion whose line is half-copied or unattributed simply has no `verse`, and its tenth star is an ordinary grid — the same guard as `ANWA_MAX_LETTERS`. Four of the eight written mansions are still missing one.
+- The scatter is seeded from the level's id, so the same verse is broken the same way twice running.
+
 ## The twentieth star, before the sky draws
 - الأنواء is the mansion's ending, not a mode scattered through the levels. The last grid of a mansion is followed by the rhyme, the player writes the mansion's name off a wheel that carries nothing but its letters, and only then does `MansionFinale` draw the figure and say the name back in gold. Three acts, and the middle one is the player's.
 - It is not a riddle and was never meant to be. Every rhyme opens with the mansion's own name — «إذا طلع الشرطان، استوى الزمان» — so hiding the name from the caption would hide nothing. What the ceremony is for is the writing.

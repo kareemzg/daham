@@ -87,6 +87,9 @@ const WHEEL_LIGHT := [0.58, 0.74, 0.88, 1.0, 1.0, 1.0]
 const ANWA_MAX_LETTERS := 7
 ## How long the finished name is left on screen before the sky takes over.
 const ANWA_HOLD := 0.9
+## Which star of a mansion stands aside for its verse. The middle one, so a
+## mansion reads as nine crosswords, a breath, nine more, then the rhyme.
+const BAYT_STAR := 10
 
 ## Design metrics, in the 1080-wide reference space; scaled by `_scale`.
 const REF_WIDTH := 1080.0
@@ -154,6 +157,11 @@ var hints_window: ShelfWindow
 var finale: MansionFinale
 ## The twentieth star's ceremony: the rhyme, and the name written by hand.
 var anwa: AnwaPanel
+## The tenth star: the mansion's own line of verse, taken apart.
+var bayt: BaytPanel
+## True while the verse stands in the grid's place. The wheel is not on screen
+## at all then: this mode is tapped, not dragged.
+var in_bayt: bool = false
 ## True between the last grid of a mansion and its finale. While it is set
 ## the wheel spells the mansion's name and nothing else, and `submit()`
 ## measures a guess against that name instead of against the level.
@@ -302,9 +310,17 @@ func show_level(new_level: Level) -> void:
 	# A chart left armed must not survive into a level it was not bought for.
 	grid.picking = false
 	in_anwa = false
+	in_bayt = false
 	if anwa != null:
 		anwa.visible = false
+	if bayt != null:
+		bayt.visible = false
 	grid.visible = true
+	wheel.visible = true
+	preview.visible = true
+	_preview_pill.visible = true
+	if shuffle_button != null:
+		shuffle_button.visible = true
 	if finale != null:
 		finale.visible = false
 	_hide_windows()
@@ -331,8 +347,37 @@ func show_level(new_level: Level) -> void:
 	]
 	preview.text = ""
 	toast.text = ""
+	_begin_bayt()
 	_layout()
 	_refresh_chrome()
+
+
+## Once in every mansion the grid stands aside for the line the tradition hangs
+## on that mansion. Only where somebody has settled that line: a mansion whose
+## verse is half-copied or unattributed plays its crossword as usual.
+func _begin_bayt() -> void:
+	if daily or level.index_in_mansion != BAYT_STAR:
+		return
+	var verse := Mansions.verse_of(level.mansion)
+	if verse.is_empty():
+		return
+	in_bayt = true
+	grid.visible = false
+	# The wheel is not merely idle here, it is absent: the mode is tapped, and
+	# a disc sitting under a board nobody drags on would be furniture.
+	wheel.visible = false
+	preview.visible = false
+	_preview_pill.visible = false
+	shuffle_button.visible = false
+	bayt.visible = true
+	bayt.setup(verse, hash(level.id))
+
+
+func _on_bayt_completed() -> void:
+	_say(Mansions.verse_of(level.mansion).get("poet", ""))
+	var tween := create_tween()
+	tween.tween_interval(ANWA_HOLD)
+	tween.tween_callback(_finish_level)
 
 
 func _build_chrome() -> void:
@@ -382,6 +427,12 @@ func _build_chrome() -> void:
 	anwa = AnwaPanel.new()
 	anwa.visible = false
 	add_child(anwa)
+
+	bayt = BaytPanel.new()
+	bayt.visible = false
+	add_child(bayt)
+	bayt.completed.connect(_on_bayt_completed)
+	bayt.missed.connect(func() -> void: _say("ليس هذا ترتيبَه"))
 
 	# The finale is a moment on the sky, above the board and under the windows:
 	# the card it ends with has to cover it.
@@ -674,9 +725,21 @@ func _layout() -> void:
 		0.0, band_top + maxf(0.0, (band_bottom - band_top - anwa.size.y) * 0.5)
 	)
 	anwa.relayout(s)
-	# Nothing is for sale on the rhyme screen, so the price tag must not claim
-	# otherwise.
-	_hint_cost.visible = not in_anwa
+
+	# The verse has the board to itself, all the way down: the wheel is not on
+	# screen, so there is no reason to stop short of where it would have been.
+	var verse_bottom := size.y - WHEEL_MARGIN * s
+	bayt.size = Vector2(size.x, 0.0)
+	var verse_height := bayt.wanted_height(s, size.x)
+	bayt.size = Vector2(size.x, verse_height)
+	bayt.position = Vector2(
+		0.0, band_top + maxf(0.0, (verse_bottom - band_top - verse_height) * 0.5)
+	)
+	bayt.relayout(s)
+
+	# Nothing is for sale on the rhyme or the verse, so the price tag must not
+	# claim otherwise.
+	_hint_cost.visible = not (in_anwa or in_bayt)
 
 	# The toast never lands on the grid: a message over a cell hides the letter
 	# the player just earned.
@@ -835,6 +898,11 @@ func _on_hint_pressed() -> void:
 	# button simply opens the next letter. The price tag is hidden with it.
 	if in_anwa:
 		anwa.reveal_next()
+		return
+	# Same on the verse: one word into its place, and nothing charged. The
+	# tools reveal grid letters, and there is no grid on this screen.
+	if in_bayt:
+		bayt.reveal_next()
 		return
 	for kind in Tools.COUNT:
 		hints_window.rows[kind].set_owned(tools[kind])
@@ -1390,7 +1458,7 @@ func _refresh_clock() -> void:
 func _content_nodes() -> Array[Control]:
 	return [
 		caption, stars, toast, grid, preview, _preview_pill, wheel,
-		hud, hint_button, shuffle_button, _hint_cost, anwa,
+		hud, hint_button, shuffle_button, _hint_cost, anwa, bayt,
 	]
 
 

@@ -295,6 +295,7 @@ func _run() -> void:
 	_check_separators()
 	await _check_tools()
 	_check_leaving_a_finished_level()
+	await _check_the_verse()
 	await _check_mansion_finale()
 
 	_finish()
@@ -1059,6 +1060,68 @@ func _check_leaving_a_finished_level() -> void:
 
 
 ## The twentieth star of a mansion, which the game is arranged around.
+## Once in every mansion the grid stands aside for a line of verse.
+func _check_the_verse() -> void:
+	print("=== the tenth star is a line of verse ===")
+	var verse := Level.load_from("res://data/levels/m01-10.json")
+	_check("the tenth level of الشرطان loads", verse != null)
+	if verse == null:
+		return
+	_check_equal("it is the tenth", verse.index_in_mansion, GameScreen.BAYT_STAR)
+	_check("...and its mansion has a settled line", Mansions.has_verse(1))
+
+	var save_path := "user://progress_bayt_test.json"
+	Progress.clear(save_path)
+	var was_path: String = game.progress_path
+	game.progress_path = save_path
+	game.show_level(verse)
+	_check("the verse took the board", game.in_bayt)
+	_check("...the grid stood aside", not game.grid.visible)
+	_check("...and the wheel is not on screen at all", not game.wheel.visible)
+	_check("...nor a price tag for something not for sale", not game._hint_cost.visible)
+
+	# The scattered order, straight onto the board. It is shuffled from the
+	# level's id, so this is a real arrangement and almost never the right one.
+	var places: int = game.bayt._filled.size()
+	for i in places:
+		game.bayt.place_word(i)
+	_check("a full board is read back", not game.bayt.solved)
+	var kept := 0
+	for i in places:
+		if game.bayt._filled[i] >= 0:
+			kept += 1
+	_check("...the words in their right place stay (%d of %d)" % [kept, places], kept < places)
+	_check("...and a wrong order costs no lantern", game.lanterns > 0)
+
+	# The hint puts one word where it belongs, free.
+	var purse: int = game.coins
+	game._on_hint_pressed()
+	_check("a hint places a word", game.bayt._filled.find(-1) != 0)
+	_check_equal("...and takes nothing", game.coins, purse)
+	_check("...and opens no shelf", not game.hints_window.visible)
+
+	var guard := 0
+	while not game.bayt.solved and guard < 40:
+		game.bayt.reveal_next()
+		guard += 1
+	_check("the line goes back together", game.bayt.solved)
+	await get_tree().create_timer(GameScreen.ANWA_HOLD + 0.25).timeout
+	_check("...and the level is finished by it", game.complete_window.visible)
+	_check_equal("the save moves on like any other level",
+		Progress.read(save_path).level_id, "m01-11")
+	game.complete_window.visible = false
+	Progress.clear(save_path)
+	game.progress_path = was_path
+
+	# And a mansion whose line nobody has settled plays its crossword as usual.
+	var plain := Level.load_from("res://data/levels/m04-10.json")
+	if plain != null:
+		_check("الدبران has no settled line yet", not Mansions.has_verse(4))
+		game.show_level(plain)
+		_check("...so its tenth is an ordinary grid", not game.in_bayt)
+		_check("...with its wheel back", game.wheel.visible)
+
+
 func _check_mansion_finale() -> void:
 	print("=== the twentieth star ===")
 	var last := Level.load_from("res://data/levels/m04-20.json")

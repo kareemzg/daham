@@ -142,6 +142,9 @@ static var _figures: Dictionary = {}
 ## The rhyme the tradition hangs on each mansion, keyed by number. It is
 ## what the twentieth star reads out before the player writes the name.
 static var _saj: Dictionary = {}
+## The mansion's verse, split into a poet and two hemistichs. Only the
+## mansions whose line is whole and attributed have one.
+static var _verses: Dictionary = {}
 static var _lore_read: bool = false
 
 
@@ -202,6 +205,11 @@ static func _read_lore() -> void:
 		var saj := str((entry as Dictionary).get("saj", "")).strip_edges()
 		if not saj.is_empty():
 			_saj[number] = saj
+		var verse: Variant = (entry as Dictionary).get("verse", null)
+		if typeof(verse) == TYPE_DICTIONARY:
+			var built := _build_verse(verse as Dictionary)
+			if not built.is_empty():
+				_verses[number] = built
 		if not (entry as Dictionary).has("figure"):
 			continue
 		var built := _build_figure((entry as Dictionary)["figure"])
@@ -238,6 +246,31 @@ static func _build_figure(raw: Variant) -> Dictionary:
 static func saj_of(mansion: int) -> String:
 	_read_lore()
 	return str(_saj.get(mansion, ""))
+
+
+## The mansion's verse: who said it, and its two hemistichs as word lists.
+##
+## Empty where nobody has settled the line yet. `bayt` in the lore file is the
+## hand-written prose and stays untouched; `verse` beside it is the same line
+## split for the board to arrange, and the poet is the reward for arranging it.
+static func verse_of(mansion: int) -> Dictionary:
+	_read_lore()
+	return _verses.get(mansion, {})
+
+
+static func has_verse(mansion: int) -> bool:
+	return not verse_of(mansion).is_empty()
+
+
+static func _build_verse(raw: Dictionary) -> Dictionary:
+	var poet := str(raw.get("poet", "")).strip_edges()
+	var sadr := str(raw.get("sadr", "")).split(" ", false)
+	var ajz := str(raw.get("ajz", "")).split(" ", false)
+	# A verse the mode cannot use is no verse: it needs both halves to arrange
+	# and a name to give back.
+	if poet.is_empty() or sadr.size() < 2 or ajz.size() < 2:
+		return {}
+	return {"poet": poet, "sadr": sadr, "ajz": ajz}
 
 
 ## The figure's own stars as plain points. Every older caller wants this.
