@@ -295,7 +295,7 @@ func _run() -> void:
 	_check_separators()
 	await _check_tools()
 	_check_leaving_a_finished_level()
-	_check_mansion_finale()
+	await _check_mansion_finale()
 
 	_finish()
 
@@ -800,7 +800,7 @@ func _check_windows() -> void:
 	print("=== running out of lanterns ===")
 	game.show_level(fixture)
 	game.lanterns = 1
-	game.coins = 500
+	game.coins = GameScreen.LANTERN_REFILL_COST + 300
 	for i in GameScreen.WRONG_STREAK_COST:
 		game.submit("باك")
 	_check_equal("the last lantern went out", game.lanterns, 0)
@@ -1067,6 +1067,14 @@ func _check_mansion_finale() -> void:
 		return
 	_check_equal("it is the twentieth", last.index_in_mansion, GameScreen.STARS_PER_MANSION)
 
+	# The save is watched through this whole block: the ceremony sits after
+	# `_save_ahead()`, so a write from inside it would put the player back on
+	# the solved grid with nothing to press.
+	var ahead := "user://progress_anwa_test.json"
+	Progress.clear(ahead)
+	var was_path: String = game.progress_path
+	game.progress_path = ahead
+
 	game.show_level(last)
 	var purse: int = game.coins
 	var guard := 0
@@ -1074,14 +1082,52 @@ func _check_mansion_finale() -> void:
 		game.use_tool(Tools.Kind.WORD)
 		guard += 1
 	_check("it was solved", game.grid.is_solved())
-	# The moment replaces the usual window rather than coming after it: two
-	# windows in a row on the same screen would kill it.
-	_check("the finale runs", game.finale.visible)
-	_check("...and the usual window stays away", not game.complete_window.visible)
 	_check_equal(
 		"a finished mansion pays more than a level",
 		game.coins, purse + GameScreen.LEVEL_REWARD + GameScreen.MANSION_REWARD
 	)
+	_check("...and the usual window stays away", not game.complete_window.visible)
+
+	print("=== the rhyme comes before the sky draws ===")
+	_check("the ceremony opened instead", game.in_anwa)
+	_check("...with the rhyme showing", game.anwa.visible)
+	_check("...and the grid gone", not game.grid.visible)
+	_check("...and the finale waiting", not game.finale.visible)
+	var name := Arabic.normalise(Mansions.name_of(4))
+	_check_equal("the wheel carries the name, letter for letter",
+		game.wheel.letter_count(), name.length())
+	var on_wheel: Array = Array(game.wheel.letters())
+	on_wheel.sort()
+	var wanted: Array = []
+	for i in name.length():
+		wanted.append(name[i])
+	wanted.sort()
+	_check_equal("...the same letters, ألف twice over", on_wheel, wanted)
+	_check_equal("the save already points past the mansion",
+		Progress.read(ahead).level_id, "m05-01")
+
+	var lamps: int = game.lanterns
+	game.submit("الدبر")
+	_check_equal("a wrong name costs no lantern", game.lanterns, lamps)
+	_check("...and the ceremony stays up", game.in_anwa)
+	_check_equal("...and writes nothing over the save ahead",
+		Progress.read(ahead).level_id, "m05-01")
+
+	# The hint opens a letter here rather than selling one.
+	var coins_before: int = game.coins
+	game.anwa.reveal_next()
+	_check_equal("a hint opens the first letter", game.anwa.shown, 1)
+	_check_equal("...and costs nothing", game.coins, coins_before)
+
+	game.submit(Mansions.name_of(4))
+	_check("the name is written", game.anwa.locked)
+	await get_tree().create_timer(GameScreen.ANWA_HOLD + 0.2).timeout
+	# The moment replaces the usual window rather than coming after it: two
+	# windows in a row on the same screen would kill it.
+	_check("the finale runs after it", game.finale.visible)
+	_check("...and the rhyme is gone", not game.in_anwa)
+	Progress.clear(ahead)
+	game.progress_path = was_path
 
 	game.finale.settle(last.mansion)
 	game._show_mansion_card()

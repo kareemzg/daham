@@ -52,10 +52,18 @@ const MOON_REWARD := 30
 ## The twentieth star of a mansion. It happens once in twenty levels, so it
 ## has to be felt: about nine levels' worth.
 const MANSION_REWARD := 400
-const LANTERN_REFILL_COST := 100
+## Nine levels' worth, near the mansion's own reward: filling the lanterns
+## has to be a real choice against buying tools, or it is not a price.
+const LANTERN_REFILL_COST := 900
 ## How long one lantern takes to come back on its own.
 const LANTERN_REGEN_SECONDS := 1800
 const TOAST_SECONDS := 1.1
+## A wheel holds seven tiles at most, and the ceremony needs one per letter
+## because a finger cannot touch the same tile twice. Every spring mansion
+## fits; «سعد الذابح» and its kind do not, and are let through to the finale.
+const ANWA_MAX_LETTERS := 7
+## How long the finished name is left on screen before the sky takes over.
+const ANWA_HOLD := 0.9
 
 ## Design metrics, in the 1080-wide reference space; scaled by `_scale`.
 const REF_WIDTH := 1080.0
@@ -121,6 +129,12 @@ var refill_button: GlossyPanel
 var restart_confirm_button: GlossyPanel
 var hints_window: ShelfWindow
 var finale: MansionFinale
+## The twentieth star's ceremony: the rhyme, and the name written by hand.
+var anwa: AnwaPanel
+## True between the last grid of a mansion and its finale. While it is set
+## the wheel spells the mansion's name and nothing else, and `submit()`
+## measures a guess against that name instead of against the level.
+var in_anwa: bool = false
 var mansion_window: SkyWindow
 var next_mansion_button: GlossyPanel
 var _mansion_name: Label
@@ -264,6 +278,10 @@ func show_level(new_level: Level) -> void:
 	_refresh_jump_label.call_deferred()
 	# A chart left armed must not survive into a level it was not bought for.
 	grid.picking = false
+	in_anwa = false
+	if anwa != null:
+		anwa.visible = false
+	grid.visible = true
 	if finale != null:
 		finale.visible = false
 	_hide_windows()
@@ -335,6 +353,12 @@ func _build_chrome() -> void:
 	# Furthest out first: the gear at the very edge, restart inboard of it.
 	settings_button = hud.add_utility(UiIcon.Kind.SETTINGS, _on_settings_pressed, "الإعدادات")
 	restart_button = hud.add_utility(UiIcon.Kind.RESTART, _on_restart_pressed, "إعادة المحاولة")
+
+	# The rhyme sits where the grid sits, so it is built beside it and under
+	# everything the windows cover.
+	anwa = AnwaPanel.new()
+	anwa.visible = false
+	add_child(anwa)
 
 	# The finale is a moment on the sky, above the board and under the windows:
 	# the card it ends with has to cover it.
@@ -616,6 +640,17 @@ func _layout() -> void:
 		band_top + maxf(0.0, (band_bottom - band_top - grid_extent.y) * 0.5)
 	)
 
+	# The rhyme takes the same band the grid does, centred in it, because it
+	# stands in the grid's place rather than beside it.
+	anwa.size = Vector2(size.x, anwa.wanted_height(s))
+	anwa.position = Vector2(
+		0.0, band_top + maxf(0.0, (band_bottom - band_top - anwa.size.y) * 0.5)
+	)
+	anwa.relayout(s)
+	# Nothing is for sale on the rhyme screen, so the price tag must not claim
+	# otherwise.
+	_hint_cost.visible = not in_anwa
+
 	# The toast never lands on the grid: a message over a cell hides the letter
 	# the player just earned.
 	toast.position = Vector2(0.0, grid.position.y - 12.0 * s - toast.size.y)
@@ -748,6 +783,8 @@ func _place_preview_pill() -> void:
 # --- rules -------------------------------------------------------------------
 
 func _on_word_previewed(word: String) -> void:
+	if in_anwa:
+		anwa.show_progress(word)
 	preview.text = word
 	preview.add_theme_color_override(
 		"font_color", Palette.CREAM if word.is_empty() else Color("FFF6E2")
@@ -767,6 +804,11 @@ func _on_shuffle_pressed() -> void:
 ## four tools now, and which one a player wants is their choice, not the
 ## cheapest by default.
 func _on_hint_pressed() -> void:
+	# Nothing is at stake on the rhyme screen, so there is nothing to sell: the
+	# button simply opens the next letter. The price tag is hidden with it.
+	if in_anwa:
+		anwa.reveal_next()
+		return
 	for kind in Tools.COUNT:
 		hints_window.rows[kind].set_owned(tools[kind])
 	hints_window.show_purse(coins)
@@ -950,6 +992,12 @@ func _refresh_jump_label() -> void:
 ## The one entry point for a spelled word. Returns what happened.
 func submit(raw: String) -> int:
 	var word := Arabic.normalise(raw)
+	# The ceremony is not the level. Nothing here is scored, nothing is lost,
+	# and nothing is saved: `_finish_mansion()` already wrote the save pointing
+	# at the next mansion, and writing over it here would put the player back on
+	# a solved grid with no way forward.
+	if in_anwa:
+		return _submit_anwa(word)
 	var result := _classify(word)
 	var finished := false
 	var spent_last := false
@@ -1015,6 +1063,21 @@ func submit(raw: String) -> int:
 		show_out_of_lanterns()
 	word_resolved.emit(word, result)
 	return result
+
+
+## A guess while the rhyme is up. The only right answer is the mansion's name.
+func _submit_anwa(word: String) -> int:
+	if anwa.locked:
+		return Result.TOO_SHORT
+	if word == anwa.answer:
+		_end_anwa()
+		word_resolved.emit(word, Result.CORRECT)
+		return Result.CORRECT
+	anwa.show_progress("")
+	if word.length() >= 2:
+		_say("ليس بعد")
+	word_resolved.emit(word, Result.INVALID)
+	return Result.INVALID
 
 
 func _classify(word: String) -> int:
@@ -1297,7 +1360,7 @@ func _refresh_clock() -> void:
 func _content_nodes() -> Array[Control]:
 	return [
 		caption, stars, toast, grid, preview, _preview_pill, wheel,
-		hud, hint_button, shuffle_button, _hint_cost,
+		hud, hint_button, shuffle_button, _hint_cost, anwa,
 	]
 
 
@@ -1384,10 +1447,58 @@ func _finish_mansion() -> void:
 	_refresh_chrome()
 	_save_ahead()
 	level_solved.emit()
+	if _begin_anwa():
+		return
+	_play_finale()
+
+
+## The rhyme, then the name. Returns false when this mansion cannot hold the
+## ceremony, and the finale runs straight away as it always did.
+##
+## Two things can rule it out: nobody has written the mansion's rhyme down yet,
+## or its name does not fit a wheel — «سعد الذابح» is nine letters and a space,
+## and no wheel spells a space. All seven spring mansions pass. The rest are a
+## problem for the season that ships them.
+func _begin_anwa() -> bool:
+	var saj := Mansions.saj_of(level.mansion)
+	var name := Arabic.normalise(Mansions.name_of(level.mansion))
+	if saj.is_empty() or name.contains(" ") or name.length() > ANWA_MAX_LETTERS:
+		return false
+
+	in_anwa = true
+	grid.visible = false
+	toast.text = ""
+	anwa.visible = true
+	anwa.setup(saj, name)
+	# The wheel carries the name and nothing else, shuffled so the answer is
+	# not simply read off the disc.
+	var letters := PackedStringArray()
+	for i in name.length():
+		letters.append(name[i])
+	wheel.setup(letters)
+	wheel.shuffle_letters()
+	preview.text = ""
+	_layout()
+	_refresh_chrome()
+	return true
+
+
+func _play_finale() -> void:
+	in_anwa = false
+	anwa.visible = false
 	_fade_content(0.0, 0.45)
 	finale.position = Vector2.ZERO
 	finale.size = size
 	finale.play(level.mansion)
+
+
+## The name is written. It goes gold, and the sky takes over.
+func _end_anwa() -> void:
+	anwa.lock()
+	_say(Mansions.name_of(level.mansion))
+	var tween := create_tween()
+	tween.tween_interval(ANWA_HOLD)
+	tween.tween_callback(_play_finale)
 
 
 func _show_mansion_card() -> void:

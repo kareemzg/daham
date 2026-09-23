@@ -90,6 +90,21 @@ func _shoot() -> void:
 	shell.go_to(Shell.Screen.GAME)
 	await get_tree().create_timer(MeteorWipe.DURATION + 0.2).timeout
 
+	# The rhyme, which comes before the twentieth star is drawn. Driven through
+	# `_begin_anwa()` rather than posed, so the shot is the real screen.
+	var last := Level.load_from("res://data/levels/m04-20.json")
+	if last != null:
+		shell.game.progress_path = ""
+		shell.game.show_level(last)
+		shell.game._begin_anwa()
+		await _save("screen_anwa")
+		shell.game.anwa.show_progress("الدبر")
+		await _save("screen_anwa_writing")
+		shell.game.anwa.lock()
+		await _save("screen_anwa_done")
+		for node in shell.game._content_nodes():
+			node.modulate.a = 1.0
+
 	# The twentieth star, at three moments.
 	var finale := shell.game.finale
 	finale.position = Vector2.ZERO

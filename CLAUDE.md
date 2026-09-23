@@ -64,6 +64,14 @@ Targets iOS, Android, macOS, Windows, Linux, Steam. Desktop is a paid premium bu
 - The name is revealed with `visible_characters` after shaping, never by growing the string. Growing it reshapes the word on every letter and the ones already placed jump between their medial and final forms.
 - Setting a name does not reset its gathering. The layout used to call `setup()`, and `setup()` used to reset, so a resize in the middle of forming put the name back to dust.
 
+## The twentieth star, before the sky draws
+- الأنواء is the mansion's ending, not a mode scattered through the levels. The last grid of a mansion is followed by the rhyme, the player writes the mansion's name off a wheel that carries nothing but its letters, and only then does `MansionFinale` draw the figure and say the name back in gold. Three acts, and the middle one is the player's.
+- It is not a riddle and was never meant to be. Every rhyme opens with the mansion's own name — «إذا طلع الشرطان، استوى الزمان» — so hiding the name from the caption would hide nothing. What the ceremony is for is the writing.
+- Nothing is lost there. A wrong spelling clears the row, costs no lantern, and `submit()` returns before the save block — `_finish_mansion()` has already written the save pointing at the next mansion, and a write from inside the ceremony would put the player back on the solved grid with nothing to press.
+- A wheel holds seven tiles and a finger cannot touch one twice, so the ceremony needs a name of seven letters or fewer with no space in it. All seven spring mansions pass; «سعد الذابح» and its kind do not and are let straight through to the finale. `ANWA_MAX_LETTERS` is where that boundary lives, and autumn is where it has to be solved.
+- The hint opens the next letter instead of selling one, and `_hint_cost` is hidden with it: a price tag over a button that charges nothing is a lie.
+- The rhymes are `saj` in `data/mansion-lore.json`, hand-written and never generated, read through `Mansions.saj_of()`. `AnwaPanel.break_saj()` puts two clauses on a line, because a Label left to wrap itself is the twenty-seven-lines bug.
+
 ## The daily challenge
 - One level a day, the same one for everybody: `Daily.level_for()` walks the year in big steps from the date, so two days running are nowhere near each other.
 - It costs no lantern however badly it goes, and the window says so in so many words. `GameScreen.daily` is what holds that promise, along with writing nothing to the journey's save and moving to no next level.
