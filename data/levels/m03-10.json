@@ -6,44 +6,123 @@
   "index_in_mansion": 10,
   "letters": [
     "ا",
-    "ش",
-    "ع",
-    "ة"
+    "م",
+    "ت",
+    "د",
+    "ا",
+    "د"
   ],
   "grid": {
-    "rows": 4,
-    "cols": 4
+    "rows": 6,
+    "cols": 8
   },
   "words": [
     {
-      "text": "عشا",
+      "text": "اتم",
       "row": 0,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "امد",
+      "row": 0,
+      "col": 5,
+      "direction": "v"
+    },
+    {
+      "text": "تمد",
+      "row": 0,
+      "col": 7,
+      "direction": "v"
+    },
+    {
+      "text": "ادت",
+      "row": 1,
       "col": 1,
       "direction": "h"
     },
     {
-      "text": "شاع",
-      "row": 0,
+      "text": "دامت",
+      "row": 1,
       "col": 2,
       "direction": "v"
     },
     {
-      "text": "عاش",
-      "row": 1,
+      "text": "تام",
+      "row": 2,
       "col": 0,
       "direction": "v"
     },
     {
-      "text": "اشعة",
+      "text": "امتداد",
       "row": 2,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "تمدد",
+      "row": 2,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "اما",
+      "row": 2,
+      "col": 6,
+      "direction": "v"
+    },
+    {
+      "text": "ادم",
+      "row": 3,
       "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "دام",
+      "row": 3,
+      "col": 1,
+      "direction": "v"
+    },
+    {
+      "text": "مات",
+      "row": 4,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "تدم",
+      "row": 5,
+      "col": 3,
       "direction": "h"
     }
   ],
   "bonus": [
-    "اشع",
-    "اعش",
-    "شاة",
-    "عشة"
+    "اتا",
+    "ادا",
+    "ادام",
+    "امات",
+    "امت",
+    "امتد",
+    "امداد",
+    "امدد",
+    "داد",
+    "داما",
+    "ماد",
+    "متا",
+    "مداد",
+    "مدت",
+    "مدد"
+  ],
+  "known": [
+    "اتاد",
+    "اتام",
+    "اماد",
+    "امتدد",
+    "تماد",
+    "متد"
+  ],
+  "gift": [
+    2,
+    2
   ]
 }

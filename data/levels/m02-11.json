@@ -5,45 +5,105 @@
   "season": "spring",
   "index_in_mansion": 11,
   "letters": [
-    "ر",
-    "ح",
-    "ي",
-    "ل"
+    "س",
+    "و",
+    "د",
+    "ا",
+    "ء"
   ],
   "grid": {
-    "rows": 3,
-    "cols": 6
+    "rows": 7,
+    "cols": 8
   },
   "words": [
     {
-      "text": "ريح",
+      "text": "واد",
       "row": 0,
-      "col": 1,
-      "direction": "v"
-    },
-    {
-      "text": "رحل",
-      "row": 0,
-      "col": 3,
-      "direction": "v"
-    },
-    {
-      "text": "حيل",
-      "row": 1,
-      "col": 3,
+      "col": 4,
       "direction": "h"
     },
     {
-      "text": "رحيل",
-      "row": 2,
+      "text": "دواء",
+      "row": 0,
+      "col": 6,
+      "direction": "v"
+    },
+    {
+      "text": "سوءا",
+      "row": 1,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "ساو",
+      "row": 1,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "اسود",
+      "row": 1,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "سوداء",
+      "row": 3,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "سواء",
+      "row": 3,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "اسد",
+      "row": 3,
+      "col": 5,
+      "direction": "v"
+    },
+    {
+      "text": "اود",
+      "row": 4,
+      "col": 1,
+      "direction": "h"
+    },
+    {
+      "text": "داء",
+      "row": 5,
+      "col": 5,
+      "direction": "h"
+    },
+    {
+      "text": "سوء",
+      "row": 6,
       "col": 0,
       "direction": "h"
     }
   ],
   "bonus": [
-    "حري",
-    "حلي",
-    "حير",
-    "لحي"
+    "ادو",
+    "اسو",
+    "داس",
+    "دوس",
+    "ساء",
+    "ساد",
+    "سدا",
+    "سواد",
+    "سود",
+    "ودس",
+    "وساد",
+    "وسد"
+  ],
+  "known": [
+    "دسا",
+    "ساود",
+    "ودا"
+  ],
+  "gift": [
+    3,
+    2
   ]
 }

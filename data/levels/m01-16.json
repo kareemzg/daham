@@ -11,45 +11,75 @@
     "ح"
   ],
   "grid": {
-    "rows": 3,
-    "cols": 5
+    "rows": 7,
+    "cols": 6
   },
   "words": [
     {
-      "text": "صحف",
+      "text": "تفصح",
       "row": 0,
-      "col": 0,
+      "col": 5,
+      "direction": "v"
+    },
+    {
+      "text": "تحف",
+      "row": 1,
+      "col": 1,
       "direction": "h"
     },
     {
       "text": "فحص",
-      "row": 0,
+      "row": 1,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "حفص",
+      "row": 2,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "تصفح",
+      "row": 3,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "تفحص",
+      "row": 3,
       "col": 2,
       "direction": "v"
     },
     {
       "text": "فتح",
-      "row": 0,
+      "row": 3,
       "col": 4,
       "direction": "v"
     },
     {
-      "text": "تصفح",
-      "row": 2,
+      "text": "صحف",
+      "row": 4,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "تصح",
+      "row": 6,
       "col": 1,
       "direction": "h"
     }
   ],
   "bonus": [
-    "تحف",
-    "تصح",
-    "تفحص",
-    "تفصح",
     "حتف",
     "حفت",
-    "حفص",
     "صفت",
     "صفح",
     "فصح"
-  ]
+  ],
+  "known": [
+    "تصحف",
+    "حصف"
+  ],
+  "gift": null
 }

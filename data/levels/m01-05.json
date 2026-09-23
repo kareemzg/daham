@@ -11,37 +11,42 @@
     "ل"
   ],
   "grid": {
-    "rows": 4,
-    "cols": 4
+    "rows": 3,
+    "cols": 6
   },
   "words": [
     {
-      "text": "قلت",
+      "text": "قلم",
+      "row": 0,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "قتل",
       "row": 0,
       "col": 3,
       "direction": "v"
     },
     {
-      "text": "مقتل",
-      "row": 1,
-      "col": 0,
+      "text": "قلت",
+      "row": 0,
+      "col": 3,
       "direction": "h"
     },
     {
-      "text": "قتل",
-      "row": 1,
-      "col": 1,
+      "text": "تقم",
+      "row": 0,
+      "col": 5,
       "direction": "v"
     },
     {
-      "text": "قلم",
-      "row": 3,
+      "text": "مقتل",
+      "row": 2,
       "col": 0,
       "direction": "h"
     }
   ],
   "bonus": [
-    "تقم",
     "تلق",
     "تلقم",
     "تلم",
@@ -55,5 +60,12 @@
     "مقل",
     "ملت",
     "ملق"
-  ]
+  ],
+  "known": [
+    "تلمق",
+    "قتم",
+    "لقتم",
+    "لمق"
+  ],
+  "gift": null
 }

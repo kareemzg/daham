@@ -5,51 +5,150 @@
   "season": "spring",
   "index_in_mansion": 17,
   "letters": [
-    "ن",
-    "ز",
-    "ا",
-    "ع"
+    "ك",
+    "و",
+    "ل",
+    "و",
+    "م",
+    "ب",
+    "و"
   ],
   "grid": {
-    "rows": 3,
-    "cols": 5
+    "rows": 9,
+    "cols": 12
   },
   "words": [
     {
-      "text": "نزاع",
+      "text": "بكم",
       "row": 0,
-      "col": 1,
-      "direction": "h"
-    },
-    {
-      "text": "نزع",
-      "row": 0,
-      "col": 1,
+      "col": 0,
       "direction": "v"
     },
     {
-      "text": "عنا",
-      "row": 0,
+      "text": "وكل",
+      "row": 1,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "وكم",
+      "row": 1,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "ملك",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "كوب",
+      "row": 2,
+      "col": 9,
+      "direction": "v"
+    },
+    {
+      "text": "كلم",
+      "row": 2,
+      "col": 9,
+      "direction": "h"
+    },
+    {
+      "text": "مول",
+      "row": 2,
+      "col": 11,
+      "direction": "v"
+    },
+    {
+      "text": "لكم",
+      "row": 3,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "ملوك",
+      "row": 3,
       "col": 4,
       "direction": "v"
     },
     {
-      "text": "اعز",
-      "row": 2,
-      "col": 0,
+      "text": "بول",
+      "row": 4,
+      "col": 9,
+      "direction": "h"
+    },
+    {
+      "text": "ولو",
+      "row": 4,
+      "col": 10,
+      "direction": "v"
+    },
+    {
+      "text": "كوم",
+      "row": 5,
+      "col": 3,
+      "direction": "h"
+    },
+    {
+      "text": "موكب",
+      "row": 5,
+      "col": 5,
+      "direction": "v"
+    },
+    {
+      "text": "موكل",
+      "row": 5,
+      "col": 7,
+      "direction": "v"
+    },
+    {
+      "text": "كولومبو",
+      "row": 6,
+      "col": 4,
+      "direction": "h"
+    },
+    {
+      "text": "بكل",
+      "row": 6,
+      "col": 9,
+      "direction": "v"
+    },
+    {
+      "text": "كلب",
+      "row": 8,
+      "col": 3,
       "direction": "h"
     }
   ],
   "bonus": [
-    "ازن",
-    "اعن",
-    "انزع",
-    "زان",
-    "عاز",
-    "عان",
-    "عزا",
-    "عنز",
-    "نازع",
-    "نزا"
+    "بلك",
+    "بلم",
+    "بلوك",
+    "بوم",
+    "كبل",
+    "كبول",
+    "كلوم",
+    "كمل",
+    "كولم",
+    "كولوم",
+    "لبك",
+    "لمك",
+    "لوم",
+    "مكب",
+    "مكبل",
+    "مكل",
+    "مكو",
+    "وبل",
+    "وكب",
+    "وكوب",
+    "ولب"
+  ],
+  "known": [
+    "مبك"
+  ],
+  "gift": [
+    6,
+    4
   ]
 }

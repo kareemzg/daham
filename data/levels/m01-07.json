@@ -5,44 +5,70 @@
   "season": "spring",
   "index_in_mansion": 7,
   "letters": [
-    "ع",
-    "ي",
-    "ن",
-    "ة"
+    "ز",
+    "م",
+    "ا",
+    "ن"
   ],
   "grid": {
-    "rows": 3,
+    "rows": 4,
     "cols": 6
   },
   "words": [
     {
-      "text": "عينة",
+      "text": "منا",
       "row": 0,
-      "col": 2,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "مان",
+      "row": 0,
+      "col": 3,
       "direction": "h"
     },
     {
-      "text": "عين",
-      "row": 0,
-      "col": 2,
-      "direction": "v"
-    },
-    {
-      "text": "نية",
-      "row": 0,
-      "col": 4,
-      "direction": "v"
-    },
-    {
-      "text": "عني",
+      "text": "زمان",
       "row": 1,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "زمن",
+      "row": 1,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "امن",
+      "row": 2,
+      "col": 3,
+      "direction": "h"
+    },
+    {
+      "text": "نام",
+      "row": 3,
       "col": 0,
       "direction": "h"
     }
   ],
   "bonus": [
-    "عنة",
-    "عنية",
-    "نعي"
-  ]
+    "ازم",
+    "ازن",
+    "انم",
+    "زام",
+    "زان",
+    "ماز",
+    "مزن",
+    "نزا",
+    "نما"
+  ],
+  "known": [
+    "ازمن",
+    "زامن",
+    "زنا",
+    "زنم",
+    "مزا"
+  ],
+  "gift": null
 }

@@ -12,40 +12,51 @@
   ],
   "grid": {
     "rows": 3,
-    "cols": 5
+    "cols": 6
   },
   "words": [
     {
-      "text": "تعر",
+      "text": "رعت",
       "row": 0,
       "col": 0,
-      "direction": "h"
-    },
-    {
-      "text": "رضع",
-      "row": 0,
-      "col": 2,
       "direction": "v"
     },
     {
       "text": "عرض",
       "row": 0,
-      "col": 4,
+      "col": 3,
       "direction": "v"
+    },
+    {
+      "text": "تعر",
+      "row": 0,
+      "col": 5,
+      "direction": "v"
+    },
+    {
+      "text": "رضع",
+      "row": 1,
+      "col": 3,
+      "direction": "h"
     },
     {
       "text": "تعرض",
       "row": 2,
-      "col": 1,
+      "col": 0,
       "direction": "h"
     }
   ],
   "bonus": [
     "ترع",
     "تضرع",
-    "رعت",
     "ضرع",
     "عتر",
     "عرت"
-  ]
+  ],
+  "known": [
+    "رتع",
+    "رعض",
+    "عضر"
+  ],
+  "gift": null
 }

@@ -5,53 +5,75 @@
   "season": "summer",
   "index_in_mansion": 15,
   "letters": [
-    "ث",
-    "ل",
-    "ا",
-    "ث",
-    "ة"
+    "ت",
+    "ج",
+    "ب",
+    "ر"
   ],
   "grid": {
     "rows": 5,
-    "cols": 5
+    "cols": 6
   },
   "words": [
     {
-      "text": "ثلث",
+      "text": "تجبر",
+      "row": 0,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "برج",
       "row": 0,
       "col": 2,
       "direction": "v"
     },
     {
-      "text": "ثلاث",
+      "text": "رتب",
       "row": 1,
-      "col": 0,
-      "direction": "v"
-    },
-    {
-      "text": "ثالث",
-      "row": 1,
-      "col": 0,
-      "direction": "h"
-    },
-    {
-      "text": "الة",
-      "row": 2,
       "col": 4,
       "direction": "v"
     },
     {
-      "text": "ثلاثة",
+      "text": "جرت",
+      "row": 2,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "رجب",
+      "row": 2,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "جبر",
+      "row": 3,
+      "col": 3,
+      "direction": "h"
+    },
+    {
+      "text": "جرب",
       "row": 4,
-      "col": 0,
+      "col": 1,
       "direction": "h"
     }
   ],
   "bonus": [
-    "اثث",
-    "اثل",
-    "ثال",
-    "ثلة",
-    "لثة"
+    "بتر",
+    "بجر",
+    "برت",
+    "تبر",
+    "تبرج",
+    "تجر",
+    "تجرب",
+    "ترب",
+    "ترج",
+    "جبت",
+    "ربت",
+    "رتج",
+    "رجت"
+  ],
+  "known": [
+    "ربج"
   ]
 }

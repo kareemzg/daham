@@ -5,46 +5,96 @@
   "season": "spring",
   "index_in_mansion": 7,
   "letters": [
-    "و",
-    "ط",
-    "ن",
-    "ي"
+    "ت",
+    "ص",
+    "ر",
+    "ي",
+    "ح"
   ],
   "grid": {
-    "rows": 4,
-    "cols": 5
+    "rows": 7,
+    "cols": 7
   },
   "words": [
     {
-      "text": "وطن",
+      "text": "صرح",
       "row": 0,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "حصري",
+      "row": 0,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "ريح",
+      "row": 0,
+      "col": 6,
+      "direction": "v"
+    },
+    {
+      "text": "صحي",
+      "row": 1,
+      "col": 4,
+      "direction": "h"
+    },
+    {
+      "text": "تصريح",
+      "row": 3,
+      "col": 1,
+      "direction": "h"
+    },
+    {
+      "text": "صريح",
+      "row": 3,
       "col": 2,
       "direction": "v"
     },
     {
-      "text": "وطني",
-      "row": 1,
-      "col": 1,
-      "direction": "h"
-    },
-    {
-      "text": "وين",
-      "row": 1,
-      "col": 1,
+      "text": "حصر",
+      "row": 3,
+      "col": 5,
       "direction": "v"
     },
     {
-      "text": "طين",
-      "row": 2,
+      "text": "تري",
+      "row": 5,
       "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "حرص",
+      "row": 6,
+      "col": 2,
       "direction": "h"
     }
   ],
   "bonus": [
-    "طني",
-    "طوي",
-    "نوط",
-    "نوي",
-    "وني"
-  ]
+    "تحري",
+    "تحير",
+    "ترح",
+    "ترص",
+    "تصح",
+    "تصحر",
+    "حتر",
+    "حرت",
+    "حري",
+    "حريص",
+    "حصي",
+    "حصير",
+    "حيت",
+    "حير",
+    "حيص",
+    "صري",
+    "صيت",
+    "صيح",
+    "صير"
+  ],
+  "known": [
+    "صحر",
+    "صرحي"
+  ],
+  "gift": null
 }

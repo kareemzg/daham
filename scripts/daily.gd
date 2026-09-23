@@ -55,7 +55,19 @@ static func advanced(streak: int, last_day: int, day: int) -> int:
 ## The day's level, the same one for everybody on the same date. Multiplying by
 ## a large odd number and taking the remainder walks the year in big steps, so
 ## two days running are nowhere near each other.
+##
+## It walks what this build SHIPS, not the whole year. Walking all 560 while the
+## build carries only spring picked a level that is not in the export three days
+## out of four: the file was missing, `start_daily()` returned false, and the
+## signal it hangs off ignores that, so «العب» simply did nothing and said
+## nothing. A dead button reads as a broken game, and nothing in a release build
+## would have shown why.
+##
+## When a season is added the day's level changes for anyone who updates, which
+## is unavoidable — the new levels have to become reachable. No save breaks over
+## it: a run keeps a day and a count, never a level id, so a streak carries
+## across the update untouched.
 static func level_for(day: int) -> String:
-	var slot: int = posmod(day * 2654435761, Mansions.TOTAL_LEVELS)
+	var slot: int = posmod(day * 2654435761, Mansions.SHIPPED_LEVELS)
 	return Mansions.level_id(slot / Mansions.LEVELS_PER_MANSION + 1,
 		slot % Mansions.LEVELS_PER_MANSION + 1)

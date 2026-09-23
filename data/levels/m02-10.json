@@ -5,56 +5,95 @@
   "season": "spring",
   "index_in_mansion": 10,
   "letters": [
-    "ت",
-    "د",
-    "م",
-    "ر"
+    "ب",
+    "ر",
+    "ا",
+    "ء",
+    "ة"
   ],
   "grid": {
-    "rows": 3,
-    "cols": 5
+    "rows": 7,
+    "cols": 9
   },
   "words": [
     {
-      "text": "مرت",
+      "text": "برة",
       "row": 0,
       "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "راب",
+      "row": 0,
+      "col": 1,
       "direction": "v"
     },
     {
-      "text": "تمر",
-      "row": 0,
+      "text": "براء",
+      "row": 1,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "ربة",
+      "row": 1,
+      "col": 6,
+      "direction": "v"
+    },
+    {
+      "text": "ربا",
+      "row": 2,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "ابرة",
+      "row": 2,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "برا",
+      "row": 2,
+      "col": 6,
+      "direction": "h"
+    },
+    {
+      "text": "ابر",
+      "row": 2,
+      "col": 8,
+      "direction": "v"
+    },
+    {
+      "text": "براءة",
+      "row": 3,
       "col": 2,
       "direction": "h"
     },
     {
-      "text": "متر",
-      "row": 0,
-      "col": 3,
-      "direction": "v"
-    },
-    {
-      "text": "تدمر",
-      "row": 2,
+      "text": "بار",
+      "row": 4,
       "col": 0,
       "direction": "h"
+    },
+    {
+      "text": "باء",
+      "row": 4,
+      "col": 0,
+      "direction": "v"
     }
   ],
   "bonus": [
-    "تدر",
-    "تدم",
-    "تمد",
-    "تمرد",
-    "درت",
-    "درم",
-    "دمر",
-    "رتم",
-    "ردم",
-    "رمت",
-    "رمد",
-    "مدت",
-    "مدر",
-    "مرتد",
-    "مرد"
+    "ارب",
+    "راء"
+  ],
+  "known": [
+    "اربة",
+    "براة",
+    "رباء"
+  ],
+  "gift": [
+    3,
+    2
   ]
 }

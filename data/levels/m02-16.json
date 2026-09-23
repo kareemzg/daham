@@ -5,44 +5,118 @@
   "season": "spring",
   "index_in_mansion": 16,
   "letters": [
-    "م",
-    "ظ",
-    "ل",
+    "ب",
+    "و",
+    "ر",
+    "ص",
     "ة"
   ],
   "grid": {
-    "rows": 4,
-    "cols": 5
+    "rows": 8,
+    "cols": 8
   },
   "words": [
     {
-      "text": "ظلمة",
+      "text": "صوب",
       "row": 0,
       "col": 3,
-      "direction": "v"
-    },
-    {
-      "text": "ظلم",
-      "row": 1,
-      "col": 0,
-      "direction": "v"
-    },
-    {
-      "text": "ملة",
-      "row": 1,
-      "col": 2,
       "direction": "h"
     },
     {
-      "text": "مظلة",
+      "text": "بوصة",
+      "row": 0,
+      "col": 5,
+      "direction": "v"
+    },
+    {
+      "text": "صبر",
+      "row": 0,
+      "col": 7,
+      "direction": "v"
+    },
+    {
+      "text": "صورة",
+      "row": 2,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "صور",
+      "row": 2,
+      "col": 5,
+      "direction": "h"
+    },
+    {
+      "text": "بورصة",
       "row": 3,
+      "col": 1,
+      "direction": "h"
+    },
+    {
+      "text": "صبور",
+      "row": 3,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "ربة",
+      "row": 5,
       "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "روب",
+      "row": 5,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "وبر",
+      "row": 5,
+      "col": 4,
+      "direction": "h"
+    },
+    {
+      "text": "بور",
+      "row": 5,
+      "col": 5,
+      "direction": "v"
+    },
+    {
+      "text": "برو",
+      "row": 6,
+      "col": 3,
       "direction": "h"
     }
   ],
   "bonus": [
-    "ظلة",
-    "لمة",
-    "مظل"
+    "برة",
+    "برص",
+    "بصر",
+    "بصرة",
+    "بوص",
+    "ربو",
+    "ربوة",
+    "صبة",
+    "صبرة",
+    "صرب",
+    "صرة",
+    "صوة",
+    "وبص",
+    "ورب",
+    "وربة",
+    "ورص",
+    "وصب",
+    "وصر"
+  ],
+  "known": [
+    "ربص",
+    "روبة",
+    "صبوة",
+    "صوبر"
+  ],
+  "gift": [
+    3,
+    1
   ]
 }

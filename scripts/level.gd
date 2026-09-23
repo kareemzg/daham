@@ -21,6 +21,18 @@ var cols: int = 0
 ## Each entry: {text: String, row: int, col: int, direction: String}
 var words: Array[Dictionary] = []
 var bonus: PackedStringArray = PackedStringArray()
+## Every other word the wheel can spell. Not a reward: the moon and the coins
+## belong to `bonus`, which the pipeline caps on purpose. This is only so the
+## game can tell "a real word that is not in this level" from "not a word" —
+## a seven-letter wheel spells far more than the cap holds, and the overflow
+## was being met with «ليست كلمة» and charged to the player's lanterns.
+var known: PackedStringArray = PackedStringArray()
+## `known` as a set, because a long one is searched on every guess.
+var _known: Dictionary = {}
+## One cell the level opens with already filled, or (-1, -1) for none. The
+## pipeline gives it to grids big enough to look daunting: the first letter of
+## the longest word, which is where the eye goes in a right-to-left grid.
+var gift: Vector2i = Vector2i(-1, -1)
 
 var _cells: Dictionary = {}  # Vector2i -> String
 
@@ -55,6 +67,13 @@ static func load_from(path: String) -> Level:
 		})
 	for word in parsed.get("bonus", []):
 		level.bonus.append(Arabic.normalise(str(word)))
+	var given: Variant = parsed.get("gift", null)
+	if given is Array and (given as Array).size() == 2:
+		level.gift = Vector2i(int(given[0]), int(given[1]))
+	for word in parsed.get("known", []):
+		var normalised := Arabic.normalise(str(word))
+		level.known.append(normalised)
+		level._known[normalised] = true
 	level._build_cells()
 	return level
 
@@ -103,6 +122,16 @@ func is_bonus(text: String) -> bool:
 	return bonus.has(text)
 
 
+## A real word the wheel can spell that this level does not name. Worth nothing;
+## it exists so the game can say so instead of calling it a non-word.
+func is_known(text: String) -> bool:
+	return _known.has(text)
+
+
+func has_gift() -> bool:
+	return gift.x >= 0 and gift.y >= 0
+
+
 func word_texts() -> PackedStringArray:
 	var out := PackedStringArray()
 	for entry in words:
@@ -128,6 +157,26 @@ func validate() -> PackedStringArray:
 	for word in bonus:
 		if has_grid_word(word):
 			problems.append("'%s' is listed both as a grid word and a bonus word" % word)
+	for word in known:
+		if has_grid_word(word) or is_bonus(word):
+			problems.append("'%s' is listed as known as well as scoring" % word)
+	# Every word must be a run of its own: the cell before its first letter and
+	# the one after its last have to be empty. A word sitting wholly inside
+	# another looks found the moment the longer one is, so the player fills the
+	# whole grid, nothing is left to reveal, and the level never finishes. It
+	# happened: «علي» was written across «فعلي» in m01-15 and the board would
+	# not close. The pipeline forbids it now; this is the engine refusing to
+	# open one quietly if it ever gets through again.
+	if has_gift() and not _cells.has(gift):
+		problems.append("the gift at %s is not a filled cell" % gift)
+	for entry in words:
+		var text: String = entry["text"]
+		var last := cell_at(entry, text.length() - 1)
+		var step := (
+			Vector2i(0, 1) if entry["direction"] == HORIZONTAL else Vector2i(1, 0)
+		)
+		if _cells.has(cell_at(entry, 0) - step) or _cells.has(last + step):
+			problems.append("'%s' is not a run of its own: it sits inside another word" % text)
 	return problems
 
 

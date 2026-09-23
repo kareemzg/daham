@@ -11,40 +11,55 @@
     "ة"
   ],
   "grid": {
-    "rows": 3,
+    "rows": 5,
     "cols": 5
   },
   "words": [
     {
-      "text": "اسم",
+      "text": "سام",
       "row": 0,
       "col": 0,
-      "direction": "v"
+      "direction": "h"
     },
     {
-      "text": "امس",
+      "text": "اسم",
       "row": 0,
-      "col": 2,
+      "col": 1,
       "direction": "v"
     },
     {
       "text": "امة",
       "row": 0,
-      "col": 2,
-      "direction": "h"
+      "col": 4,
+      "direction": "v"
     },
     {
       "text": "ماسة",
       "row": 2,
-      "col": 0,
+      "col": 1,
+      "direction": "h"
+    },
+    {
+      "text": "امس",
+      "row": 2,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "سمة",
+      "row": 4,
+      "col": 2,
       "direction": "h"
     }
   ],
   "bonus": [
-    "سام",
     "سما",
-    "سمة",
     "ماس",
     "مسا"
-  ]
+  ],
+  "known": [
+    "سامة",
+    "سماة"
+  ],
+  "gift": null
 }

@@ -5,48 +5,100 @@
   "season": "spring",
   "index_in_mansion": 6,
   "letters": [
-    "ت",
-    "و",
-    "ق",
-    "ع"
+    "ش",
+    "ه",
+    "د",
+    "ا",
+    "ء"
   ],
   "grid": {
-    "rows": 4,
-    "cols": 5
+    "rows": 6,
+    "cols": 9
   },
   "words": [
     {
-      "text": "تقع",
+      "text": "داء",
+      "row": 0,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "اشهد",
       "row": 0,
       "col": 3,
       "direction": "v"
     },
     {
-      "text": "وقت",
-      "row": 1,
-      "col": 2,
+      "text": "شاء",
+      "row": 0,
+      "col": 6,
       "direction": "v"
     },
     {
-      "text": "وقع",
-      "row": 1,
+      "text": "شاه",
+      "row": 0,
+      "col": 6,
+      "direction": "h"
+    },
+    {
+      "text": "هاش",
+      "row": 0,
+      "col": 8,
+      "direction": "v"
+    },
+    {
+      "text": "شهداء",
+      "row": 2,
       "col": 2,
       "direction": "h"
     },
     {
-      "text": "توقع",
+      "text": "شاهد",
       "row": 2,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "اشد",
+      "row": 2,
+      "col": 5,
+      "direction": "v"
+    },
+    {
+      "text": "هاد",
+      "row": 3,
+      "col": 1,
+      "direction": "h"
+    },
+    {
+      "text": "شهد",
+      "row": 5,
       "col": 0,
       "direction": "h"
     }
   ],
   "bonus": [
-    "تعوق",
-    "تقو",
-    "توق",
-    "عتق",
-    "عوق",
-    "قوت",
-    "وعق"
+    "ادهش",
+    "اهد",
+    "داش",
+    "داه",
+    "دها",
+    "دهاء",
+    "دهش",
+    "شاد",
+    "شاده",
+    "شدا",
+    "شده",
+    "شها",
+    "شهاد",
+    "هاء",
+    "هدا"
+  ],
+  "known": [
+    "دشا"
+  ],
+  "gift": [
+    2,
+    2
   ]
 }

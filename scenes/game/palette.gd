@@ -31,6 +31,11 @@ const GOLD := Color("E9B92C")
 const GOLD_LIGHT := Color("FFE38A")
 const GOLD_DEEP := Color("9A7A15")
 
+## The stars of the wider figure behind a mansion — the lion a mansion is only
+## the brow of. Cold and dim against the mansion's own gold, because it is
+## context and must never compete with its subject.
+const FIGURE_FAINT := Color("6E8BA6")
+
 const TAMR := Color("D08A47")
 const TAMR_DEEP := Color("8A4A12")
 

@@ -1,7 +1,7 @@
 extends Control
 ## Drives the playable slice and checks it, then saves a screenshot.
 ##
-##   godot --path . --quit-after 600 res://scenes/dev/game_test.tscn
+##   godot --path . res://scenes/dev/game_test.tscn
 ##
 ## Exits 0 when every check passes, 1 otherwise, so it can gate a commit.
 ## Writes tools/out/game_slice.png for looking at.
@@ -10,6 +10,7 @@ const SHOT_PATH := "res://tools/out/game_slice.png"
 
 var _failures: PackedStringArray = PackedStringArray()
 var _checks: int = 0
+var _done: bool = false
 
 @onready var game: GameScreen = $Game
 
@@ -53,6 +54,49 @@ func _run() -> void:
 	# Row 2, column 5 is the far LEFT of the third row: the alif of بات.
 	_check_equal("crossing cell reads right to left", level.cells().get(Vector2i(2, 5), ""), "ا")
 
+	# Every shipped level, not one sample. A grid is generated, so a fault in
+	# the pipeline shows up in a handful of files somewhere in the middle of the
+	# season and in none of the ones anybody opens by hand: the level that would
+	# not finish was the fifteenth, and six of the five hundred and sixty were
+	# like it.
+	print("=== every shipped level holds together ===")
+	var faults := PackedStringArray()
+	var counted := 0
+	for mansion in Mansions.SHIPPED:
+		for index in Mansions.LEVELS_PER_MANSION:
+			var id := Mansions.level_id(mansion + 1, index + 1)
+			var shipped := Level.load_from("res://data/levels/%s.json" % id)
+			if shipped == null:
+				faults.append("%s will not load" % id)
+				continue
+			counted += 1
+			for problem in shipped.validate():
+				faults.append("%s: %s" % [id, problem])
+	_check_equal("all of the season is there", counted,
+		Mansions.SHIPPED * Mansions.LEVELS_PER_MANSION)
+	if faults.size() > 0:
+		for fault in faults:
+			print("      %s" % fault)
+	_check_equal("...and every one of them validates", faults.size(), 0)
+
+	# The check that would have caught it, proved against a grid built to fail.
+	# «با» laid across «باب» adds no cell of its own, so finding the longer word
+	# leaves the shorter one unfound with nothing left on the board to reveal.
+	var nested := Level.new()
+	nested.rows = 1
+	nested.cols = 3
+	nested.letters = PackedStringArray(["ب", "ا"])
+	nested.words = [
+		{"text": "باب", "row": 0, "col": 0, "direction": Level.HORIZONTAL},
+		{"text": "با", "row": 0, "col": 0, "direction": Level.HORIZONTAL},
+	]
+	nested._build_cells()
+	var complaint := ""
+	for problem in nested.validate():
+		if problem.contains("run of its own"):
+			complaint = problem
+	_check("a word hiding inside another is refused (%s)" % complaint, complaint != "")
+
 	print("=== layout has no overlaps ===")
 	var toast_bottom: float = game.toast.position.y + game.toast.size.y
 	var grid_top: float = game.grid.position.y
@@ -64,7 +108,25 @@ func _run() -> void:
 	_check("toast clears the grid (%s <= %s)" % [toast_bottom, grid_top], toast_bottom <= grid_top)
 	_check("star band clears the toast (%s <= %s)" % [stars_bottom, game.toast.position.y], stars_bottom <= game.toast.position.y)
 	_check("preview clears the wheel (%s <= %s)" % [preview_bottom, wheel_top], preview_bottom <= wheel_top)
-	_check("preview clears the grid (%s <= %s)" % [grid_bottom, game.preview.position.y], grid_bottom <= game.preview.position.y)
+	# The grid runs down to the wheel now, so it no longer clears the preview —
+	# it passes under it. What has to hold instead: the grid stops above the
+	# wheel, and the preview is a later child, so the pill draws over the last
+	# row for the second a word is being spelled rather than being fenced out
+	# of a strip that is empty the rest of the time.
+	_check("grid clears the wheel (%s <= %s)" % [grid_bottom, wheel_top], grid_bottom <= wheel_top)
+	_check(
+		"the preview draws over the grid, not beside it (%d > %d)"
+		% [game.preview.get_index(), game.grid.get_index()],
+		game.preview.get_index() > game.grid.get_index()
+	)
+	_check(
+		"...and so does its pill",
+		game._preview_pill != null and game._preview_pill.get_index() > game.grid.get_index()
+	)
+	# An empty preview must not sit on the board: the pill hides itself, and
+	# the label has nothing to paint.
+	_check("an idle preview covers nothing",
+		game.preview.text.is_empty() and not game._preview_pill.visible)
 	_check("wheel fits on screen (%s <= %s)" % [wheel_bottom, game.size.y], wheel_bottom <= game.size.y)
 	# The design seats the tiles inside the disc. Grow a tile far enough and it
 	# climbs onto the rim instead, which no other check would notice.
@@ -158,13 +220,29 @@ func _run() -> void:
 
 	await _check_level_complete()
 
-	# Generated grids run from four columns to eleven. The fixture is six, so on
-	# its own it would never catch a layout that cannot shrink.
+	# The fixture is six columns and four letters, so on its own it would never
+	# catch a layout that cannot shrink. The widest level is found rather than
+	# named: the levels are generated, so naming one ties this check to a
+	# particular run of the pipeline and it breaks on the next regeneration for
+	# no reason. Searching the shipped season also keeps it honest about what a
+	# player of this build actually reaches.
 	print("=== the widest level in the game still fits ===")
-	var widest := Level.load_from("res://data/levels/m27-12.json")
-	_check("the widest level loads", widest != null)
+	var widest: Level = null
+	for mansion in Mansions.SHIPPED:
+		for index in Mansions.LEVELS_PER_MANSION:
+			var candidate := Level.load_from(
+				"res://data/levels/%s.json" % Mansions.level_id(mansion + 1, index + 1)
+			)
+			if candidate != null and (widest == null or candidate.cols > widest.cols):
+				widest = candidate
+	_check("the widest shipped level loads", widest != null)
 	if widest != null:
-		_check_equal("it is the eleven-column one", widest.cols, 11)
+		print("  (it is %s, %d columns, %d letters)" % [
+			widest.id, widest.cols, widest.letters.size()
+		])
+		# Nine is the number that matters: past it the grid has to shrink its
+		# cells rather than the screen growing, which is the case that broke.
+		_check("it is a wide one (%d columns)" % widest.cols, widest.cols >= 9)
 		game.show_level(widest)
 		var left: float = game.grid.position.x
 		var right: float = left + game.grid.size.x
@@ -177,15 +255,40 @@ func _run() -> void:
 		)
 		_check("its cells shrank (%s < %s)" % [game.grid.cell_size, GameScreen.CELL],
 			game.grid.cell_size < GameScreen.CELL)
+
+	# The fullest wheel is a separate search from the widest grid. They used to
+	# be the same level and the checks were written as one; they are not the
+	# same level any more, and a wheel check riding on a grid search silently
+	# stops testing the wheel the day the pipeline runs again.
+	var fullest: Level = null
+	for mansion in Mansions.SHIPPED:
+		for index in Mansions.LEVELS_PER_MANSION:
+			var candidate := Level.load_from(
+				"res://data/levels/%s.json" % Mansions.level_id(mansion + 1, index + 1)
+			)
+			if candidate != null and (
+				fullest == null or candidate.letters.size() > fullest.letters.size()
+			):
+				fullest = candidate
+	_check("a fullest wheel was found", fullest != null)
+	if fullest != null:
+		print("  (the fullest wheel is %s, %d letters)" % [fullest.id, fullest.letters.size()])
 		# Seven letters on the wheel at the four-letter tile size overlap.
-		_check_equal("its wheel holds seven letters", game.wheel.letter_count(), 7)
-		var spacing: float = 2.0 * game.wheel.orbit_radius * sin(PI / 7.0)
+		_check_equal("the shipped season reaches seven letters", fullest.letters.size(), 7)
+		game.show_level(fullest)
+		var count := game.wheel.letter_count()
+		var spacing: float = 2.0 * game.wheel.orbit_radius * sin(PI / float(count))
 		var drawn: float = game.wheel.effective_tile_radius() * 2.0
 		_check("its tiles keep clear (%0.1f <= %0.1f)" % [drawn, spacing], drawn <= spacing)
 
 	_check_saving()
 	await _check_autosave()
 	await _check_finish_save()
+	await _check_shipped_edge()
+	_check_save_version()
+	await _check_word_budget()
+	_check_jump_bar()
+	await _check_gift()
 	_check_full_moon()
 	await _check_windows()
 	_check_smooth_edges()
@@ -285,6 +388,248 @@ func _check_autosave() -> void:
 	_check_equal("...and the streak still counting", second.wrong_streak, 2)
 	second.queue_free()
 	await get_tree().process_frame
+	Progress.clear(save_path)
+
+
+## The build ships a season at a time, so the year the mansion table describes
+## is longer than the levels on disk. Two things have to hold at that seam.
+##
+## First, nothing may name a level past it. `_save_ahead()` writes whatever
+## `next_level_id()` returns, and the boot path drops the entire save when it
+## cannot load the level a save names — so naming «m08-01» after the last level
+## of spring would send a player who finished the season back to a new game
+## with no coins, no lanterns and no run.
+##
+## Second, a save that names a missing level has to cost the player that level
+## and nothing else. It can happen without any bug: a build that ships fewer
+## seasons than the one that wrote the save.
+func _check_shipped_edge() -> void:
+	print("=== the edge of what this build carries ===")
+	var scene: PackedScene = load("res://scenes/game/game.tscn")
+	var last := Mansions.level_id(Mansions.SHIPPED, GameScreen.STARS_PER_MANSION)
+
+	var edge: GameScreen = scene.instantiate()
+	edge.level_path = "res://data/levels/%s.json" % last
+	edge.progress_path = ""
+	add_child(edge)
+	await get_tree().process_frame
+	_check_equal("the last shipped level is where it should be", edge.level.id, last)
+	_check_equal("nothing comes after it", edge.next_level_id(), "")
+	edge.queue_free()
+	await get_tree().process_frame
+
+	var before: GameScreen = scene.instantiate()
+	before.level_path = "res://data/levels/%s.json" % Mansions.level_id(
+		Mansions.SHIPPED, GameScreen.STARS_PER_MANSION - 1
+	)
+	before.progress_path = ""
+	add_child(before)
+	await get_tree().process_frame
+	_check_equal("...but the one before it still leads on", before.next_level_id(), last)
+	before.queue_free()
+	await get_tree().process_frame
+
+	# A save pointing at a season this build does not carry.
+	var save_path := "user://progress_scope_test.json"
+	Progress.clear(save_path)
+	var stale := Progress.new()
+	stale.level_id = Mansions.level_id(Mansions.SHIPPED + 1, 1)
+	stale.coins = 777
+	stale.lanterns = 2
+	stale.moon = 5
+	stale.daily_streak = 4
+	stale.found = PackedStringArray(["كتاب"])
+	stale.wrong_streak = 3
+	stale.write(save_path)
+
+	var back: GameScreen = scene.instantiate()
+	back.level_path = "res://data/levels/m01-01.json"
+	back.progress_path = save_path
+	add_child(back)
+	await get_tree().process_frame
+	_check("it opens on a level that is in the build", Mansions.is_shipped(back.level.mansion))
+	_check_equal("...and the coins survived", back.coins, 777)
+	_check_equal("...and the lanterns", back.lanterns, 2)
+	_check_equal("...and the moon", back.moon, 5)
+	_check_equal("...and the run of days", back.daily_streak, 4)
+	# What belonged to the level that went is the only thing that goes with it.
+	_check("...while the lost level's words did not follow", not back.grid.is_found("كتاب"))
+	_check_equal("...nor its streak of wrong guesses", back.wrong_streak, 0)
+	back.queue_free()
+	await get_tree().process_frame
+	Progress.clear(save_path)
+
+
+## A big grid opens with one cell already filled.
+##
+## It is not in the save and must not be: `show_level()` always runs before
+## `restore()`, so the level itself is what remembers, and a save written when
+## the ramp was tuned differently cannot keep opening a cell that is no longer
+## given away.
+func _check_gift() -> void:
+	print("=== the letter a big grid gives away ===")
+	var scene: PackedScene = load("res://scenes/game/game.tscn")
+	var giving: Level = null
+	var plain: Level = null
+	for mansion in Mansions.SHIPPED:
+		for index in Mansions.LEVELS_PER_MANSION:
+			var candidate := Level.load_from(
+				"res://data/levels/%s.json" % Mansions.level_id(mansion + 1, index + 1)
+			)
+			if candidate == null:
+				continue
+			if candidate.has_gift() and giving == null:
+				giving = candidate
+			if not candidate.has_gift() and plain == null:
+				plain = candidate
+	_check("some level gives a letter", giving != null)
+	_check("...and the small ones do not", plain != null)
+	if giving == null or plain == null:
+		return
+	print("      %s gives %s; %s gives none" % [giving.id, giving.gift, plain.id])
+	_check("a giving level is a big one (%d words)" % giving.words.size(),
+		giving.words.size() >= 10)
+	_check("...and a plain one is not (%d words)" % plain.words.size(),
+		plain.words.size() < 10)
+
+	var screen: GameScreen = scene.instantiate()
+	screen.level_path = "res://data/levels/%s.json" % giving.id
+	screen.progress_path = ""
+	add_child(screen)
+	await get_tree().process_frame
+	_check("the cell is open before a single word is found",
+		screen.grid.is_revealed_at(giving.gift))
+	_check("...and it is not the whole word", not screen.grid.is_solved())
+	screen.queue_free()
+	await get_tree().process_frame
+
+	# The save is not what remembers it: a fresh screen on the same level, with
+	# a save that knows nothing of the gift, still opens it.
+	var save_path := "user://progress_gift_test.json"
+	Progress.clear(save_path)
+	var blank := Progress.new()
+	blank.level_id = giving.id
+	blank.write(save_path)
+	var again: GameScreen = scene.instantiate()
+	again.level_path = "res://data/levels/%s.json" % giving.id
+	again.progress_path = save_path
+	add_child(again)
+	await get_tree().process_frame
+	_check("a save that never heard of it still opens it",
+		again.grid.is_revealed_at(giving.gift))
+	again.queue_free()
+	await get_tree().process_frame
+	Progress.clear(save_path)
+
+
+## The jump bar is a tool for watching the curve, so it has to agree with the
+## curve. It reads the levels rather than keeping its own copy of the ramp, and
+## this checks that what it reads is what the pipeline wrote.
+func _check_jump_bar() -> void:
+	print("=== jumping to where the difficulty changes ===")
+	_check("the bar exists in a debug build", game._jump_label != null)
+	var steps := game._difficulty_steps()
+	print("      %s" % " ".join(steps))
+	_check("there are several steps (%d)" % steps.size(), steps.size() >= 10)
+	_check_equal("the first is the first level", steps[0], Mansions.level_id(1, 1))
+
+	# Each step really is a change, and nothing between two steps changes.
+	var wrong := PackedStringArray()
+	var previous := Vector2i(-1, -1)
+	for mansion in Mansions.SHIPPED:
+		for index in Mansions.LEVELS_PER_MANSION:
+			var id := Mansions.level_id(mansion + 1, index + 1)
+			var lv := Level.load_from("res://data/levels/%s.json" % id)
+			if lv == null:
+				continue
+			var shape := Vector2i(lv.letters.size(), lv.words.size())
+			var changed := shape != previous
+			if changed != steps.has(id):
+				wrong.append(id)
+			previous = shape
+	_check_equal("every step is a change and every change is a step", wrong.size(), 0)
+
+
+## Two rules that were decided by playing, and cost nothing to get wrong quietly.
+##
+## The budget is per level, not a run: a correct word used to wipe the count, so
+## a player who found something every few tries never paid for a wrong guess at
+## all. And a real Arabic word the wheel spells, which this level happens not to
+## name, is free — it is not a reward and not a mistake.
+func _check_word_budget() -> void:
+	print("=== the wrong-guess budget, and a real word that is not here ===")
+	var scene: PackedScene = load("res://scenes/game/game.tscn")
+
+	# A level with a `known` word to try, found rather than named.
+	var subject: Level = null
+	for mansion in Mansions.SHIPPED:
+		for index in Mansions.LEVELS_PER_MANSION:
+			var candidate := Level.load_from(
+				"res://data/levels/%s.json" % Mansions.level_id(mansion + 1, index + 1)
+			)
+			if candidate != null and candidate.known.size() > 0:
+				subject = candidate
+				break
+		if subject != null:
+			break
+	_check("a level carries words it does not score", subject != null)
+	if subject == null:
+		return
+
+	var screen: GameScreen = scene.instantiate()
+	screen.level_path = "res://data/levels/%s.json" % subject.id
+	screen.progress_path = ""
+	add_child(screen)
+	await get_tree().process_frame
+
+	var known_word: String = subject.known[0]
+	var coins_before := screen.coins
+	var moon_before := screen.moon
+	_check_equal("a real word that is not here is its own answer",
+		screen.submit(known_word), GameScreen.Result.KNOWN)
+	_check_equal("...it costs nothing", screen.wrong_streak, 0)
+	_check_equal("...and earns nothing", screen.coins, coins_before)
+	_check_equal("...not even a sliver of moon", screen.moon, moon_before)
+
+	# Four wrong, then a real find, then one more wrong. Under the old rule the
+	# find wiped the count and the fifth mistake was free.
+	var lanterns_before := screen.lanterns
+	for i in 4:
+		screen.submit("ززز%d" % i)
+	_check_equal("four wrong guesses are counted", screen.wrong_streak, 4)
+	screen.submit(subject.words[0]["text"])
+	_check_equal("...and finding a word does not wipe them", screen.wrong_streak, 4)
+	screen.submit("ززززز")
+	_check_equal("the fifth costs a lantern", screen.lanterns, lanterns_before - 1)
+	_check_equal("...and the budget starts over", screen.wrong_streak, 0)
+	screen.queue_free()
+	await get_tree().process_frame
+
+
+## A save written by another build has to be refused, not half-read.
+##
+## The levels were regenerated, so a version-1 save names ids whose puzzles have
+## changed underneath it: restoring one would hand the grid words that are not
+## in it. Refusing the file loses a game; reading it wrong corrupts one.
+func _check_save_version() -> void:
+	print("=== a save from another build ===")
+	var save_path := "user://progress_version_test.json"
+	Progress.clear(save_path)
+
+	var current := Progress.new()
+	current.coins = 999
+	current.write(save_path)
+	_check_equal("a save of this version reads back", Progress.read(save_path).coins, 999)
+
+	# The same file, aged by one version and nothing else.
+	var raw: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(save_path))
+	raw["version"] = Progress.VERSION - 1
+	var handle := FileAccess.open(save_path, FileAccess.WRITE)
+	handle.store_string(JSON.stringify(raw))
+	handle.close()
+	var stale := Progress.read(save_path)
+	_check_equal("one from the build before is refused", stale.coins, Progress.new().coins)
+	_check_equal("...and nothing of it leaks through", stale.level_id, "")
 	Progress.clear(save_path)
 
 
@@ -901,7 +1246,31 @@ func _check_cells_drawn(image: Image) -> void:
 
 
 func _finish() -> void:
+	_done = true
 	print("=== %s checks, %s failed ===" % [_checks, _failures.size()])
 	for failure in _failures:
 		print("  FAILED: %s" % failure)
 	get_tree().quit(1 if _failures.size() > 0 else 0)
+
+## The frame cap is the test's own, not the command line's.
+##
+## `--quit-after N` quits with code 0, so a run cut short by it reads as a
+## passing one, and a failure it never reached is never printed. This counts the
+## frames itself and quits 2 with a sentence saying what happened. Run the scene
+## without `--quit-after`, or with a larger one as an outer backstop.
+const FRAME_BUDGET := 4000
+
+var _frames: int = 0
+
+
+func _process(_delta: float) -> void:
+	if _done:
+		return
+	_frames += 1
+	if _frames < FRAME_BUDGET:
+		return
+	_done = true
+	print("")
+	print("=== CUT SHORT after %d checks and %d frames ===" % [_checks, _frames])
+	print("    the run never reached its end: raise FRAME_BUDGET or find the hang")
+	get_tree().quit(2)
