@@ -446,6 +446,8 @@ func _run() -> void:
 	_check_equal("...and returns a lantern", shell.game.lanterns, 3)
 	shell.daily_window.visible = false
 
+	await _check_darkness()
+
 	_check_separators()
 
 	_finish()
@@ -454,6 +456,69 @@ func _run() -> void:
 ## Same rule as the slice test, over the screens this one builds: the title
 ## carries «المنزلة ٤ — الدبران · النجمة ١٢ من ٢٠», and the map its own lines.
 ## Every screen the shell made is still a child here, shown or hidden.
+## There is no losing in this game, only light that lessens.
+func _check_darkness() -> void:
+	print("=== the lanterns take the light with them ===")
+	shell.go_to(Shell.Screen.GAME)
+	await get_tree().create_timer(MeteorWipe.DURATION + 0.2).timeout
+
+	shell.game.lanterns = 5
+	shell.game._refresh_chrome()
+	var full: float = shell.sky.light
+	_check_equal("five lanterns is the sky as designed", full, 1.0)
+
+	shell.game.lanterns = 3
+	shell.game._refresh_chrome()
+	var middling: float = shell.sky.light
+	_check("three is darker (%0.2f < %0.2f)" % [middling, full], middling < full)
+	_check_equal("...and the disc is still full (%0.2f)" % shell.game.wheel.light,
+		shell.game.wheel.light, 1.0)
+
+	shell.game.lanterns = 1
+	shell.game._refresh_chrome()
+	_check("one is darker still (%0.2f < %0.2f)" % [shell.sky.light, middling],
+		shell.sky.light < middling)
+	_check("...and now the disc goes with it (%0.2f)" % shell.game.wheel.light,
+		shell.game.wheel.light < 1.0)
+	_check("the stars dim less than the sky does",
+		shell.sky.stars.light > shell.sky.light)
+
+	shell.game.lanterns = 0
+	shell.game._refresh_chrome()
+	_check("none is the darkest (%0.2f)" % shell.sky.light, shell.sky.light < 0.6)
+	_check("...but never black", shell.sky.light > 0.4)
+
+	print("=== the question comes after the first dark, not before ===")
+	_check("nothing was asked on the way in", not shell.notify_window.visible)
+	_check("...and the settings have not been written to", not shell.settings.notify_asked)
+
+	shell.game.lanterns = 0
+	shell.game.show_out_of_lanterns()
+	_check("the lanterns window is up", shell.game.lanterns_window.visible)
+	_check("...and the question waits behind it", not shell.notify_window.visible)
+
+	shell.game.lanterns_window.close()
+	await get_tree().create_timer(SkyPopup.CLOSE_SECONDS + 0.1).timeout
+	shell.notify_window.settle()
+	_check("it is asked once that window is gone", shell.notify_window.visible)
+
+	for panel in shell.notify_window.buttons():
+		if (panel.get_meta("label") as Label).text == "نعم، أنبئني":
+			(panel.get_meta("button") as Button).pressed.emit()
+	_check("the answer is kept", shell.settings.notify)
+	_check("...and the asking is over", shell.settings.notify_asked)
+	_check_equal("...and it survives a read", GameSettings.read(SETTINGS).notify, true)
+
+	await get_tree().create_timer(SkyPopup.CLOSE_SECONDS + 0.1).timeout
+	shell.game.lanterns = 0
+	shell.game.show_out_of_lanterns()
+	shell.game.lanterns_window.close()
+	await get_tree().create_timer(SkyPopup.CLOSE_SECONDS + 0.1).timeout
+	_check("and it is never asked again", not shell.notify_window.visible)
+	shell.game.lanterns = 5
+	shell.game._refresh_chrome()
+
+
 func _check_separators() -> void:
 	print("=== no dot beside a number ===")
 	var bad := PackedStringArray()

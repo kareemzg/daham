@@ -42,6 +42,8 @@ var _coin_label: Label
 var _moon_label: Label
 var _moon_icon: UiIcon
 var _lamps: Array[UiIcon] = []
+## Where the last lantern's breathing is in its cycle.
+var _pulse: float = 0.0
 var _utilities: Array[GlossyPanel] = []
 
 
@@ -141,6 +143,23 @@ func _label() -> Label:
 	if _font != null:
 		label.add_theme_font_override("font", _font)
 	return label
+
+
+## The one lantern left breathes, so the warning arrives before the window does.
+func _process(delta: float) -> void:
+	if _lamps.is_empty():
+		return
+	var alight := lanterns == 1
+	if not alight and is_equal_approx(_pulse, 0.0):
+		return
+	_pulse = fmod(_pulse + delta, TAU) if alight else 0.0
+	var lamp := _lamps[0]
+	var swell := 1.0 if not alight else 1.0 + 0.16 * (0.5 + 0.5 * sin(_pulse * 3.4))
+	lamp.pivot_offset = lamp.size * 0.5
+	lamp.scale = Vector2(swell, swell)
+	lamp.modulate = Color(1, 1, 1) if not alight else Color(
+		1.0, 1.0, 1.0, 0.78 + 0.22 * (0.5 + 0.5 * sin(_pulse * 3.4))
+	)
 
 
 func _refresh() -> void:

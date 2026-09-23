@@ -10,6 +10,24 @@ extends Control
 var stars: StarField
 var _sky: GradientTexture2D
 
+## How much light is left in the sky, 1.0 down to about half.
+##
+## There is no losing in this game, only light that lessens: every lantern the
+## player spends takes a degree off the sky and off the wheel's disc, and
+## nothing is said about it. The stars dim less than the gradient does, so a
+## darker sky reads as deeper night rather than as a screen turned down.
+var light: float = 1.0:
+	set(value):
+		var next := clampf(value, 0.0, 1.0)
+		if is_equal_approx(next, light):
+			return
+		light = next
+		# The declaration's own initialiser can run before `_init()` has made
+		# the field, so this is not a needless guard.
+		if stars != null:
+			stars.light = 0.5 + 0.5 * light
+		queue_redraw()
+
 
 func _init() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -41,4 +59,6 @@ func _make_sky() -> GradientTexture2D:
 
 
 func _draw() -> void:
-	draw_texture_rect(_sky, Rect2(Vector2.ZERO, size), false)
+	# Multiplied rather than washed with black: the hue stays, only the
+	# brightness goes, which is what a night getting darker looks like.
+	draw_texture_rect(_sky, Rect2(Vector2.ZERO, size), false, Color(light, light, light))

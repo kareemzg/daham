@@ -7,7 +7,7 @@ extends RefCounted
 ## that forget, and so the day sound arrives it has somewhere to look.
 
 const DEFAULT_PATH := "user://settings.json"
-const VERSION := 1
+const VERSION := 2
 
 var sound: bool = true
 var music: bool = true
@@ -15,6 +15,17 @@ var haptics: bool = true
 ## Only Arabic exists. The row is in the window because the design has it, and
 ## because adding a second language later should not move anything.
 var language: String = "ar"
+## One notification, when the lanterns are full again. Nothing else.
+##
+## Scheduling it needs a platform plugin the project does not have yet, so this
+## is stored and unread, like the sound switches. What it does carry today is
+## the promise the window makes, which has to survive a restart or the question
+## would be asked again.
+var notify: bool = false
+## Whether the question has been put at all. It is not asked on a first launch
+## but the first time the player runs out of lanterns — the moment a
+## notification means something.
+var notify_asked: bool = false
 
 
 static func read(path: String = DEFAULT_PATH) -> GameSettings:
@@ -35,6 +46,8 @@ static func read(path: String = DEFAULT_PATH) -> GameSettings:
 	settings.music = bool(data.get("music", true))
 	settings.haptics = bool(data.get("haptics", true))
 	settings.language = str(data.get("language", "ar"))
+	settings.notify = bool(data.get("notify", false))
+	settings.notify_asked = bool(data.get("notify_asked", false))
 	return settings
 
 
@@ -45,6 +58,8 @@ func write(path: String = DEFAULT_PATH) -> bool:
 		"music": music,
 		"haptics": haptics,
 		"language": language,
+		"notify": notify,
+		"notify_asked": notify_asked,
 	}
 	# Beside the real file, then moved into place, as the save does: a kill
 	# mid-write leaves the old settings rather than half a file.

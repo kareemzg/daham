@@ -30,6 +30,9 @@ var settings_window: SettingsWindow
 var mansion_window: SkyWindow
 var shop_window: ShelfWindow
 var daily_window: DailyWindow
+## Asked once, the first time the lanterns run out. See `_ask_about_notice()`.
+var notify_window: SkyWindow
+var _owed_notice_question: bool = false
 ## The journey's state, held while the day's challenge is played over it.
 var _journey: Progress = null
 var _figure: FigureView
@@ -78,6 +81,11 @@ func _ready() -> void:
 	game.settings_requested.connect(open_settings)
 	game.daily_finished.connect(_on_daily_finished)
 	game.cards_requested.connect(func() -> void: go_to(Screen.CARDS))
+	# The sky is the shell's, so the darkness the lanterns cause has to come
+	# across as a message. It follows the player between screens, because it
+	# belongs to the player and not to the screen they are on.
+	game.light_changed.connect(func(light: float) -> void: sky.light = light)
+	game.lanterns_emptied.connect(_on_lanterns_emptied)
 
 	settings_window = SettingsWindow.new()
 	settings_window.configure_settings(DISPLAY_FONT, UI_BOLD_FONT)
@@ -109,12 +117,39 @@ func _ready() -> void:
 	mansion_window.close_requested.connect(func() -> void: mansion_window.close())
 	mansion_window.add_close_cross()
 
+	# The question about the notification. It is built here with every other
+	# window, and opened only after the lanterns have run out for the first time.
+	notify_window = SkyWindow.new()
+	notify_window.configure(DISPLAY_FONT, UI_BOLD_FONT)
+	notify_window.set_crest(UiIcon.Kind.LANTERN)
+	notify_window.set_title("أُنبئك حين تعود؟")
+	# Broken by hand: a Label left to wrap itself claims a height it works out
+	# at zero width, which on a window's first layout is every word on a line.
+	notify_window.set_body("إشعارٌ واحد حين تمتلئ فوانيسك.\nلا شيء غيره.")
+	notify_window.visible = false
+	add_child(notify_window)
+	var yes := notify_window.add_button(
+		GlossyPanel.Style.BUTTON_EMBER, "نعم، أنبئني", UiIcon.Kind.LANTERN
+	)
+	(yes.get_meta("button") as Button).pressed.connect(
+		func() -> void: _answer_notice(true))
+	var later := notify_window.add_button(
+		GlossyPanel.Style.BUTTON_CREAM, "لاحقاً", -1, 92.0
+	)
+	(later.get_meta("button") as Button).pressed.connect(
+		func() -> void: _answer_notice(false))
+
 	shop_window = ShelfWindow.new()
 	shop_window.configure_shelf(
 		DISPLAY_FONT, UI_BOLD_FONT, UiIcon.Kind.SHOP, "المتجر",
 		"تُشترى بالعملات التي تكسبها من المستويات."
 	)
-	shop_window.add_item(UiIcon.Kind.LANTERN, "املأ الفوانيس", "الخمسة كاملة", 100)
+	# The one price, read from where it is spent. A shop that sells a refill
+	# for less than the screen charges is two prices for one thing.
+	shop_window.add_item(
+		UiIcon.Kind.LANTERN, "املأ الفوانيس", "الخمسة كاملة",
+		GameScreen.LANTERN_REFILL_COST
+	)
 	shop_window.add_item(UiIcon.Kind.SPYGLASS, "ثلاثة مناظير", "بدل ١٥٠، توفّر ٣٠", 120)
 	shop_window.add_item(UiIcon.Kind.ASTROLABE, "أسطرلابان", "بدل ٣٠٠، توفّر ٦٠", 240)
 	shop_window.add_purse()
@@ -233,6 +268,37 @@ func place() -> Vector2i:
 	if game == null or game.level == null:
 		return Vector2i.ZERO
 	return Mansions.parse(game.level.id)
+
+
+## The lanterns have gone out. The question waits for the window that tells
+## the player so to close: two windows at once would be one of them unread.
+func _on_lanterns_emptied() -> void:
+	if settings.notify_asked:
+		return
+	if _owed_notice_question:
+		return
+	_owed_notice_question = true
+	game.lanterns_window.closed.connect(_ask_about_notice, CONNECT_ONE_SHOT)
+
+
+func _ask_about_notice() -> void:
+	_owed_notice_question = false
+	if settings.notify_asked or showing != Screen.GAME:
+		return
+	notify_window.open()
+
+
+## Either answer settles it for good: the question is asked once.
+func _answer_notice(yes: bool) -> void:
+	settings.notify = yes
+	settings.notify_asked = true
+	# Nothing schedules anything yet — a local notification needs a platform
+	# plugin this project does not carry. What is stored is the promise, so the
+	# day the plugin lands it has an answer waiting and the player is not asked
+	# twice.
+	if not settings_path.is_empty():
+		settings.write(settings_path)
+	notify_window.close()
 
 
 func open_settings() -> void:
@@ -390,7 +456,9 @@ func _layout() -> void:
 		node.size = area.size
 
 	# Windows centre on the whole window, so they are never off to one side.
-	for node: Control in [settings_window, mansion_window, shop_window, daily_window]:
+	for node: Control in [
+		settings_window, mansion_window, shop_window, daily_window, notify_window
+	]:
 		node.position = Vector2.ZERO
 		node.size = size
 	settings_window.relayout(s)
@@ -398,3 +466,4 @@ func _layout() -> void:
 	_layout_star_line(s)
 	shop_window.relayout(s)
 	daily_window.relayout(s)
+	notify_window.relayout(s)

@@ -90,6 +90,25 @@ func _shoot() -> void:
 	shell.go_to(Shell.Screen.GAME)
 	await get_tree().create_timer(MeteorWipe.DURATION + 0.2).timeout
 
+	# The light going out of the sky, lantern by lantern. Four shots, because
+	# the whole point is that the steps are felt one at a time.
+	for count in [5, 3, 1]:
+		shell.game.lanterns = count
+		shell.game._refresh_chrome()
+		await _save("screen_dark_%d" % count)
+	shell.game.lanterns = 0
+	shell.game._refresh_chrome()
+	shell.game.show_out_of_lanterns()
+	shell.game.lanterns_window.settle()
+	await _save("screen_dark_0")
+	shell.game.lanterns_window.visible = false
+	shell.notify_window.open()
+	shell.notify_window.settle()
+	await _save("screen_notify")
+	shell.notify_window.visible = false
+	shell.game.lanterns = 3
+	shell.game._refresh_chrome()
+
 	# The rhyme, which comes before the twentieth star is drawn. Driven through
 	# `_begin_anwa()` rather than posed, so the shot is the real screen.
 	var last := Level.load_from("res://data/levels/m04-20.json")

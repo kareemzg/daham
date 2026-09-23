@@ -26,6 +26,16 @@ signal daily_finished
 ## Asked for from the card a finished mansion opens.
 signal cards_requested
 
+## How much light the sky should have, 1.0 down to about half. The shell owns
+## the one backdrop the whole game draws on, so the screen cannot dim it
+## itself: it says how dark it should be and the shell does it.
+signal light_changed(light: float)
+
+## The last lantern has gone out. The shell uses it to ask, once in a player's
+## life, whether they want telling when the lanterns are full again: at a first
+## launch the question means nothing, and here it means everything.
+signal lanterns_emptied
+
 enum Result {
 	CORRECT,  ## a grid word, found for the first time
 	ALREADY_FOUND,  ## a grid word found earlier: pulse it, score nothing
@@ -55,9 +65,22 @@ const MANSION_REWARD := 400
 ## Nine levels' worth, near the mansion's own reward: filling the lanterns
 ## has to be a real choice against buying tools, or it is not a price.
 const LANTERN_REFILL_COST := 900
-## How long one lantern takes to come back on its own.
-const LANTERN_REGEN_SECONDS := 1800
+## How long one lantern takes to come back on its own. Ten minutes, not the
+## half hour it was: the darkness is the punishment now, and a wait long enough
+## to send the player away is a different one.
+const LANTERN_REGEN_SECONDS := 600
 const TOAST_SECONDS := 1.1
+## How much light is left in the sky at each lantern count, five down to none.
+##
+## There is no losing here, only light that lessens. A table rather than a
+## curve, because what matters is how each step feels and not that the steps
+## are even: five is the sky as designed, three is visibly less without a word
+## said, one is the darkest anyone plays in, and none is darker still behind
+## the window.
+const LANTERN_LIGHT := [0.55, 0.66, 0.76, 0.85, 0.93, 1.0]
+## The disc goes with it, but only at the bottom of the range: dimming it early
+## would make the letters hard to read for no reason.
+const WHEEL_LIGHT := [0.58, 0.74, 0.88, 1.0, 1.0, 1.0]
 ## A wheel holds seven tiles at most, and the ceremony needs one per letter
 ## because a finger cannot touch the same tile twice. Every spring mansion
 ## fits; «سعد الذابح» and its kind do not, and are let through to the finale.
@@ -397,7 +420,11 @@ func _build_windows() -> void:
 	lanterns_window = _new_window()
 	lanterns_window.set_crest(UiIcon.Kind.LANTERN, 0.0)
 	lanterns_window.set_title("نفدت الفوانيس")
-	lanterns_window.set_body("انطفأ آخر فانوس.\nاملأها لتكمل، أو عد لاحقاً.")
+	# The wait is read off the constant rather than written into the prose:
+	# a window that says ten minutes while the code says thirty is a lie the
+	# player can time.
+	lanterns_window.set_body("انطفأ آخر فانوس.\nيعود الأول بعد %s دقائق، أو املأها الآن."
+		% Arabic.eastern_digits(LANTERN_REGEN_SECONDS / 60))
 	_clock_strip = _build_clock_row(lanterns_window)
 	refill_button = lanterns_window.add_button(
 		GlossyPanel.Style.BUTTON_EMBER,
@@ -1306,6 +1333,7 @@ func show_out_of_lanterns() -> void:
 	_refresh_clock()
 	_open(lanterns_window)
 	set_process(true)
+	lanterns_emptied.emit()
 
 
 func _on_refill_pressed() -> void:
@@ -1350,7 +1378,9 @@ func _refresh_clock() -> void:
 	var seconds := Arabic.eastern_digits(left % 60)
 	if left % 60 < 10:
 		seconds = Arabic.eastern_digits(0) + seconds
-	label.text = "يعود فانوس بعد %s:%s" % [Arabic.eastern_digits(left / 60), seconds]
+	# Just the clock. The window's own prose already says what is being waited
+	# for; saying it twice in two lines is the window talking to itself.
+	label.text = "%s:%s" % [Arabic.eastern_digits(left / 60), seconds]
 
 
 # --- moving between levels ---------------------------------------------------
@@ -1595,6 +1625,18 @@ func _refresh_chrome() -> void:
 	hud.lanterns = lanterns
 	# `_moon_shown`, not `moon`: the chip waits for the flying star to land.
 	hud.moon = _moon_shown
+	_refresh_light()
+
+
+## The sky and the disc follow the lanterns. Nothing announces it.
+func _refresh_light() -> void:
+	var step := clampi(lanterns, 0, LANTERN_LIGHT.size() - 1)
+	var sky_light: float = LANTERN_LIGHT[step]
+	if _sky != null:
+		_sky.light = sky_light
+	if wheel != null:
+		wheel.light = WHEEL_LIGHT[step]
+	light_changed.emit(sky_light)
 
 
 func _say(message: String) -> void:
