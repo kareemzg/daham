@@ -5,44 +5,83 @@
   "season": "spring",
   "index_in_mansion": 18,
   "letters": [
-    "ا",
-    "س",
-    "ي",
-    "ا"
+    "ح",
+    "ض",
+    "و",
+    "ر"
   ],
   "grid": {
-    "rows": 3,
-    "cols": 4
+    "rows": 5,
+    "cols": 8
   },
   "words": [
     {
-      "text": "اسيا",
+      "text": "حضر",
       "row": 0,
-      "col": 0,
+      "col": 2,
       "direction": "h"
     },
     {
-      "text": "ايا",
-      "row": 0,
-      "col": 0,
-      "direction": "v"
-    },
-    {
-      "text": "ياس",
+      "text": "حوض",
       "row": 0,
       "col": 2,
       "direction": "v"
     },
     {
-      "text": "ايس",
+      "text": "روح",
+      "row": 0,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "حور",
+      "row": 0,
+      "col": 7,
+      "direction": "v"
+    },
+    {
+      "text": "حرض",
       "row": 2,
       "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "روض",
+      "row": 2,
+      "col": 1,
+      "direction": "v"
+    },
+    {
+      "text": "حضور",
+      "row": 2,
+      "col": 4,
+      "direction": "h"
+    },
+    {
+      "text": "وضح",
+      "row": 2,
+      "col": 6,
+      "direction": "v"
+    },
+    {
+      "text": "وحر",
+      "row": 4,
+      "col": 5,
       "direction": "h"
     }
   ],
   "bonus": [
-    "اسا",
-    "اسي",
-    "اياس"
-  ]
+    "رضح",
+    "ضحو",
+    "وضر"
+  ],
+  "known": [
+    "حوضر",
+    "رحض",
+    "ضرح",
+    "ضرو",
+    "ضور",
+    "ورض"
+  ],
+  "gift": null
 }

@@ -5,44 +5,85 @@
   "season": "spring",
   "index_in_mansion": 17,
   "letters": [
-    "و",
-    "ص",
+    "س",
     "ل",
-    "ة"
+    "ب",
+    "ي"
   ],
   "grid": {
-    "rows": 5,
-    "cols": 4
+    "rows": 9,
+    "cols": 5
   },
   "words": [
     {
-      "text": "صول",
+      "text": "بلس",
       "row": 0,
-      "col": 1,
+      "col": 0,
       "direction": "h"
     },
     {
-      "text": "وصل",
+      "text": "سبل",
       "row": 0,
       "col": 2,
       "direction": "v"
     },
     {
-      "text": "وصلة",
+      "text": "ليس",
+      "row": 1,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "سلبي",
       "row": 2,
-      "col": 0,
+      "col": 1,
       "direction": "h"
     },
     {
-      "text": "صلة",
+      "text": "سبيل",
       "row": 2,
       "col": 1,
       "direction": "v"
+    },
+    {
+      "text": "لبس",
+      "row": 5,
+      "col": 1,
+      "direction": "h"
+    },
+    {
+      "text": "بيس",
+      "row": 5,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "سلب",
+      "row": 6,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "سيل",
+      "row": 7,
+      "col": 2,
+      "direction": "h"
     }
   ],
   "bonus": [
-    "صوة",
-    "صولة",
-    "لصة"
-  ]
+    "بسل",
+    "بلي",
+    "سبي",
+    "سلي",
+    "سليب",
+    "سيب",
+    "لبسي",
+    "لبي",
+    "لبيس",
+    "لسب",
+    "يبس",
+    "يلب"
+  ],
+  "known": [],
+  "gift": null
 }

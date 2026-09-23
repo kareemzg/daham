@@ -31,12 +31,18 @@ enum Result {
 	ALREADY_FOUND,  ## a grid word found earlier: pulse it, score nothing
 	BONUS,  ## a valid word outside the grid: fills the moon
 	BONUS_REPEAT,
-	INVALID,  ## not a word: five in a row costs a lantern
+	KNOWN,  ## a real word the wheel spells, but not one of this level's: free
+	INVALID,  ## not a word: five of them in a level costs a lantern
 	TOO_SHORT,  ## one letter or none: ignored entirely
 }
 
 const LANTERNS_MAX := 5
 const MOON_PHASES := 8
+## How many wrong guesses a level costs a lantern. A budget for the level, not
+## a run: a correct word no longer wipes it, because wiping it meant a player
+## who found something every few tries never paid for anything. `show_level()`
+## is the only thing that clears it, so the budget is per level and survives a
+## quit — which is the whole reason it is saved.
 const WRONG_STREAK_COST := 5
 const LEVEL_REWARD := 45
 ## What the cheapest tool costs, for the price tag beside the wheel. The four
@@ -55,18 +61,22 @@ const TOAST_SECONDS := 1.1
 const REF_WIDTH := 1080.0
 const CELL := 124.0
 const CELL_GAP := 16.0
-const WHEEL_BODY := 277.0
+## The disc's radius. It only has to contain the tiles: the orbit is 163 and
+## the widest tile 80, so 243 is everything there is to hold. It sat at 277,
+## and those 34 units of nothing were 50 off the grid's height once doubled —
+## on a tall grid the cells are capped by height, so the padding was coming
+## straight out of the letters.
+const WHEEL_BODY := 252.0
 const WHEEL_ORBIT := 163.0
 const TILE_RADIUS := 80.0
 const PREVIEW_SIZE := 100.0
 const PREVIEW_PILL_HEIGHT := 144.0
 const PREVIEW_PILL_MIN := 366.0
 const PREVIEW_PILL_PAD := 72.0
-const WHEEL_MARGIN := 62.0
+const WHEEL_MARGIN := 46.0
 const CHIP_HEIGHT := 92.0
 const GRID_MARGIN := 60.0
 const STARS_PER_MANSION := 20
-const MANSION_COUNT := 28
 const BUTTON_SIZE := 161.0
 
 const DISPLAY_FONT := preload("res://assets/fonts/arabic_display.tres")
@@ -115,6 +125,11 @@ var mansion_window: SkyWindow
 var next_mansion_button: GlossyPanel
 var _mansion_name: Label
 var _mansion_figure: FigureView
+var _jump_label: Label = null
+## Level ids where the wheel's width or the grid's word count changes, read off
+## the levels themselves rather than kept in a table beside the one the pipeline
+## already has.
+var _jump_steps: PackedStringArray = PackedStringArray()
 var _mansion_line: StarLine
 var _mansion_reward: Control
 ## How many of each tool the player owns, bought ahead from the shop.
@@ -162,6 +177,7 @@ func _ready() -> void:
 	wheel.word_submitted.connect(_on_word_submitted)
 	grid.cell_picked.connect(_on_cell_picked)
 	resized.connect(_layout)
+	_build_jump_bar()
 
 	# Pick up where the player left off, in the middle of a level if that is
 	# where they were.
@@ -170,6 +186,20 @@ func _ready() -> void:
 	if not progress_path.is_empty():
 		saved = Progress.read(progress_path)
 		first = _level_by_id(saved.level_id)
+		if first == null and not saved.level_id.is_empty():
+			# The save names a level this build does not carry: a scope that
+			# shrank, or a save written by a build with more seasons in it.
+			# Losing the level is no reason to lose the coins, the lanterns,
+			# the moon and the run, so the progress is kept and only the place
+			# in it moves. What belonged to the lost level is dropped with it.
+			push_warning("Game: saved level %s is not in this build" % saved.level_id)
+			first = Level.load_from(level_path)
+			if first != null:
+				saved.level_id = first.id
+				saved.found = PackedStringArray()
+				saved.bonus_found = PackedStringArray()
+				saved.revealed = []
+				saved.wrong_streak = 0
 	if first == null:
 		saved = null
 		first = Level.load_from(level_path)
@@ -189,10 +219,26 @@ func level_by_id(id: String) -> Level:
 func _level_by_id(id: String) -> Level:
 	if id.is_empty():
 		return null
+	# The shipped range is enforced here, not only by the export filter, so that
+	# running from source behaves the way the build does. The filter leaves the
+	# other seasons' files out of the export, but they are all still on disk in
+	# the editor: without this the game happily plays a level no player can
+	# reach, and every check of that seam passes against a file the build does
+	# not carry. The hand-made fixture parses to nothing and is let through.
+	var place := Mansions.parse(id)
+	if place != Vector2i.ZERO and not Mansions.is_shipped(place.x):
+		return null
 	return Level.load_from("res://data/levels/%s.json" % id)
 
 
-## The level after this one, or "" at the end of the year.
+## The level after this one, or "" at the end of what this build carries.
+##
+## The boundary is `Mansions.is_shipped`, not the twenty-eighth mansion: the
+## build ships a season at a time, and a level file past the shipped range is
+## not in the export. Naming the next level anyway is what makes this dangerous
+## rather than merely wrong — `_save_ahead()` would write that id, and the boot
+## path throws the whole save away when it cannot load the level it names. A
+## player who finished spring would come back to a fresh game.
 func next_level_id() -> String:
 	if level == null:
 		return ""
@@ -201,9 +247,9 @@ func next_level_id() -> String:
 	if index > STARS_PER_MANSION:
 		mansion += 1
 		index = 1
-	if mansion > MANSION_COUNT:
+	if not Mansions.is_shipped(mansion):
 		return ""
-	return "m%02d-%02d" % [mansion, index]
+	return Mansions.level_id(mansion, index)
 
 
 ## Puts a level on the screen and clears everything that belongs to the last one.
@@ -215,6 +261,7 @@ func show_level(new_level: Level) -> void:
 
 	_bonus_found.clear()
 	wrong_streak = 0
+	_refresh_jump_label.call_deferred()
 	# A chart left armed must not survive into a level it was not bought for.
 	grid.picking = false
 	if finale != null:
@@ -222,6 +269,13 @@ func show_level(new_level: Level) -> void:
 	_hide_windows()
 
 	grid.setup(level)
+	# The gift is opened here rather than restored from the save. `show_level()`
+	# always runs before `restore()`, so a level that has one always has it, and
+	# a save cannot be the thing that remembers it — which matters because the
+	# ramp can be retuned and a save written against the old one must not keep
+	# opening a cell the level no longer gives away.
+	if level.has_gift():
+		grid.reveal_cell(level.gift, false)
 	wheel.body_radius = WHEEL_BODY
 	wheel.orbit_radius = WHEEL_ORBIT
 	wheel.tile_radius = TILE_RADIUS
@@ -522,12 +576,14 @@ func _layout() -> void:
 	preview.position = Vector2(0.0, wheel.position.y - 14.0 * s - preview.size.y)
 	_place_preview_pill()
 
-	# The header is anchored to the top of the screen.
-	caption.position = Vector2(0.0, 186.0 * s)
+	# The header is anchored to the top of the screen. The caption used to sit
+	# 34 units below the chips for no reason anyone can see; a tall grid is
+	# capped by height, so that gap was cells.
+	caption.position = Vector2(0.0, 172.0 * s)
 	caption.size = Vector2(size.x, 56.0 * s)
 	caption.add_theme_font_size_override("font_size", int(34.0 * s))
 
-	stars.position = Vector2(70.0 * s, 250.0 * s)
+	stars.position = Vector2(70.0 * s, 236.0 * s)
 	stars.size = Vector2(size.x - 140.0 * s, 150.0 * s)
 
 	toast.add_theme_font_size_override("font_size", int(36.0 * s))
@@ -537,7 +593,14 @@ func _layout() -> void:
 	# sits in the middle of it. Chaining it straight to the preview instead
 	# would pin it to the bottom of that gap whenever the grid is short.
 	var band_top := stars.position.y + stars.size.y + 12.0 * s + toast.size.y + 12.0 * s
-	var band_bottom := preview.position.y - 20.0 * s
+	# Down to the wheel, not down to the preview. The preview's strip was held
+	# empty for the one second a finger is on the wheel, and on a grid capped
+	# by height those 134 units were coming out of every cell on the board.
+	# The pill is a later child than the grid, so it simply draws over the last
+	# row while a word is being spelled — and that is the row a player looking
+	# at the wheel is not reading. The toast keeps its own strip above the
+	# grid: a message there would sit on the letter just won.
+	var band_bottom := wheel.position.y - 20.0 * s
 
 	# Cells shrink to fit. Generated grids run from four columns to eleven, and a
 	# fixed cell size pushed nearly half of them off the side of the screen.
@@ -782,6 +845,108 @@ func _on_cell_picked(cell: Vector2i) -> void:
 		save()
 
 
+# --- jumping about, for looking at the curve ---------------------------------
+
+## A bar for hopping straight to where the difficulty changes.
+##
+## Only in a debug build, so a release cannot show it whatever anyone forgets.
+## It lives on its own `CanvasLayer` and never enters `_layout()`: a tool for
+## looking at the game must not be able to move the game it is looking at.
+##
+## It is deliberately plain. Nothing here is a `GlossyPanel` and nothing is
+## measured against the 1080 reference, because it is not part of the design and
+## should never be mistaken for it.
+func _build_jump_bar() -> void:
+	if not OS.is_debug_build():
+		return
+	var layer := CanvasLayer.new()
+	layer.layer = 128
+	add_child(layer)
+
+	var bar := PanelContainer.new()
+	bar.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	bar.mouse_filter = Control.MOUSE_FILTER_PASS
+	var skin := StyleBoxFlat.new()
+	skin.bg_color = Color(0, 0, 0, 0.55)
+	skin.content_margin_left = 10.0
+	skin.content_margin_right = 10.0
+	skin.content_margin_top = 4.0
+	skin.content_margin_bottom = 4.0
+	bar.add_theme_stylebox_override("panel", skin)
+	layer.add_child(bar)
+
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
+	bar.add_child(row)
+
+	var back := Button.new()
+	back.text = "السابقة"
+	back.pressed.connect(func() -> void: _jump(-1))
+	row.add_child(back)
+
+	_jump_label = Label.new()
+	_jump_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_jump_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_jump_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(_jump_label)
+
+	var forward := Button.new()
+	forward.text = "التالية"
+	forward.pressed.connect(func() -> void: _jump(1))
+	row.add_child(forward)
+	_refresh_jump_label()
+
+
+## Where the shape of a level changes, in order. Worked out once, by reading
+## every shipped level: the ramp lives in the pipeline, and a copy of it here
+## would be a second truth to keep in step.
+func _difficulty_steps() -> PackedStringArray:
+	if not _jump_steps.is_empty():
+		return _jump_steps
+	var previous := Vector2i(-1, -1)
+	for mansion in Mansions.SHIPPED:
+		for index in Mansions.LEVELS_PER_MANSION:
+			var id := Mansions.level_id(mansion + 1, index + 1)
+			var candidate := _level_by_id(id)
+			if candidate == null:
+				continue
+			var shape := Vector2i(candidate.letters.size(), candidate.words.size())
+			if shape != previous:
+				_jump_steps.append(id)
+				previous = shape
+	return _jump_steps
+
+
+func _jump(direction: int) -> void:
+	var steps := _difficulty_steps()
+	if steps.is_empty() or level == null:
+		return
+	# Where this level sits among the steps: the last one at or before it.
+	var at := 0
+	for i in steps.size():
+		if steps[i] <= level.id:
+			at = i
+	var target := clampi(at + direction, 0, steps.size() - 1)
+	# Already standing on a step, so a nudge forward means the next one.
+	if steps[at] != level.id and direction > 0:
+		target = mini(at + 1, steps.size() - 1)
+	var upcoming := _level_by_id(steps[target])
+	if upcoming == null:
+		return
+	_hide_windows()
+	show_level(upcoming)
+	save()
+	_refresh_jump_label()
+
+
+func _refresh_jump_label() -> void:
+	if _jump_label == null or level == null:
+		return
+	_jump_label.text = "%s — عجلة %d، كلمات %d" % [
+		level.id, level.letters.size(), level.words.size()
+	]
+
+
 ## The one entry point for a spelled word. Returns what happened.
 func submit(raw: String) -> int:
 	var word := Arabic.normalise(raw)
@@ -791,7 +956,6 @@ func submit(raw: String) -> int:
 	match result:
 		Result.CORRECT:
 			grid.reveal(word)
-			wrong_streak = 0
 			_say("كلمة صحيحة")
 			if grid.is_solved():
 				_finish_level()
@@ -802,7 +966,6 @@ func submit(raw: String) -> int:
 		Result.BONUS:
 			_bonus_found[word] = true
 			moon = mini(moon + 1, MOON_PHASES)
-			wrong_streak = 0
 			# The payout is state, so it lands on the guess. Waiting for the
 			# star to arrive would put half a second between earning the coins
 			# and owning them, and the save at the end of this call happens
@@ -814,6 +977,11 @@ func submit(raw: String) -> int:
 			_celebrate_bonus(word)
 		Result.BONUS_REPEAT:
 			_flash_preview(word)
+		Result.KNOWN:
+			# It costs nothing and earns nothing. The player spelled real Arabic;
+			# this level simply does not want it, and saying «ليست كلمة» to
+			# «نسر» would be the game being wrong rather than being hard.
+			_say("كلمة صحيحة، ليست من هذه المرحلة")
 		Result.INVALID:
 			wrong_streak += 1
 			if wrong_streak >= WRONG_STREAK_COST:
@@ -856,6 +1024,8 @@ func _classify(word: String) -> int:
 		return Result.ALREADY_FOUND if grid.is_found(word) else Result.CORRECT
 	if level.is_bonus(word):
 		return Result.BONUS_REPEAT if _bonus_found.has(word) else Result.BONUS
+	if level.is_known(word):
+		return Result.KNOWN
 	return Result.INVALID
 
 
@@ -1230,7 +1400,7 @@ func _show_mansion_card() -> void:
 		Mansions.season_name(Mansions.season_of(mansion)),
 		Arabic.eastern_digits(mansion),
 	])
-	_mansion_figure.shape = Mansions.shape_of(mansion)
+	_mansion_figure.figure = Mansions.figure_of(mansion)
 	_mansion_line.show_mansion(mansion)
 	_open(mansion_window)
 

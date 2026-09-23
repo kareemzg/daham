@@ -14,7 +14,15 @@ extends RefCounted
 ## file would lose everything rather than the last word.
 
 const DEFAULT_PATH := "user://progress.json"
-const VERSION := 1
+## Raised when a save can no longer describe the game it was written for.
+##
+## 2: every level was regenerated, so an id like `m03-07` is a different puzzle
+## than the one a version-1 save found its words in. Restoring such a save would
+## hand the grid words that are not in it.
+## 3: regenerated again, for the difficulty curve and the `known` lists.
+## 4: and again, once a word was no longer allowed to hide inside another.
+## 5: and again, for the ramp that climbs to twenty-two words and the gift cell.
+const VERSION := 5
 
 var level_id: String = ""
 var coins: int = 480

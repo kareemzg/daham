@@ -5,60 +5,68 @@
   "season": "summer",
   "index_in_mansion": 7,
   "letters": [
+    "خ",
     "ا",
-    "ض",
-    "ط",
-    "ه",
-    "ا",
-    "د"
+    "ل",
+    "ي"
   ],
   "grid": {
     "rows": 4,
-    "cols": 8
+    "cols": 6
   },
   "words": [
     {
-      "text": "اضطهاد",
+      "text": "خال",
+      "row": 0,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "خالي",
       "row": 0,
       "col": 2,
       "direction": "h"
     },
     {
-      "text": "اهدا",
+      "text": "خيال",
       "row": 0,
       "col": 2,
       "direction": "v"
     },
     {
-      "text": "هاد",
+      "text": "لاي",
       "row": 0,
-      "col": 5,
+      "col": 4,
       "direction": "v"
     },
     {
-      "text": "داه",
-      "row": 0,
-      "col": 7,
-      "direction": "v"
-    },
-    {
-      "text": "طاه",
+      "text": "الي",
       "row": 1,
       "col": 0,
       "direction": "h"
     },
     {
-      "text": "هدا",
+      "text": "الخ",
       "row": 3,
-      "col": 0,
+      "col": 1,
       "direction": "h"
     }
   ],
   "bonus": [
-    "ادا",
-    "اضطهد",
-    "اهد",
-    "دها",
-    "ضاد"
+    "اخل",
+    "اخلي",
+    "اخيل",
+    "ايل",
+    "خلا",
+    "خلي",
+    "خيل",
+    "لاخ",
+    "يال",
+    "يلا"
+  ],
+  "known": [
+    "خايل",
+    "لخا",
+    "لخي"
   ]
 }

@@ -93,7 +93,7 @@ func show_mansion(number: int, lit: int, total: int) -> void:
 		GlossyPanel.Style.CHIP if state == State.DONE else GlossyPanel.Style.PANEL_NIGHT
 	)
 	_shell.modulate = Color(1.18, 1.18, 1.18) if state == State.NOW else Color(1, 1, 1)
-	_figure.shape = Mansions.shape_of(number) if state != State.LOCKED else []
+	_figure.figure = Mansions.figure_of(number) if state != State.LOCKED else {}
 	_figure.modulate = Color(1, 1, 1) if state == State.DONE else Color(0.45, 0.58, 0.66)
 	_figure.visible = state != State.LOCKED
 	_mark.visible = state == State.LOCKED

@@ -98,6 +98,31 @@ def _is_complete(grid: Grid, words: tuple[str, ...]) -> bool:
     return found == sorted(words)
 
 
+def _is_its_own_run(grid: Grid, placement: Placement) -> bool:
+    """A word must BE a maximal run, not merely sit inside one.
+
+    The run rule reads the grid and asks whether every maximal run is one of the
+    words. It never asks the converse, and that hole let a word be recorded on
+    cells another word already covers. In m01-15 «علي» was written across row 2
+    inside «فعلي», and the grid still passed because a vertical run elsewhere
+    happened to spell «علي» as well. The multiset matched, so nothing complained
+    — but in the game every cell filled while one word stayed unfound, and the
+    completion window never came. The player had solved it and the level would
+    not admit it.
+
+    Six levels of 560 were like this, every one of them with six or seven grid
+    words: raising the word count is what made a word small enough to hide
+    inside another likely.
+    """
+    row, col = placement.row, placement.col
+    length = len(placement.word)
+    if placement.direction == HORIZONTAL:
+        before, after = (row, col - 1), (row, col + length)
+    else:
+        before, after = (row - 1, col), (row + length, col)
+    return before not in grid and after not in grid
+
+
 def _crossing_placements(grid: Grid, word: str) -> Iterator[Placement]:
     """Every way to hang `word` off a letter already on the grid."""
     for (row, col), letter in grid.items():
@@ -148,7 +173,9 @@ def layout(
         if len(solutions) >= solution_cap or nodes >= node_cap:
             return
         if not remaining:
-            if _is_complete(grid, targets):
+            if _is_complete(grid, targets) and all(
+                _is_its_own_run(grid, placement) for placement in placed
+            ):
                 solutions.append(_normalise(placed))
             return
         head, *rest = remaining

@@ -11,20 +11,14 @@
     "ي"
   ],
   "grid": {
-    "rows": 3,
+    "rows": 7,
     "cols": 6
   },
   "words": [
     {
-      "text": "هما",
+      "text": "هيا",
       "row": 0,
-      "col": 0,
-      "direction": "h"
-    },
-    {
-      "text": "اهم",
-      "row": 0,
-      "col": 2,
+      "col": 3,
       "direction": "v"
     },
     {
@@ -38,23 +32,66 @@
       "row": 2,
       "col": 2,
       "direction": "h"
+    },
+    {
+      "text": "مياه",
+      "row": 2,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "هام",
+      "row": 2,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "ماي",
+      "row": 3,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "اهم",
+      "row": 4,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "هما",
+      "row": 4,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "يهم",
+      "row": 5,
+      "col": 1,
+      "direction": "h"
+    },
+    {
+      "text": "امه",
+      "row": 6,
+      "col": 3,
+      "direction": "h"
     }
   ],
   "bonus": [
-    "امه",
     "اهيم",
     "ايم",
     "ايهم",
     "ماه",
-    "ماي",
     "مها",
-    "مياه",
     "ميه",
-    "هام",
     "همي",
-    "هيا",
     "هيام",
-    "هيم",
-    "يهم"
+    "هيم"
+  ],
+  "known": [
+    "اهمي"
+  ],
+  "gift": [
+    2,
+    2
   ]
 }

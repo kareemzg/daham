@@ -157,8 +157,17 @@ func _scale() -> float:
 
 
 ## Where the board sits inside the window, and how big it is.
+##
+## The width is the design's: 1080 reference units, scaled so the whole board
+## fits. The height is **all of it**. The scale is chosen so 1920 units already
+## fit, so anything past that is room the window has and the design did not ask
+## for, and letterboxing it away was throwing 18 to 20 per cent of the screen
+## off the top and bottom of every modern phone — 460 pixels on a 19.5:9 one,
+## where the grid was being squeezed into 39 per cent of the height. A screen
+## laid out from `size.y` simply gets more; one anchored to the top is unmoved.
 func board() -> Rect2:
-	var area := BOARD * _scale()
+	var scale := _scale()
+	var area := Vector2(BOARD.x * scale, maxf(BOARD.y * scale, size.y))
 	return Rect2(((size - area) * 0.5).floor(), area)
 
 
@@ -263,7 +272,7 @@ func open_mansion(mansion: int) -> void:
 		Arabic.eastern_digits(lit),
 		Arabic.eastern_digits(Mansions.LEVELS_PER_MANSION),
 	])
-	_figure.shape = Mansions.shape_of(mansion)
+	_figure.figure = Mansions.figure_of(mansion)
 	_star_line.show_mansion(mansion)
 	_layout()
 	mansion_window.open()

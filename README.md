@@ -53,12 +53,34 @@ Three desktop presets are in `export_presets.cfg`, and the export templates for
 godot --path . --headless --export-release "macOS" build/macos/SamaAlArab.zip
 ```
 
-`Linux` and `Windows` are the other two preset names. Each build carries all
-561 levels and leaves out the dictionary, the pipeline and the dev scenes: the
-dictionary is only ever read by `tools/pipeline/`, and shipping it would add
-three quarters of a megabyte nothing reads.
+`Linux` and `Windows` are the other two preset names. A build carries **one
+season**: `Mansions.SHIPPED` is seven, so the export holds spring's 140 levels,
+mansions `m01` to `m07`, and leaves the other three seasons out along with the
+dictionary, the pipeline and the dev scenes. Raise `SHIPPED` by seven and widen
+the export filter to ship the next season.
 
-What is not done: nothing is signed. macOS needs a Developer ID and
+The boundary is enforced in `_level_by_id()` as well as in the filter, so
+running from source behaves like the build: every level file is still on disk in
+the editor, and without that check the game would play levels no player can
+reach. On the dictionary:
+`_classify()` consults only the level's own grid words and its pre-computed
+`bonus` list, so nothing in a build ever opens the dictionary.
+
+That is also where a rule is hiding. A real Arabic word outside the level's
+bonus list is judged «ليست كلمة» and counts toward losing a lantern, and the
+`MAX_BONUS = 60` cap in the pipeline means 153 of the 560 levels have such a
+tail: a seven-letter level at the cap rejects seventy common words on
+average, and as many as a hundred and sixty. Whether that
+should stay is an open design question, not a build question — see
+[docs/to-launch.md](docs/to-launch.md). Answering it does not need the
+dictionary at runtime either; the pipeline already knows every word a level's
+letters can spell.
+
+Everything still to be done before this can ship — audio, the losing loop,
+ads, onboarding, the mobile presets — is listed in
+[docs/to-launch.md](docs/to-launch.md).
+
+What is not done here: nothing is signed. macOS needs a Developer ID and
 notarisation before it will open on another Mac without the right-click dance,
 and Windows wants a code-signing certificate or SmartScreen will warn. Both are
 accounts and keys rather than code, and the credentials file Godot writes

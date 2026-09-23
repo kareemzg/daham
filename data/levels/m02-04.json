@@ -5,44 +5,84 @@
   "season": "spring",
   "index_in_mansion": 4,
   "letters": [
-    "ر",
-    "د",
+    "م",
+    "و",
+    "ج",
     "و",
     "د"
   ],
   "grid": {
-    "rows": 3,
-    "cols": 5
+    "rows": 6,
+    "cols": 6
   },
   "words": [
     {
-      "text": "دور",
+      "text": "دوم",
       "row": 0,
-      "col": 0,
+      "col": 1,
       "direction": "v"
     },
     {
-      "text": "رود",
-      "row": 0,
-      "col": 2,
-      "direction": "h"
-    },
-    {
-      "text": "ورد",
+      "text": "دمج",
       "row": 0,
       "col": 3,
       "direction": "v"
     },
     {
-      "text": "ردود",
+      "text": "مجد",
+      "row": 0,
+      "col": 5,
+      "direction": "v"
+    },
+    {
+      "text": "موجود",
       "row": 2,
+      "col": 1,
+      "direction": "h"
+    },
+    {
+      "text": "وجود",
+      "row": 2,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "وجد",
+      "row": 2,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "موج",
+      "row": 3,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "ومد",
+      "row": 4,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "جود",
+      "row": 5,
       "col": 0,
       "direction": "h"
     }
   ],
   "bonus": [
-    "دود",
-    "ردد",
-    "ودر"
-  ]
+    "جمد",
+    "جمود",
+    "جودو",
+    "مجود",
+    "وجم",
+    "ودج"
+  ],
+  "known": [
+    "جدم",
+    "دجم",
+    "وجوم"
+  ],
+  "gift": null
 }

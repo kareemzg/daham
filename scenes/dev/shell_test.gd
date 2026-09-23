@@ -10,6 +10,7 @@ const SETTINGS := "user://shell_test_settings.json"
 
 var shell: Shell
 var _failures: PackedStringArray = PackedStringArray()
+var _done: bool = false
 var _checks: int = 0
 
 
@@ -77,6 +78,61 @@ func _run() -> void:
 	# The hand-made fixture sits outside the generated range on purpose.
 	_check_equal("the fixture is not a place", Mansions.parse("sample"), Vector2i.ZERO)
 	_check_equal("nor is a mansion past the year", Mansions.parse("m99-01"), Vector2i.ZERO)
+
+	print("=== the figures are real stars, not placeholders ===")
+	var real := 0
+	var faults := PackedStringArray()
+	for mansion in Mansions.SHIPPED:
+		var f := Mansions.figure_of(mansion + 1)
+		var points: Array = f["points"]
+		var mags: Array = f["mags"]
+		if points.is_empty():
+			faults.append("%d has no points" % (mansion + 1))
+			continue
+		if mags.size() != points.size():
+			faults.append("%d has %d points but %d magnitudes" % [mansion + 1, points.size(), mags.size()])
+		for pair: Vector2i in (f["join"] as Array):
+			if pair.x < 0 or pair.y < 0 or pair.x >= points.size() or pair.y >= points.size():
+				faults.append("%d joins stars that are not there: %s" % [mansion + 1, pair])
+		if f["real"]:
+			real += 1
+	_check_equal("every shipped mansion has a real figure", real, Mansions.SHIPPED)
+	if faults.size() > 0:
+		for fault in faults:
+			print("      %s" % fault)
+	_check_equal("...and none of them is malformed", faults.size(), 0)
+
+	# الثريا is nine stars inside one degree; only the spread of brightness
+	# tells it from a smudge, and no line may be drawn through a cluster.
+	var thurayya := Mansions.figure_of(3)
+	_check_equal("الثريا is nine stars", (thurayya["points"] as Array).size(), 9)
+	_check_equal("...joined by nothing, because it is a cluster",
+		(thurayya["join"] as Array).size(), 0)
+	var mags: Array = thurayya["mags"]
+	var spread: float = 0.0
+	for m: float in mags:
+		spread = maxf(spread, m - (mags as Array).min())
+	_check("...and its magnitudes really do spread (%0.2f)" % spread, spread > 3.0)
+
+	# الدبران is one star; what makes it a figure is the herd behind it.
+	var dabaran := Mansions.figure_of(4)
+	_check_equal("الدبران is one star", (dabaran["points"] as Array).size(), 1)
+	_check("...and it has a figure behind it", (dabaran["behind"] as Array).size() > 0)
+
+	# الهقعة branches: two lines meeting at one star, not a chain.
+	var haqa := Mansions.figure_of(5)
+	_check_equal("الهقعة branches from one star", (haqa["join"] as Array).size(), 2)
+
+	print("=== what this build actually carries ===")
+	_check_equal("spring is shipped whole", Mansions.shipped_seasons(), 1)
+	_check("the first mansion is in", Mansions.is_shipped(1))
+	_check("the last of spring is in", Mansions.is_shipped(Mansions.SHIPPED))
+	_check("the first of summer is not", not Mansions.is_shipped(Mansions.SHIPPED + 1))
+	_check("nor is the last of the year", not Mansions.is_shipped(Mansions.COUNT))
+	_check("mansion zero is not a mansion", not Mansions.is_shipped(0))
+	_check_equal("a hundred and forty levels", Mansions.SHIPPED_LEVELS, 140)
+	_check("spring is whole", Mansions.season_shipped(0))
+	_check("summer is not", not Mansions.season_shipped(1))
 
 	print("=== it opens on the title, where the save left off ===")
 	_check_equal("the title is showing", shell.showing, Shell.Screen.TITLE)
@@ -324,6 +380,21 @@ func _run() -> void:
 		Daily.level_for(day) != Daily.level_for(day + 1)
 	)
 	_check("...and it is a level that exists", shell.game.level_by_id(Daily.level_for(day)) != null)
+	# Every day of a whole cycle, not just today. The file is on disk either way
+	# when the test runs from source, so existence proves nothing: what has to
+	# hold is that the level is inside the shipped range, because that is what
+	# the export carries. This is the check that would have caught «العب» doing
+	# nothing on six days out of seven.
+	var unshipped := 0
+	var repeats := 0
+	for i in Mansions.SHIPPED_LEVELS:
+		var id := Daily.level_for(day + i)
+		if not Mansions.is_shipped(Mansions.parse(id).x):
+			unshipped += 1
+		if i > 0 and id == Daily.level_for(day + i - 1):
+			repeats += 1
+	_check_equal("every day of a cycle is a shipped level", unshipped, 0)
+	_check_equal("...and no day repeats the day before", repeats, 0)
 
 	print("=== playing the day's challenge ===")
 	var journey: String = shell.game.level.id
@@ -379,6 +450,7 @@ func _run() -> void:
 
 
 func _finish() -> void:
+	_done = true
 	Progress.clear(SAVE)
 	GameSettings.clear(SETTINGS)
 	print("")
@@ -390,3 +462,26 @@ func _finish() -> void:
 	for failure in _failures:
 		print("  FAILED: %s" % failure)
 	get_tree().quit(1)
+
+## The frame cap is the test's own, not the command line's.
+##
+## `--quit-after N` quits with code 0, so a run cut short by it reads as a
+## passing one, and a failure it never reached is never printed. This counts the
+## frames itself and quits 2 with a sentence saying what happened. Run the scene
+## without `--quit-after`, or with a larger one as an outer backstop.
+const FRAME_BUDGET := 4000
+
+var _frames: int = 0
+
+
+func _process(_delta: float) -> void:
+	if _done:
+		return
+	_frames += 1
+	if _frames < FRAME_BUDGET:
+		return
+	_done = true
+	print("")
+	print("=== CUT SHORT after %d checks and %d frames ===" % [_checks, _frames])
+	print("    the run never reached its end: raise FRAME_BUDGET or find the hang")
+	get_tree().quit(2)

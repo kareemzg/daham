@@ -11,19 +11,19 @@
     "ي"
   ],
   "grid": {
-    "rows": 5,
-    "cols": 4
+    "rows": 9,
+    "cols": 5
   },
   "words": [
     {
-      "text": "جوي",
+      "text": "جوز",
       "row": 0,
-      "col": 3,
+      "col": 0,
       "direction": "v"
     },
     {
-      "text": "زوجي",
-      "row": 2,
+      "text": "جيز",
+      "row": 0,
       "col": 0,
       "direction": "h"
     },
@@ -31,23 +31,58 @@
       "text": "زوج",
       "row": 2,
       "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "وجيز",
+      "row": 2,
+      "col": 1,
       "direction": "v"
     },
     {
-      "text": "جوز",
-      "row": 2,
+      "text": "زوي",
+      "row": 3,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "زيج",
+      "row": 4,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "جوزي",
+      "row": 4,
       "col": 2,
       "direction": "v"
+    },
+    {
+      "text": "زوجي",
+      "row": 5,
+      "col": 1,
+      "direction": "h"
+    },
+    {
+      "text": "وجي",
+      "row": 6,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "جوي",
+      "row": 7,
+      "col": 0,
+      "direction": "h"
     }
   ],
   "bonus": [
     "جزي",
-    "جوزي",
-    "جيز",
-    "زوي",
-    "زيج",
-    "وجز",
-    "وجي",
-    "وجيز"
+    "وجز"
+  ],
+  "known": [],
+  "gift": [
+    2,
+    1
   ]
 }

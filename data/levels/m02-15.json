@@ -5,54 +5,98 @@
   "season": "spring",
   "index_in_mansion": 15,
   "letters": [
-    "ض",
-    "م",
+    "ط",
+    "ب",
     "ي",
-    "ر"
+    "ع",
+    "ة"
   ],
   "grid": {
-    "rows": 4,
-    "cols": 4
+    "rows": 8,
+    "cols": 9
   },
   "words": [
     {
-      "text": "رضي",
+      "text": "عطب",
       "row": 0,
-      "col": 0,
-      "direction": "v"
+      "col": 2,
+      "direction": "h"
     },
     {
-      "text": "مريض",
+      "text": "طبي",
       "row": 0,
       "col": 3,
       "direction": "v"
     },
     {
-      "text": "ضمير",
+      "text": "طبعة",
       "row": 1,
-      "col": 0,
+      "col": 6,
+      "direction": "v"
+    },
+    {
+      "text": "طبع",
+      "row": 1,
+      "col": 6,
       "direction": "h"
     },
     {
-      "text": "مرض",
+      "text": "بيع",
+      "row": 2,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "عطية",
+      "row": 2,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "عيب",
       "row": 3,
-      "col": 1,
+      "col": 6,
+      "direction": "h"
+    },
+    {
+      "text": "طبيعة",
+      "row": 4,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "طيبة",
+      "row": 4,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "بطة",
+      "row": 5,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "طيب",
+      "row": 6,
+      "col": 0,
       "direction": "h"
     }
   ],
   "bonus": [
-    "رمض",
-    "رمي",
-    "ريم",
-    "ضرم",
-    "ضري",
-    "ضمر",
-    "ضمي",
-    "ضير",
-    "ضيم",
-    "مرضي",
-    "مري",
-    "مضر",
-    "مضي"
+    "بيعة",
+    "طية",
+    "طيع",
+    "عبط",
+    "عبيط",
+    "عيبة",
+    "عيط"
+  ],
+  "known": [
+    "بعط"
+  ],
+  "gift": [
+    4,
+    2
   ]
 }

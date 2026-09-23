@@ -11,42 +11,69 @@
     "ي"
   ],
   "grid": {
-    "rows": 3,
-    "cols": 6
+    "rows": 8,
+    "cols": 5
   },
   "words": [
     {
-      "text": "خفي",
+      "text": "ليف",
       "row": 0,
-      "col": 0,
+      "col": 4,
       "direction": "v"
     },
     {
-      "text": "خلفي",
-      "row": 0,
+      "text": "خلف",
+      "row": 1,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "خفي",
+      "row": 1,
       "col": 2,
       "direction": "h"
     },
     {
-      "text": "خلف",
-      "row": 0,
+      "text": "خلفي",
+      "row": 3,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "خليف",
+      "row": 3,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "خلي",
+      "row": 5,
       "col": 2,
       "direction": "v"
     },
     {
+      "text": "خيل",
+      "row": 5,
+      "col": 2,
+      "direction": "h"
+    },
+    {
       "text": "فيل",
-      "row": 1,
+      "row": 6,
       "col": 0,
       "direction": "h"
     }
   ],
   "bonus": [
-    "خلي",
-    "خليف",
     "خيف",
-    "خيل",
     "فلي",
-    "لفخ",
-    "ليف"
-  ]
+    "لفخ"
+  ],
+  "known": [
+    "فلخ",
+    "لخف",
+    "لخي",
+    "يفخ"
+  ],
+  "gift": null
 }

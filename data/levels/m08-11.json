@@ -5,52 +5,69 @@
   "season": "summer",
   "index_in_mansion": 11,
   "letters": [
-    "ج",
-    "ا",
-    "ئ",
-    "ز",
-    "ة"
+    "م",
+    "ق",
+    "ي",
+    "د"
   ],
   "grid": {
-    "rows": 5,
-    "cols": 6
+    "rows": 8,
+    "cols": 4
   },
   "words": [
     {
-      "text": "جاز",
+      "text": "دمي",
       "row": 0,
-      "col": 3,
+      "col": 2,
       "direction": "v"
     },
     {
-      "text": "جزئ",
-      "row": 0,
-      "col": 3,
-      "direction": "h"
-    },
-    {
-      "text": "جائز",
+      "text": "قديم",
       "row": 1,
-      "col": 1,
+      "col": 0,
       "direction": "v"
     },
     {
-      "text": "جائزة",
-      "row": 2,
+      "text": "قيم",
+      "row": 1,
       "col": 0,
       "direction": "h"
     },
     {
-      "text": "جزا",
+      "text": "قدم",
+      "row": 3,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "مقيد",
       "row": 4,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "قدمي",
+      "row": 4,
+      "col": 1,
+      "direction": "v"
+    },
+    {
+      "text": "قيد",
+      "row": 7,
       "col": 0,
       "direction": "h"
     }
   ],
   "bonus": [
-    "اجئ",
-    "اجز",
-    "ازج",
-    "زاج"
+    "دقي",
+    "ديم",
+    "قدي",
+    "مدق",
+    "مدي"
+  ],
+  "known": [
+    "دقم",
+    "دمق",
+    "قمد"
   ]
 }

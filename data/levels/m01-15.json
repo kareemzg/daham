@@ -5,44 +5,75 @@
   "season": "spring",
   "index_in_mansion": 15,
   "letters": [
-    "ا",
-    "ر",
-    "ا",
-    "ك"
+    "ف",
+    "ع",
+    "ل",
+    "ي"
   ],
   "grid": {
-    "rows": 3,
-    "cols": 4
+    "rows": 5,
+    "cols": 7
   },
   "words": [
     {
-      "text": "كار",
+      "text": "عيل",
       "row": 0,
-      "col": 1,
-      "direction": "v"
-    },
-    {
-      "text": "كرا",
-      "row": 0,
-      "col": 1,
+      "col": 0,
       "direction": "h"
     },
     {
-      "text": "ارك",
+      "text": "علف",
       "row": 0,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "ليف",
+      "row": 0,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "فعل",
+      "row": 0,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "فلي",
+      "row": 0,
+      "col": 4,
+      "direction": "h"
+    },
+    {
+      "text": "فعلي",
+      "row": 2,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "علي",
+      "row": 2,
       "col": 3,
       "direction": "v"
     },
     {
-      "text": "اراك",
-      "row": 2,
-      "col": 0,
+      "text": "فيل",
+      "row": 4,
+      "col": 2,
       "direction": "h"
     }
   ],
   "bonus": [
-    "ارا",
-    "اكار",
-    "اكر"
-  ]
+    "عفي",
+    "يعل",
+    "يفع"
+  ],
+  "known": [
+    "عفل",
+    "عيف",
+    "فلع",
+    "لفع"
+  ],
+  "gift": null
 }

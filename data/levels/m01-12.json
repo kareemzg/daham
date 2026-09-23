@@ -11,12 +11,18 @@
     "ن"
   ],
   "grid": {
-    "rows": 4,
-    "cols": 4
+    "rows": 5,
+    "cols": 5
   },
   "words": [
     {
       "text": "منح",
+      "row": 0,
+      "col": 1,
+      "direction": "v"
+    },
+    {
+      "text": "مسح",
       "row": 0,
       "col": 1,
       "direction": "h"
@@ -28,20 +34,31 @@
       "direction": "v"
     },
     {
-      "text": "سمح",
-      "row": 1,
-      "col": 0,
-      "direction": "v"
-    },
-    {
       "text": "محسن",
       "row": 2,
       "col": 0,
       "direction": "h"
+    },
+    {
+      "text": "مسن",
+      "row": 2,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "سمح",
+      "row": 2,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "حسم",
+      "row": 4,
+      "col": 2,
+      "direction": "h"
     }
   ],
   "bonus": [
-    "حسم",
     "حمس",
     "حنس",
     "سحم",
@@ -49,11 +66,14 @@
     "سمن",
     "سنح",
     "محن",
-    "مسح",
-    "مسن",
     "نحس",
     "نحم",
     "نسم",
     "نمس"
-  ]
+  ],
+  "known": [
+    "سنم",
+    "نسح"
+  ],
+  "gift": null
 }

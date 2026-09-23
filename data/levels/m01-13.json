@@ -11,41 +11,63 @@
     "ب"
   ],
   "grid": {
-    "rows": 3,
-    "cols": 5
+    "rows": 5,
+    "cols": 6
   },
   "words": [
     {
-      "text": "تغيب",
-      "row": 0,
-      "col": 1,
-      "direction": "h"
-    },
-    {
-      "text": "غبي",
+      "text": "بيت",
       "row": 0,
       "col": 2,
       "direction": "v"
     },
     {
-      "text": "بيت",
+      "text": "بغي",
       "row": 0,
-      "col": 4,
-      "direction": "v"
+      "col": 2,
+      "direction": "h"
     },
     {
       "text": "تبي",
-      "row": 2,
+      "row": 1,
       "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "تيب",
+      "row": 1,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "تبغ",
+      "row": 1,
+      "col": 5,
+      "direction": "v"
+    },
+    {
+      "text": "تغيب",
+      "row": 2,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "غبي",
+      "row": 2,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "غيب",
+      "row": 4,
+      "col": 2,
       "direction": "h"
     }
   ],
   "bonus": [
     "بغت",
-    "بغي",
-    "تبغ",
-    "تغب",
-    "تيب",
-    "غيب"
-  ]
+    "تغب"
+  ],
+  "known": [],
+  "gift": null
 }

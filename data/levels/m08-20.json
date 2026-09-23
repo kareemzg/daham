@@ -5,58 +5,68 @@
   "season": "summer",
   "index_in_mansion": 20,
   "letters": [
-    "ا",
-    "ن",
-    "ذ",
-    "ا",
-    "ك"
+    "م",
+    "ص",
+    "و",
+    "ر"
   ],
   "grid": {
-    "rows": 3,
+    "rows": 4,
     "cols": 7
   },
   "words": [
     {
-      "text": "كنا",
+      "text": "صوم",
       "row": 0,
-      "col": 0,
+      "col": 1,
       "direction": "v"
     },
     {
-      "text": "انذاك",
+      "text": "صور",
       "row": 0,
-      "col": 2,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "روم",
+      "row": 1,
+      "col": 0,
       "direction": "h"
     },
     {
-      "text": "اذا",
-      "row": 0,
+      "text": "مصر",
+      "row": 1,
       "col": 2,
       "direction": "v"
     },
     {
-      "text": "كان",
-      "row": 0,
+      "text": "ورم",
+      "row": 1,
+      "col": 4,
+      "direction": "h"
+    },
+    {
+      "text": "مرو",
+      "row": 1,
       "col": 6,
       "direction": "v"
     },
     {
-      "text": "انا",
+      "text": "مصور",
       "row": 2,
-      "col": 0,
+      "col": 1,
       "direction": "h"
     }
   ],
   "bonus": [
-    "اذاك",
-    "اذان",
-    "اذن",
-    "اكن",
-    "انك",
-    "ذاك",
-    "ذان",
-    "كانا",
-    "كذا",
-    "ناك"
+    "صرم",
+    "ورص",
+    "وصر",
+    "وصم"
+  ],
+  "known": [
+    "رمص",
+    "صمر",
+    "مرص"
   ]
 }

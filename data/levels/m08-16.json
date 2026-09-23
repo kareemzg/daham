@@ -5,64 +5,63 @@
   "season": "summer",
   "index_in_mansion": 16,
   "letters": [
-    "ت",
-    "ب",
+    "ا",
+    "س",
     "ر",
-    "ي",
-    "ر"
+    "ة"
   ],
   "grid": {
-    "rows": 3,
-    "cols": 7
+    "rows": 7,
+    "cols": 5
   },
   "words": [
     {
-      "text": "ريب",
+      "text": "اسر",
       "row": 0,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "سراة",
+      "row": 0,
+      "col": 3,
+      "direction": "v"
+    },
+    {
+      "text": "سارة",
+      "row": 2,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "اسرة",
+      "row": 3,
       "col": 0,
       "direction": "h"
     },
     {
-      "text": "بيت",
-      "row": 0,
+      "text": "راس",
+      "row": 3,
       "col": 2,
       "direction": "v"
     },
     {
-      "text": "بري",
-      "row": 0,
+      "text": "سار",
+      "row": 4,
       "col": 4,
-      "direction": "h"
-    },
-    {
-      "text": "ربي",
-      "row": 0,
-      "col": 5,
       "direction": "v"
     },
     {
-      "text": "تبرير",
-      "row": 2,
+      "text": "سرا",
+      "row": 5,
       "col": 2,
       "direction": "h"
     }
   ],
   "bonus": [
-    "بتر",
-    "برت",
-    "برر",
-    "بير",
-    "تبر",
-    "تبرر",
-    "تبي",
-    "ترب",
-    "تربي",
-    "تري",
-    "تيب",
-    "ربت",
-    "رتب",
-    "رتبي",
-    "رتيب",
-    "رير"
-  ]
+    "ارس",
+    "رسا",
+    "سرة"
+  ],
+  "known": []
 }

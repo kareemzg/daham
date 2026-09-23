@@ -5,54 +5,72 @@
   "season": "summer",
   "index_in_mansion": 13,
   "letters": [
-    "م",
+    "ف",
     "ي",
-    "ا",
-    "م",
-    "ي"
+    "ن",
+    "ا"
   ],
   "grid": {
-    "rows": 4,
-    "cols": 6
+    "rows": 6,
+    "cols": 5
   },
   "words": [
     {
-      "text": "امي",
+      "text": "نايف",
       "row": 0,
+      "col": 0,
+      "direction": "v"
+    },
+    {
+      "text": "فين",
+      "row": 0,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "فان",
+      "row": 1,
       "col": 2,
       "direction": "v"
     },
     {
-      "text": "ماي",
-      "row": 0,
-      "col": 5,
-      "direction": "v"
+      "text": "فني",
+      "row": 1,
+      "col": 2,
+      "direction": "h"
     },
     {
-      "text": "امم",
-      "row": 1,
+      "text": "فينا",
+      "row": 3,
       "col": 0,
       "direction": "h"
     },
     {
-      "text": "مما",
-      "row": 1,
-      "col": 1,
+      "text": "اني",
+      "row": 3,
+      "col": 3,
       "direction": "v"
     },
     {
-      "text": "ميامي",
-      "row": 2,
-      "col": 1,
+      "text": "اين",
+      "row": 5,
+      "col": 2,
       "direction": "h"
     }
   ],
   "bonus": [
-    "اممي",
-    "ايم",
-    "ميم",
-    "ياي",
-    "يمام",
-    "يمم"
+    "انف",
+    "انفي",
+    "فاني",
+    "ناف",
+    "نافي",
+    "ناي",
+    "نفي",
+    "نيف",
+    "يان"
+  ],
+  "known": [
+    "افن",
+    "فيا"
   ]
 }

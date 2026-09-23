@@ -5,55 +5,63 @@
   "season": "autumn",
   "index_in_mansion": 19,
   "letters": [
-    "م",
-    "ح",
-    "م",
+    "و",
+    "ت",
     "ي",
+    "ر",
     "ة"
   ],
   "grid": {
-    "rows": 5,
-    "cols": 5
+    "rows": 4,
+    "cols": 7
   },
   "words": [
     {
-      "text": "محي",
+      "text": "تروي",
       "row": 0,
       "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "روي",
+      "row": 0,
+      "col": 4,
+      "direction": "v"
+    },
+    {
+      "text": "روت",
+      "row": 0,
+      "col": 4,
       "direction": "h"
     },
     {
-      "text": "حمية",
-      "row": 0,
-      "col": 3,
-      "direction": "v"
-    },
-    {
-      "text": "محمي",
+      "text": "وتر",
       "row": 1,
-      "col": 1,
-      "direction": "v"
-    },
-    {
-      "text": "محمية",
-      "row": 2,
       "col": 0,
       "direction": "h"
     },
     {
-      "text": "حية",
-      "row": 4,
+      "text": "وتيرة",
+      "row": 2,
+      "col": 2,
+      "direction": "h"
+    },
+    {
+      "text": "تري",
+      "row": 3,
       "col": 0,
       "direction": "h"
     }
   ],
   "bonus": [
-    "حمة",
-    "حمم",
-    "حمي",
-    "حميم",
-    "محم",
-    "ميم",
-    "يمم"
+    "تروية",
+    "تورية",
+    "توي",
+    "روية",
+    "وتري",
+    "وري"
+  ],
+  "known": [
+    "رتة"
   ]
 }

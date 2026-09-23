@@ -12,39 +12,56 @@
   ],
   "grid": {
     "rows": 4,
-    "cols": 4
+    "cols": 7
   },
   "words": [
     {
       "text": "قتلى",
       "row": 0,
-      "col": 3,
-      "direction": "v"
-    },
-    {
-      "text": "قتل",
-      "row": 1,
-      "col": 1,
+      "col": 4,
       "direction": "v"
     },
     {
       "text": "قلت",
+      "row": 0,
+      "col": 4,
+      "direction": "h"
+    },
+    {
+      "text": "تلى",
+      "row": 0,
+      "col": 6,
+      "direction": "v"
+    },
+    {
+      "text": "تلق",
       "row": 1,
-      "col": 1,
+      "col": 0,
+      "direction": "h"
+    },
+    {
+      "text": "قتل",
+      "row": 1,
+      "col": 2,
+      "direction": "v"
+    },
+    {
+      "text": "لقى",
+      "row": 2,
+      "col": 4,
       "direction": "h"
     },
     {
       "text": "تلقى",
       "row": 3,
-      "col": 0,
+      "col": 1,
       "direction": "h"
     }
   ],
   "bonus": [
     "تقلى",
-    "تلق",
-    "تلى",
-    "قلى",
-    "لقى"
-  ]
+    "قلى"
+  ],
+  "known": [],
+  "gift": null
 }
