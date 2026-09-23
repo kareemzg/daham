@@ -282,7 +282,7 @@ func show_level(new_level: Level) -> void:
 	wheel.setup(level.letters)
 	stars.setup(STARS_PER_MANSION, level.index_in_mansion - 1)
 
-	caption.text = "المنزلة %s · %s · النجمة %s من %s" % [
+	caption.text = "المنزلة %s — %s · النجمة %s من %s" % [
 		Arabic.eastern_digits(level.mansion),
 		level.mansion_name,
 		Arabic.eastern_digits(level.index_in_mansion),
@@ -377,7 +377,7 @@ func _build_windows() -> void:
 	_clock_strip = _build_clock_row(lanterns_window)
 	refill_button = lanterns_window.add_button(
 		GlossyPanel.Style.BUTTON_EMBER,
-		"املأ الفوانيس · %s" % Arabic.eastern_digits(LANTERN_REFILL_COST),
+		"املأ الفوانيس — %s" % Arabic.eastern_digits(LANTERN_REFILL_COST),
 		UiIcon.Kind.COIN
 	)
 	_wire(refill_button, _on_refill_pressed)
@@ -1133,7 +1133,7 @@ func _float_gain(at: Vector2, text: String) -> void:
 ## already happened, back in submit(); this is only the part that catches up.
 func _show_full_moon(at: Vector2) -> void:
 	_burst(at)
-	_say("اكتمل البدر · +%s" % Arabic.eastern_digits(MOON_REWARD))
+	_say("اكتمل البدر — +%s" % Arabic.eastern_digits(MOON_REWARD))
 	var tween := create_tween()
 	tween.tween_interval(0.5)
 	tween.tween_callback(func() -> void:

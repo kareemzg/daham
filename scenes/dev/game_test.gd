@@ -292,6 +292,7 @@ func _run() -> void:
 	_check_full_moon()
 	await _check_windows()
 	_check_smooth_edges()
+	_check_separators()
 	await _check_tools()
 	_check_leaving_a_finished_level()
 	_check_mansion_finale()
@@ -902,6 +903,45 @@ func _check_smooth_edges() -> void:
 			% ("none" if rough.is_empty() else ", ".join(rough)),
 		rough.is_empty()
 	)
+
+
+## The middle dot must not touch a number anywhere a player can read it.
+##
+## It had slipped into five strings at once, and no grep could see them: every
+## one is built by `%` at runtime, so the dot and the digit only meet on the
+## screen. This reads the screens instead.
+func _check_separators() -> void:
+	print("=== no dot beside a number ===")
+	var bad := PackedStringArray()
+	for node in _every_node(self):
+		for text in _readable(node):
+			var hit := Arabic.dot_beside_digit(text)
+			if not hit.is_empty():
+				bad.append("%s «%s»" % [node.name, hit])
+	_check(
+		"no dot lands beside a digit (%s)"
+			% ("none" if bad.is_empty() else ", ".join(bad)),
+		bad.is_empty()
+	)
+
+
+func _every_node(root: Node) -> Array[Node]:
+	var out: Array[Node] = [root]
+	for child in root.get_children():
+		out.append_array(_every_node(child))
+	return out
+
+
+## Everything on a node that a player ends up reading.
+func _readable(node: Node) -> PackedStringArray:
+	var out := PackedStringArray()
+	if node is Label:
+		out.append((node as Label).text)
+	elif node is Button:
+		out.append((node as Button).text)
+	if node is Control:
+		out.append((node as Control).tooltip_text)
+	return out
 
 
 func _scripts_under(root: String) -> PackedStringArray:
