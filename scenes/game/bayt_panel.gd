@@ -119,8 +119,9 @@ func _rebuild() -> void:
 		slot.style = GlossyPanel.Style.WELL
 		add_child(slot)
 		_slots.append(slot)
+		# Empty. `_paint()` fills it with the word the player actually placed —
+		# never with the word that belongs there, which is the answer.
 		var label := _label(DISPLAY_FONT, Palette.TILE_INK)
-		label.text = _wanted(place)
 		label.visible = false
 		slot.add_child(label)
 		_slot_labels.append(label)
@@ -254,6 +255,12 @@ func reveal_next() -> bool:
 func _paint() -> void:
 	for place in _slots.size():
 		var taken := _filled[place] >= 0
+		# The word the player chose. Writing `_wanted(place)` here instead was
+		# the bug that made every tap look right and every line read wrong:
+		# the board showed the answer back while `_read_back()` judged the
+		# choice, so a player could arrange a verse that looked perfect and be
+		# told it was not.
+		_slot_labels[place].text = _pool[_filled[place]] if taken else ""
 		_slot_labels[place].visible = taken
 		_slots[place].style = (
 			GlossyPanel.Style.TILE_GOLD if solved
@@ -303,16 +310,33 @@ func _width_of(text: String, scale: float) -> float:
 	).x
 
 
-## Words laid right to left, wrapping when the line runs out of room.
+## The width every empty place is drawn at: the widest word in the line.
+##
+## Sized to its own word, a place told the player which word went in it before
+## they had chosen anything — the shape of the empty board was the answer. One
+## width for all of them says nothing, and it does not move when a word lands.
+func _slot_width(scale: float) -> float:
+	var widest := 0.0
+	for text in _pool:
+		widest = maxf(widest, _width_of(text, scale))
+	return maxf(widest + 34.0 * scale, 70.0 * scale)
+
+
+## Words laid right to left, wrapping when the line runs out of room. `fixed`
+## above zero gives every item that width instead of its own.
 func _lay_row(
-	items: Array, texts: PackedStringArray, top: float, scale: float, gap: float
+	items: Array, texts: PackedStringArray, top: float, scale: float, gap: float,
+	fixed: float = 0.0
 ) -> float:
 	var pad := PAD_X * scale
 	var inner := size.x - pad * 2.0
 	var height := SLOT_H * scale
 	var widths := PackedFloat32Array()
 	for text in texts:
-		widths.append(maxf(_width_of(text, scale) + 34.0 * scale, 70.0 * scale))
+		widths.append(
+			fixed if fixed > 0.0
+			else maxf(_width_of(text, scale) + 34.0 * scale, 70.0 * scale)
+		)
 
 	var lines: Array[PackedInt32Array] = []
 	var line := PackedInt32Array()
@@ -363,8 +387,11 @@ func relayout(scale: float) -> void:
 	var sadr_slots: Array = _slots.slice(0, _sadr.size())
 	var ajz_slots: Array = _slots.slice(_sadr.size())
 	var top := _ask.size.y + ASK_GAP * scale
-	var bottom := _lay_row(sadr_slots, _sadr, top, scale, gap)
-	bottom = _lay_row(ajz_slots, _ajz, bottom + ROW_GAP * scale, scale, gap)
+	# One width across both hemistichs, or the narrower row would still say
+	# which words are short.
+	var slot := _slot_width(scale)
+	var bottom := _lay_row(sadr_slots, _sadr, top, scale, gap, slot)
+	bottom = _lay_row(ajz_slots, _ajz, bottom + ROW_GAP * scale, scale, gap, slot)
 
 	_caller.add_theme_font_size_override("font_size", int(ASK_SIZE * scale))
 	_caller.position = Vector2(0.0, bottom + POET_TOP * scale)

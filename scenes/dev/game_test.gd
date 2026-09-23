@@ -1080,6 +1080,39 @@ func _check_the_verse() -> void:
 	_check("...and the wheel is not on screen at all", not game.wheel.visible)
 	_check("...nor a price tag for something not for sale", not game._hint_cost.visible)
 
+	# Every empty place is the same width, or the board itself gives the order
+	# away: a narrow gap can only be a short word.
+	game._layout()
+	var widths: Array = []
+	for slot in game.bayt._slots:
+		widths.append(snappedf(slot.size.x, 0.5))
+	var one_width := true
+	for w in widths:
+		if w != widths[0]:
+			one_width = false
+	_check("every empty place is one width (%s)" % [widths.slice(0, 3)], one_width)
+	_check("...and wide enough for the longest word", float(widths[0]) > 60.0)
+
+	# The word the player puts down is the word that shows. Putting the wanted
+	# word in the label instead made every tap look right and every line read
+	# wrong: the board answered itself while `_read_back()` judged the choice.
+	var pool_words: PackedStringArray = game.bayt._pool
+	var somewhere_wrong := -1
+	for i in pool_words.size():
+		if pool_words[i] != game.bayt._wanted(0):
+			somewhere_wrong = i
+			break
+	_check("the shuffle has a word that does not belong first", somewhere_wrong >= 0)
+	if somewhere_wrong >= 0:
+		game.bayt.place_word(somewhere_wrong)
+		_check_equal("a placed word shows itself, not the one that belongs there",
+			game.bayt._slot_labels[0].text, pool_words[somewhere_wrong])
+		_check("...and it is not the answer",
+			game.bayt._slot_labels[0].text != game.bayt._wanted(0))
+		game.bayt._take_back(0)
+		_check_equal("...and taking it back clears the place",
+			game.bayt._slot_labels[0].text, "")
+
 	# The scattered order, straight onto the board. It is shuffled from the
 	# level's id, so this is a real arrangement and almost never the right one.
 	var places: int = game.bayt._filled.size()
