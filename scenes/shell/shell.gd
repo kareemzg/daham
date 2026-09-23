@@ -32,6 +32,8 @@ var shop_window: ShelfWindow
 var daily_window: DailyWindow
 ## Which mansion the moon is in tonight, and whether it is the player's.
 var qiran_window: QiranWindow
+## The way in, over everything, once in a player's life.
+var cold_open: ColdOpen
 ## Asked once, the first time the lanterns run out. See `_ask_about_notice()`.
 var notify_window: SkyWindow
 var _owed_notice_question: bool = false
@@ -84,6 +86,7 @@ func _ready() -> void:
 	game.settings_requested.connect(open_settings)
 	game.daily_finished.connect(_on_daily_finished)
 	game.qiran_finished.connect(_on_qiran_finished)
+	game.tour_finished.connect(_on_tour_finished)
 	game.cards_requested.connect(func() -> void: go_to(Screen.CARDS))
 	# The sky is the shell's, so the darkness the lanterns cause has to come
 	# across as a message. It follows the player between screens, because it
@@ -187,6 +190,14 @@ func _ready() -> void:
 			qiran_window.close())
 	qiran_window.close_requested.connect(func() -> void: qiran_window.close())
 
+	# Built after the screens and before the wipe, so it covers the title and
+	# the meteor passes over it rather than under.
+	cold_open = ColdOpen.new()
+	cold_open.visible = false
+	add_child(cold_open)
+	cold_open.begin_requested.connect(_begin_tour)
+	cold_open.skip_requested.connect(_skip_tour)
+
 	wipe = MeteorWipe.new()
 	add_child(wipe)
 	wipe.swap.connect(_on_swap)
@@ -194,6 +205,60 @@ func _ready() -> void:
 	resized.connect(_layout)
 	_refresh_title()
 	_layout()
+	_open_cold()
+
+
+## A first run opens on the dark sky rather than on the title. Everything else
+## is already built behind it, so skipping is instant and beginning is a fade.
+func _open_cold() -> void:
+	if settings.tour_done or settings_path.is_empty():
+		return
+	# A save that already has a journey in it is not a first run, whatever the
+	# settings say: a settings file lost or cleared must not re-teach a player
+	# who is nineteen mansions in.
+	if game.level != null and Mansions.parse(game.level.id) != Vector2i(1, 1):
+		settings.tour_done = true
+		settings.write(settings_path)
+		return
+	title.visible = false
+	cold_open.visible = true
+	sky.light = ColdOpen.SKY_LIGHT
+
+
+## «أَضِئْ أوّلَ نجم»: straight into the first level, with nothing on screen but
+## the board and the wheel.
+func _begin_tour() -> void:
+	game.teaching = true
+	game._refresh_chrome()
+	_leave_cold()
+	showing = Screen.TITLE
+	go_to(Screen.GAME)
+
+
+## «تخطِّ التعريف»: the title, and everything on from the start.
+func _skip_tour() -> void:
+	_on_tour_finished()
+	_leave_cold()
+	title.visible = true
+
+
+func _leave_cold() -> void:
+	var fade := cold_open.create_tween()
+	fade.tween_property(cold_open, "modulate:a", 0.0, 0.35)
+	fade.tween_callback(func() -> void:
+		cold_open.visible = false
+		cold_open.modulate.a = 1.0)
+	# The sky comes back to whatever the lanterns say it should be.
+	game._refresh_light()
+
+
+## The first level is done, or the tour was skipped. Either way it is over.
+func _on_tour_finished() -> void:
+	game.teaching = false
+	if settings.tour_done or settings_path.is_empty():
+		return
+	settings.tour_done = true
+	settings.write(settings_path)
 
 
 ## The screens are laid out against a 1080 by 1920 board. On a window of
@@ -521,7 +586,7 @@ func _layout() -> void:
 		node.position = Vector2.ZERO
 		node.size = size
 
-	for node: Control in [title, map, cards, game]:
+	for node: Control in [title, map, cards, game, cold_open]:
 		node.position = area.position
 		node.size = area.size
 

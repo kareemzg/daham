@@ -450,6 +450,8 @@ func _run() -> void:
 
 	await _check_qiran()
 
+	await _check_the_way_in()
+
 	_check_separators()
 
 	_finish()
@@ -458,6 +460,90 @@ func _run() -> void:
 ## Same rule as the slice test, over the screens this one builds: the title
 ## carries «المنزلة ٤ — الدبران · النجمة ١٢ من ٢٠», and the map its own lines.
 ## Every screen the shell made is still a child here, shown or hidden.
+## A player opening the game for the first time: a dark sky, then a board with
+## nothing on it but the wheel, and the counters arriving one at a time.
+func _check_the_way_in() -> void:
+	print("=== the way in, once in a player's life ===")
+	var save := "user://tour_test_progress.json"
+	var kept := "user://tour_test_settings.json"
+	Progress.clear(save)
+	GameSettings.clear(kept)
+
+	var fresh := Shell.new()
+	fresh.progress_path = save
+	fresh.settings_path = kept
+	fresh.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(fresh)
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	_check("it opens on the dark sky, not the title", fresh.cold_open.visible)
+	_check("...and the title is behind it", not fresh.title.visible)
+	_check("...and the sky is darker than any lantern makes it",
+		fresh.sky.light < GameScreen.LANTERN_LIGHT[0])
+	_check_equal("...on the first level of the first mansion",
+		fresh.game.level.id, "m01-01")
+
+	fresh.cold_open.begin_requested.emit()
+	await get_tree().create_timer(MeteorWipe.DURATION + 0.25).timeout
+	_check("it goes straight into the level", fresh.showing == Shell.Screen.GAME)
+	_check("...teaching", fresh.game.teaching)
+	_check("...with nothing on the board but the wheel",
+		not fresh.game.hud._chip_lanterns.visible
+			and not fresh.game.hud._chip_coins.visible
+			and not fresh.game.hud._chip_moon.visible)
+	_check("...no hint button", not fresh.game.hint_button.visible)
+	_check("...and no price tag", not fresh.game._hint_cost.visible)
+
+	# «حسم» is real Arabic and not in this grid, so it is the first bonus word.
+	fresh.game.submit("حسم")
+	_check("the moon arrives on the first word outside the grid",
+		fresh.game.hud._chip_moon.visible)
+	_check("...and says so", fresh.game._coach.visible)
+	_check("...but the lanterns are still nowhere",
+		not fresh.game.hud._chip_lanterns.visible)
+
+	# «محس» is the one three-letter run of ح س ا م that is not a word.
+	var lamps: int = fresh.game.lanterns
+	fresh.game.submit("محس")
+	_check("the lanterns arrive on the first wrong guess",
+		fresh.game.hud._chip_lanterns.visible)
+	_check_equal("...before any is lost", fresh.game.lanterns, lamps)
+	# A counter that is not on screen must not hold its place open either.
+	fresh.game._layout()
+	_check("...and the counters that are not there leave no gap (%0.0f)"
+		% fresh.game.hud._chip_lanterns.position.x,
+		fresh.game.hud._chip_lanterns.position.x
+			< fresh.game.hud._chip_moon.position.x + 300.0 * fresh.game._scale())
+
+	for word in ["حسام", "حماس", "امس", "اسم"]:
+		fresh.game.submit(word)
+	_check("the level is finished", fresh.game.grid.is_solved())
+	_check("...and the teaching is over", not fresh.game.teaching)
+	_check("...everything is on the board now",
+		fresh.game.hud._chip_lanterns.visible and fresh.game.hud._chip_coins.visible
+			and fresh.game.hud._chip_moon.visible and fresh.game.hint_button.visible)
+	_check("...and it is written down", GameSettings.read(kept).tour_done)
+
+	fresh.queue_free()
+	await get_tree().process_frame
+
+	# A second launch: the same save, the same settings, and no tour.
+	var again := Shell.new()
+	again.progress_path = save
+	again.settings_path = kept
+	again.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(again)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	_check("coming back opens on the title", not again.cold_open.visible)
+	_check("...and teaches nothing", not again.game.teaching)
+	again.queue_free()
+	await get_tree().process_frame
+	Progress.clear(save)
+	GameSettings.clear(kept)
+
+
 ## The moon lodges in a new mansion every night, and the arithmetic says which.
 func _check_qiran() -> void:
 	print("=== the moon lodges in a mansion every night ===")

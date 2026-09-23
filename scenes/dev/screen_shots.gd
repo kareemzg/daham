@@ -34,6 +34,38 @@ func _ready() -> void:
 
 
 func _shoot() -> void:
+	# The way in, before anything else: a dark sky and a bare first level.
+	# Driven through the real shell so these are the screens, not a pose.
+	shell.settings.tour_done = false
+	shell.game.progress_path = ""
+	var first := Level.load_from("res://data/levels/m01-01.json")
+	if first != null:
+		shell.title.visible = false
+		shell.cold_open.visible = true
+		shell.sky.light = ColdOpen.SKY_LIGHT
+		await _save("screen_cold")
+		shell.cold_open.visible = false
+		shell.title.visible = true
+		shell.game.teaching = true
+		shell.game.show_level(first)
+		shell.game._refresh_chrome()
+		shell._screen(shell.showing).visible = false
+		shell.showing = Shell.Screen.GAME
+		shell.game.visible = true
+		await _save("screen_tour_bare")
+		shell.game.submit("حسم")
+		await _save("screen_tour_moon")
+		shell.game.submit("محس")
+		await _save("screen_tour_lantern")
+		shell.game.teaching = false
+		shell.game._coach.visible = false
+		shell.game._refresh_chrome()
+		shell.game.visible = false
+		shell.showing = Shell.Screen.TITLE
+		shell.title.visible = true
+		shell.game.show_level(Level.load_from("res://data/levels/m04-12.json"))
+		shell.game.progress_path = SAVE
+
 	await _save("screen_title")
 
 	shell.go_to(Shell.Screen.MAP)

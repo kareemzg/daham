@@ -27,6 +27,9 @@ signal daily_finished
 ## A conjunction night is over. The shell puts the journey back, exactly as it
 ## does after the daily challenge.
 signal qiran_finished
+
+## The first level is over, so the way in is walked. The shell writes it down.
+signal tour_finished
 ## Asked for from the card a finished mansion opens.
 signal cards_requested
 
@@ -91,6 +94,8 @@ const WHEEL_LIGHT := [0.58, 0.74, 0.88, 1.0, 1.0, 1.0]
 const ANWA_MAX_LETTERS := 7
 ## How long the finished name is left on screen before the sky takes over.
 const ANWA_HOLD := 0.9
+## How long a line of teaching stays up. Long enough to read twice.
+const COACH_SECONDS := 3.4
 ## Which star of a mansion stands aside for its verse. The middle one, so a
 ## mansion reads as nine crosswords, a breath, nine more, then the rhyme.
 const BAYT_STAR := 10
@@ -191,6 +196,18 @@ var daily: bool = false
 ## lodges in, opened without lanterns because the player already lit it.
 var qiran: bool = false
 
+## The way in. While it is set the screen carries nothing but the board and the
+## wheel, and each counter arrives at the moment it starts to mean something:
+## the moon on the first word that is not in the grid, the lanterns on the first
+## guess that is not a word — before anything is lost, not after.
+##
+## The shell turns it on for a first run only, and `tour_finished` turns it off
+## for good. Nothing derives it from the level, because a player revisiting
+## m01-01 on a conjunction night must not be taught it again.
+var teaching: bool = false
+var _taught_moon: bool = false
+var _taught_lantern: bool = false
+
 ## Anything that is not the journey. Neither the daily challenge nor a
 ## conjunction night spends a lantern, writes a save, lights a star or moves to
 ## a next level — the shell keeps the journey aside and puts it back after.
@@ -202,6 +219,8 @@ var daily_day: int = 0
 var _complete_stars: StarDots
 var _complete_reward: Control
 var _clock_strip: Control
+var _coach: GlossyPanel
+var _coach_label: Label
 
 ## Unix time when the next lantern comes back. Zero while they are full.
 var _lantern_clock: int = 0
@@ -445,6 +464,15 @@ func _build_chrome() -> void:
 	bayt = BaytPanel.new()
 	bayt.visible = false
 	add_child(bayt)
+
+	# One line at a time, over whatever is under it. It reserves no strip: it
+	# is there for a moment on a first run and never again.
+	_coach = GlossyPanel.new()
+	_coach.style = GlossyPanel.Style.PANEL_NIGHT
+	_coach.visible = false
+	add_child(_coach)
+	_coach_label = _make_label(UI_BOLD_FONT, Color("E7F4F6"))
+	_coach.add_child(_coach_label)
 	bayt.completed.connect(_on_bayt_completed)
 	bayt.missed.connect(func() -> void: _say("ليس هذا ترتيبَه"))
 
@@ -751,9 +779,22 @@ func _layout() -> void:
 	)
 	bayt.relayout(s)
 
-	# Nothing is for sale on the rhyme or the verse, so the price tag must not
-	# claim otherwise.
-	_hint_cost.visible = not (in_anwa or in_bayt)
+	# The coach line floats just above the wheel, over the board. It reserves
+	# nothing: on a first run it is there for three seconds and never again.
+	if _coach.visible:
+		var lines := float(_coach_label.text.count("\n") + 1)
+		var coach_h := (34.0 + lines * 46.0) * s
+		var coach_w := minf(size.x - 80.0 * s, 620.0 * s)
+		_coach.size = Vector2(coach_w, coach_h)
+		_coach.position = Vector2(
+			(size.x - coach_w) * 0.5, wheel.position.y - 26.0 * s - coach_h
+		)
+		_coach.radius_override = 26.0 * s
+		_coach_label.position = Vector2.ZERO
+		_coach_label.size = _coach.size
+		_coach_label.add_theme_font_size_override("font_size", int(30.0 * s))
+		_coach_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_coach_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 
 	# The toast never lands on the grid: a message over a cell hides the letter
 	# the player just earned.
@@ -1121,6 +1162,11 @@ func submit(raw: String) -> int:
 			grid.nudge(word)
 			_say("وجدتها سابقاً")
 		Result.BONUS:
+			if teaching and not _taught_moon:
+				_taught_moon = true
+				_refresh_chrome()
+				hud.announce("moon")
+				_coach_say("كلمةٌ ليست في الرقعة، لكنّها عربيّة.\nالكلماتُ الزائدةُ تملأ القمر.")
 			_bonus_found[word] = true
 			moon = mini(moon + 1, MOON_PHASES)
 			# The payout is state, so it lands on the guess. Waiting for the
@@ -1155,6 +1201,13 @@ func submit(raw: String) -> int:
 						int(Time.get_unix_time_from_system()) + LANTERN_REGEN_SECONDS
 					)
 				spent_last = lanterns <= 0
+			elif teaching and not _taught_lantern:
+				# The lantern shows at the first wrong guess, not at the first
+				# one lost: the player learns the price before paying it.
+				_taught_lantern = true
+				_refresh_chrome()
+				hud.announce("lanterns")
+				_coach_say("خمسُ محاولاتٍ خاطئةٍ تُطفئ فانوساً.\nلك خمسةٌ، وهذه أُولاها.")
 			else:
 				_say("ليست كلمة")
 		Result.TOO_SHORT:
@@ -1520,6 +1573,12 @@ func _finish_level() -> void:
 		# can be played at all when the lanterns are out.
 		qiran_finished.emit()
 		return
+	if teaching:
+		# One level is the whole lesson. Everything is on screen from here.
+		teaching = false
+		_coach.visible = false
+		_refresh_chrome()
+		tour_finished.emit()
 	coins += LEVEL_REWARD
 	stars.light_next()
 	_refresh_chrome()
@@ -1713,6 +1772,14 @@ func _refresh_chrome() -> void:
 	hud.lanterns = lanterns
 	# `_moon_shown`, not `moon`: the chip waits for the flying star to land.
 	hud.moon = _moon_shown
+	# During the way in the counters arrive one at a time; after it they are
+	# simply all there.
+	hud.show_chips(not teaching or _taught_lantern, not teaching, not teaching or _taught_moon)
+	if hint_button != null:
+		hint_button.visible = not teaching
+		shuffle_button.visible = not teaching and not in_bayt
+		# Nothing is for sale on the rhyme, the verse, or the first level.
+		_hint_cost.visible = not (teaching or in_anwa or in_bayt)
 	_refresh_light()
 
 
@@ -1725,6 +1792,22 @@ func _refresh_light() -> void:
 	if wheel != null:
 		wheel.light = WHEEL_LIGHT[step]
 	light_changed.emit(sky_light)
+
+
+## A line of teaching, shown for as long as it takes to read. Broken by hand:
+## a Label left to wrap itself claims the height it works out at no width.
+func _coach_say(text: String) -> void:
+	if _coach == null:
+		return
+	_coach_label.text = text
+	_coach.visible = true
+	_coach.modulate.a = 0.0
+	_layout()
+	var tween := _coach.create_tween()
+	tween.tween_property(_coach, "modulate:a", 1.0, 0.25)
+	tween.tween_interval(COACH_SECONDS)
+	tween.tween_property(_coach, "modulate:a", 0.0, 0.3)
+	tween.tween_callback(func() -> void: _coach.visible = false)
 
 
 func _say(message: String) -> void:

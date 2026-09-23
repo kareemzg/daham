@@ -7,7 +7,7 @@ extends RefCounted
 ## that forget, and so the day sound arrives it has somewhere to look.
 
 const DEFAULT_PATH := "user://settings.json"
-const VERSION := 2
+const VERSION := 3
 
 var sound: bool = true
 var music: bool = true
@@ -26,6 +26,11 @@ var notify: bool = false
 ## but the first time the player runs out of lanterns — the moment a
 ## notification means something.
 var notify_asked: bool = false
+## Whether the way in has been walked: the dark sky, the bare first level, and
+## the counters arriving one at a time. It lives here rather than in the save
+## because it is about the player and not about the journey — a save wiped or
+## a mansion replayed must not put a player back through the tour.
+var tour_done: bool = false
 
 
 static func read(path: String = DEFAULT_PATH) -> GameSettings:
@@ -48,6 +53,7 @@ static func read(path: String = DEFAULT_PATH) -> GameSettings:
 	settings.language = str(data.get("language", "ar"))
 	settings.notify = bool(data.get("notify", false))
 	settings.notify_asked = bool(data.get("notify_asked", false))
+	settings.tour_done = bool(data.get("tour_done", false))
 	return settings
 
 
@@ -60,6 +66,7 @@ func write(path: String = DEFAULT_PATH) -> bool:
 		"language": language,
 		"notify": notify,
 		"notify_asked": notify_asked,
+		"tour_done": tour_done,
 	}
 	# Beside the real file, then moved into place, as the save does: a kill
 	# mid-write leaves the old settings rather than half a file.
