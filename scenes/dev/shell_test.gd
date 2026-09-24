@@ -365,6 +365,33 @@ func _run() -> void:
 	_check("...nor did the meteor",
 		shell.wipe.position == Vector2.ZERO and shell.wipe.size == shell.size)
 
+	print("=== and clear of the strip a swipe-up owns ===")
+	# Android hides the navigation bar in immersive mode and then reports no
+	# inset at the bottom, while the gesture that leaves the app still lives
+	# there. The floor is what keeps the wheel's lowest tile off it.
+	shell.safe_area_override = Vector4(0.0, 0.0, 0.0, 0.0)
+	shell.keeps_gesture_floor = false
+	shell._layout()
+	var flat := shell.board()
+	shell.keeps_gesture_floor = true
+	shell._layout()
+	var floored := shell.board()
+	_check("the board stops short of the bottom (%0.0f)"
+		% (flat.position.y + flat.size.y - floored.position.y - floored.size.y),
+		floored.position.y + floored.size.y < flat.position.y + flat.size.y)
+	_check("...by the floor and no more",
+		is_equal_approx(
+			flat.size.y - floored.size.y, Shell.GESTURE_FLOOR * shell._raw_scale()))
+	_check("...and the sky still reaches it",
+		shell.sky.size.y == shell.size.y and shell.sky.position.y == 0.0)
+	# A system that does report a gesture inset is not given a second one.
+	shell.safe_area_override = Vector4(0.0, 0.0, Shell.GESTURE_FLOOR * 3.0, 0.0)
+	shell._layout()
+	var reported := shell.board()
+	_check_equal("a reported inset is kept, not added to",
+		reported.size.y, shell.size.y - Shell.GESTURE_FLOOR * 3.0)
+
+	shell.keeps_gesture_floor = OS.has_feature("mobile")
 	shell.safe_area_override = Vector4(-1.0, 0.0, 0.0, 0.0)
 	shell._layout()
 	_check_equal("and putting it back restores the board", shell.board(), area)

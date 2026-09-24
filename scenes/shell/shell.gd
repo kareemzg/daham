@@ -41,6 +41,10 @@ var admin: AdminPanel
 ## left) in canvas units. A negative first value means "ask the system". It is
 ## here so a notch can be looked at on a desktop, where no system reports one.
 var safe_area_override: Vector4 = Vector4(-1.0, 0.0, 0.0, 0.0)
+## Whether the bottom is held clear of the gesture strip. True on a touch
+## screen, and settable so a desktop can be made to behave like one — which is
+## the only way to look at the result of a floor no desktop has.
+var keeps_gesture_floor: bool = OS.has_feature("mobile")
 ## Asked once, the first time the lanterns run out. See `_ask_about_notice()`.
 var notify_window: SkyWindow
 var _owed_notice_question: bool = false
@@ -300,6 +304,17 @@ func _on_tour_finished() -> void:
 ## that read its own width came out three times too big on a desktop window with
 ## half of it off the edge.
 const BOARD := Vector2(1080.0, 1920.0)
+## What the board keeps clear at the bottom of a phone even when the system
+## reports nothing there, in canvas units at a 1080-wide board.
+##
+## Android's gesture navigation owns a strip across the bottom of the screen —
+## a swipe up there leaves the app. With `immersive_mode` on, the navigation
+## bar is hidden and the system reports no inset, so the board ran to the very
+## edge and the wheel's lowest tile ended two pixels above a strip that eats
+## the swipe. The strip is about 48 device pixels; this is that, rounded up,
+## and it is a floor rather than an addition: a phone that does report a
+## gesture inset already has it and nothing is added.
+const GESTURE_FLOOR := 56.0
 
 
 ## What a notch, a status bar and a gesture bar take off the window, in canvas
@@ -337,9 +352,32 @@ func safe_inset() -> Vector4:
 	)
 
 
+## The system's inset, with a floor under the bottom on a touch screen.
+##
+## It is separate from `safe_inset()` because that one answers what the system
+## says, which a test and the diagnostic line both want unvarnished.
+func _floored_inset() -> Vector4:
+	var inset := safe_inset()
+	if not keeps_gesture_floor:
+		return inset
+	inset.z = maxf(inset.z, GESTURE_FLOOR * _raw_scale())
+	return inset
+
+
+## The scale before the floor is applied, for turning the floor's reference
+## units into this window's. Working it out from the floored room would need
+## the floor it is being used to compute.
+func _raw_scale() -> float:
+	var inset := safe_inset()
+	var room := Vector2(
+		maxf(size.x - inset.w - inset.y, 1.0), maxf(size.y - inset.x - inset.z, 1.0)
+	)
+	return maxf(minf(room.x / BOARD.x, room.y / BOARD.y), 0.01)
+
+
 ## What the board has to lay itself out inside, once the notch is taken off.
 func _safe_room() -> Vector2:
-	var inset := safe_inset()
+	var inset := _floored_inset()
 	return Vector2(
 		maxf(size.x - inset.w - inset.y, 1.0), maxf(size.y - inset.x - inset.z, 1.0)
 	)
@@ -361,7 +399,7 @@ func _scale() -> float:
 ## laid out from `size.y` simply gets more; one anchored to the top is unmoved.
 func board() -> Rect2:
 	var scale := _scale()
-	var inset := safe_inset()
+	var inset := _floored_inset()
 	var room := _safe_room()
 	# `_scale()` already measured against the room, so the width fits by
 	# construction; clamping it again only moved the answer by a float's worth
