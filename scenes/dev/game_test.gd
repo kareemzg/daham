@@ -1115,10 +1115,17 @@ func _check_the_verse() -> void:
 
 	# The scattered order, straight onto the board. It is shuffled from the
 	# level's id, so this is a real arrangement and almost never the right one.
+	var lamps_before_verse: int = game.lanterns
 	var places: int = game.bayt._filled.size()
 	for i in places:
 		game.bayt.place_word(i)
 	_check("a full board is read back", not game.bayt.solved)
+	# Counted, and nothing more: pressure a player can feel without a cost the
+	# mode does not charge.
+	_check_equal("the reading is counted", game.bayt.tries, 1)
+	_check_equal("...and the line says which one is next",
+		game.bayt._ask.text, "المحاولةُ الثانية")
+	_check_equal("...and still no lantern", game.lanterns, lamps_before_verse)
 	var kept := 0
 	for i in places:
 		if game.bayt._filled[i] >= 0:

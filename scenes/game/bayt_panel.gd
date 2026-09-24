@@ -55,6 +55,13 @@ var _scale: float = 1.0
 
 ## True once the line has been read back right.
 var solved: bool = false
+## How many full readings the player has asked for, right or wrong.
+##
+## It is shown after the first miss and nothing else happens to it: no lantern,
+## no cap, no denominator. A player who is on their fifth try should be able to
+## feel it, and a number with a «من ٥» after it would be a threat the game does
+## not keep — nothing waits at five.
+var tries: int = 0
 
 
 func _ready() -> void:
@@ -67,6 +74,7 @@ func setup(verse: Dictionary, shuffle_seed: int) -> void:
 	_ajz = PackedStringArray(verse.get("ajz", []))
 	_poet = str(verse.get("poet", ""))
 	solved = false
+	tries = 0
 
 	_filled = PackedInt32Array()
 	for i in _sadr.size() + _ajz.size():
@@ -226,6 +234,7 @@ func _read_back() -> void:
 		if _pool[_filled[place]] != _wanted(place):
 			_filled[place] = -1
 			wrong += 1
+	tries += 1
 	if wrong == 0:
 		solved = true
 		_poet_label.text = _poet
@@ -235,7 +244,21 @@ func _read_back() -> void:
 		completed.emit()
 		return
 	_paint()
+	_ask.text = "المحاولةُ %s" % _ordinal(tries + 1)
 	missed.emit()
+
+
+## «الثانية», «الثالثة» … The feminine forms, because a محاولة is feminine.
+## Past ten it is a numeral, which is where counting them stops being a nudge
+## and starts being a tally.
+static func _ordinal(nth: int) -> String:
+	const NAMES := [
+		"الأولى", "الثانية", "الثالثة", "الرابعة", "الخامسة",
+		"السادسة", "السابعة", "الثامنة", "التاسعة", "العاشرة",
+	]
+	if nth >= 1 and nth <= NAMES.size():
+		return NAMES[nth - 1]
+	return Arabic.eastern_digits(nth)
 
 
 ## Opens the next empty place with the word it wants, as a hint does.

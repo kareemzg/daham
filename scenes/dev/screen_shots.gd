@@ -169,6 +169,11 @@ func _shoot() -> void:
 		shell.game.progress_path = ""
 		shell.game.show_level(verse)
 		await _save("screen_bayt")
+		# A wrong reading: the words that do not belong come back, and the line
+		# at the top starts counting.
+		for i in shell.game.bayt._filled.size():
+			shell.game.bayt.place_word(i)
+		await _save("screen_bayt_missed")
 		for i in 5:
 			shell.game.bayt.reveal_next()
 		await _save("screen_bayt_half")
