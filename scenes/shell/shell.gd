@@ -37,6 +37,10 @@ var cold_open: ColdOpen
 ## The workbench for reaching any moment without playing to it. Null in a
 ## release build, where `AdminPanel.attach()` declines to make one.
 var admin: AdminPanel
+## Overrides what the system says the safe area is, as (top, right, bottom,
+## left) in canvas units. A negative first value means "ask the system". It is
+## here so a notch can be looked at on a desktop, where no system reports one.
+var safe_area_override: Vector4 = Vector4(-1.0, 0.0, 0.0, 0.0)
 ## Asked once, the first time the lanterns run out. See `_ask_about_notice()`.
 var notify_window: SkyWindow
 var _owed_notice_question: bool = false
@@ -211,6 +215,16 @@ func _ready() -> void:
 	_open_cold()
 	# Debug builds only; it returns null in a release and nothing is built.
 	admin = AdminPanel.attach(self)
+	if OS.is_debug_build():
+		# Printed once, so a phone can be asked what it really is instead of
+		# guessed at from a screenshot.
+		var window := DisplayServer.window_get_size()
+		print("[screen] window %d x %d   canvas %.0f x %.0f   safe area %s" % [
+			window.x, window.y, size.x, size.y, DisplayServer.get_display_safe_area()
+		])
+		print("[screen] inset (top, right, bottom, left) = %s   board = %s" % [
+			safe_inset(), board()
+		])
 
 
 ## A first run opens on the dark sky rather than on the title. Everything else
@@ -274,8 +288,52 @@ func _on_tour_finished() -> void:
 const BOARD := Vector2(1080.0, 1920.0)
 
 
+## What a notch, a status bar and a gesture bar take off the window, in canvas
+## units, as (top, right, bottom, left).
+##
+## The sky keeps the whole window — it is the room the game is played in, and a
+## night that stopped short of the notch would read as a picture of a night. It
+## is the board that moves in, because a lantern under a camera cutout is a
+## lantern the player cannot see or press.
+##
+## `DisplayServer` answers in device pixels and the board is measured in canvas
+## units, so the ratio between them is what converts. On a desktop, and on any
+## phone without a cutout, every side comes back zero.
+func safe_inset() -> Vector4:
+	if safe_area_override.x >= 0.0:
+		return safe_area_override
+	var window := DisplayServer.window_get_size()
+	if window.x <= 0 or window.y <= 0 or size.x <= 0.0:
+		return Vector4.ZERO
+	# The safe area is the DISPLAY's, in screen coordinates, and it only
+	# describes this window when this window is the whole screen. A window on a
+	# desktop has nothing over it: asking anyway handed back the Mac's menu bar
+	# as a 448-unit notch and pushed the board down the screen.
+	if window != DisplayServer.screen_get_size(DisplayServer.window_get_current_screen()):
+		return Vector4.ZERO
+	var safe := DisplayServer.get_display_safe_area()
+	if safe.size.x <= 0 or safe.size.y <= 0:
+		return Vector4.ZERO
+	var per_pixel := size.x / float(window.x)
+	return Vector4(
+		maxf(float(safe.position.y), 0.0) * per_pixel,
+		maxf(float(window.x - safe.position.x - safe.size.x), 0.0) * per_pixel,
+		maxf(float(window.y - safe.position.y - safe.size.y), 0.0) * per_pixel,
+		maxf(float(safe.position.x), 0.0) * per_pixel
+	)
+
+
+## What the board has to lay itself out inside, once the notch is taken off.
+func _safe_room() -> Vector2:
+	var inset := safe_inset()
+	return Vector2(
+		maxf(size.x - inset.w - inset.y, 1.0), maxf(size.y - inset.x - inset.z, 1.0)
+	)
+
+
 func _scale() -> float:
-	return maxf(minf(size.x / BOARD.x, size.y / BOARD.y), 0.01)
+	var room := _safe_room()
+	return maxf(minf(room.x / BOARD.x, room.y / BOARD.y), 0.01)
 
 
 ## Where the board sits inside the window, and how big it is.
@@ -289,8 +347,14 @@ func _scale() -> float:
 ## laid out from `size.y` simply gets more; one anchored to the top is unmoved.
 func board() -> Rect2:
 	var scale := _scale()
-	var area := Vector2(BOARD.x * scale, maxf(BOARD.y * scale, size.y))
-	return Rect2(((size - area) * 0.5).floor(), area)
+	var inset := safe_inset()
+	var room := _safe_room()
+	# `_scale()` already measured against the room, so the width fits by
+	# construction; clamping it again only moved the answer by a float's worth
+	# and broke a test that compares the rect exactly.
+	var area := Vector2(BOARD.x * scale, maxf(BOARD.y * scale, room.y))
+	var at := Vector2(inset.w, inset.x) + ((room - area) * 0.5).floor()
+	return Rect2(at, area)
 
 
 func _screen(which: int) -> Control:

@@ -347,6 +347,28 @@ func _run() -> void:
 	)
 	_check_equal("the play screen sits on it", shell.game.size, area.size)
 
+	print("=== and it keeps clear of a notch ===")
+	# No system reports one on a desktop, so one is put there by hand: the
+	# numbers an iPhone with a Dynamic Island gives, in canvas units.
+	shell.safe_area_override = Vector4(120.0, 0.0, 68.0, 0.0)
+	shell._layout()
+	var notched := shell.board()
+	_check_equal("the board starts below the island", notched.position.y, 120.0)
+	_check_equal("...and ends above the home bar",
+		notched.position.y + notched.size.y, shell.size.y - 68.0)
+	_check("...so the screens lose exactly that much (%0.0f)"
+		% (area.size.y - notched.size.y), is_equal_approx(
+			area.size.y - notched.size.y, 188.0))
+	_check_equal("the play screen moved with it", shell.game.position.y, 120.0)
+	_check("...and the sky did not: it is the room, not the board",
+		shell.sky.position == Vector2.ZERO and shell.sky.size == shell.size)
+	_check("...nor did the meteor",
+		shell.wipe.position == Vector2.ZERO and shell.wipe.size == shell.size)
+
+	shell.safe_area_override = Vector4(-1.0, 0.0, 0.0, 0.0)
+	shell._layout()
+	_check_equal("and putting it back restores the board", shell.board(), area)
+
 	# The wheel places its disc and tiles from its own rect. They used to be
 	# placed from the rect it had a moment before, and on a wide window the
 	# whole wheel was drawn outside the board.
