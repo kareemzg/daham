@@ -841,6 +841,20 @@ func _check_darkness() -> void:
 			(panel.get_meta("button") as Button).pressed.emit()
 	_check("the answer is kept", shell.settings.notify)
 	_check("...and the asking is over", shell.settings.notify_asked)
+
+	# And it is a switch afterwards, not a one-off question.
+	shell.open_settings()
+	shell.settings_window.settle()
+	var notify_row: SkyToggle = shell.settings_window.rows[
+		SettingsWindow.KEYS.find("notify")]
+	_check("the settings hold a row for it", notify_row != null)
+	_check("...showing the answer that was given", notify_row.on)
+	shell.settings_window.changed.emit("notify", false)
+	_check("...and turning it off is kept", not shell.settings.notify)
+	_check_equal("...through a reread", GameSettings.read(SETTINGS).notify, false)
+	shell.settings_window.changed.emit("notify", true)
+	_check("...and back on again", GameSettings.read(SETTINGS).notify)
+	shell.settings_window.visible = false
 	_check_equal("...and it survives a read", GameSettings.read(SETTINGS).notify, true)
 
 	await get_tree().create_timer(SkyPopup.CLOSE_SECONDS + 0.1).timeout

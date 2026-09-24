@@ -480,8 +480,15 @@ func _on_setting_changed(key: String, on: bool) -> void:
 			settings.music = on
 		"haptics":
 			settings.haptics = on
-	# Nothing plays yet: the game has no audio. Storing the answer is what makes
-	# the window real rather than a drawing of a window.
+		"notify":
+			settings.notify = on
+			# Turning it on from here settles the question too: a player who
+			# has said yes in the settings must not be asked again the first
+			# time their lanterns run out.
+			settings.notify_asked = true
+	# Nothing plays yet: the game has no audio, and no platform plugin schedules
+	# the notification. Storing the answer is what makes the window real rather
+	# than a drawing of a window.
 	if not settings_path.is_empty():
 		settings.write(settings_path)
 
