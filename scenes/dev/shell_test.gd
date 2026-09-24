@@ -615,6 +615,23 @@ func _check_the_way_in() -> void:
 	_check("...no hint button", not fresh.game.hint_button.visible)
 	_check("...and no price tag", not fresh.game._hint_cost.visible)
 
+	# A bare board and no word about why is not a lesson. The first line is up
+	# and it waits for the finger rather than for a timer.
+	_check("...but a line saying what to do", fresh.game._coach.visible)
+	_check("...which mentions the letters",
+		fresh.game._coach_label.text.contains("الحروف"))
+	_check("...and waits to be obeyed", fresh.game._coach_waits)
+	fresh.game._on_word_previewed("ح")
+	_check("...then goes when the finger lands", not fresh.game._coach_waits)
+
+	# The first word down: the crossing letters are what open the next one.
+	fresh.game.submit("حسام")
+	_check("a second line follows the first word", fresh.game._coach.visible)
+	_check("...and it points at the shared letter",
+		fresh.game._coach_label.text.contains("المشترك"))
+	_check("...counting what is left",
+		fresh.game._coach_label.text.contains(Arabic.eastern_digits(3)))
+
 	# «حسم» is real Arabic and not in this grid, so it is the first bonus word.
 	fresh.game.submit("حسم")
 	_check("the moon arrives on the first word outside the grid",

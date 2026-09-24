@@ -262,8 +262,7 @@ func _open_cold() -> void:
 ## «أَضِئْ أوّلَ نجم»: straight into the first level, with nothing on screen but
 ## the board and the wheel.
 func _begin_tour() -> void:
-	game.teaching = true
-	game._refresh_chrome()
+	game.start_teaching()
 	_leave_cold()
 	showing = Screen.TITLE
 	go_to(Screen.GAME)

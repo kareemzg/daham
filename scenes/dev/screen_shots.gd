@@ -46,13 +46,15 @@ func _shoot() -> void:
 		await _save("screen_cold")
 		shell.cold_open.visible = false
 		shell.title.visible = true
-		shell.game.teaching = true
 		shell.game.show_level(first)
-		shell.game._refresh_chrome()
+		shell.game.start_teaching()
 		shell._screen(shell.showing).visible = false
 		shell.showing = Shell.Screen.GAME
 		shell.game.visible = true
 		await _save("screen_tour_bare")
+		shell.game._on_word_previewed("ح")
+		shell.game.submit("حسام")
+		await _save("screen_tour_crossing")
 		shell.game.submit("حسم")
 		await _save("screen_tour_moon")
 		shell.game.submit("محس")

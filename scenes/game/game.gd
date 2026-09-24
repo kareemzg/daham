@@ -207,6 +207,9 @@ var qiran: bool = false
 var teaching: bool = false
 var _taught_moon: bool = false
 var _taught_lantern: bool = false
+## Whether the line about the crossing letters has been said. It waits for the
+## first word to land, because until then there is no crossing to point at.
+var _taught_crossing: bool = false
 
 ## Anything that is not the journey. Neither the daily challenge nor a
 ## conjunction night spends a lantern, writes a save, lights a star or moves to
@@ -221,6 +224,8 @@ var _complete_reward: Control
 var _clock_strip: Control
 var _coach: GlossyPanel
 var _coach_label: Label
+## Set while a line is waiting for the player to move rather than for a timer.
+var _coach_waits: bool = false
 
 ## Unix time when the next lantern comes back. Zero while they are full.
 var _lantern_clock: int = 0
@@ -928,6 +933,8 @@ func _place_preview_pill() -> void:
 # --- rules -------------------------------------------------------------------
 
 func _on_word_previewed(word: String) -> void:
+	if _coach_waits and not word.is_empty():
+		_coach_done()
 	if in_anwa:
 		anwa.show_progress(word)
 	preview.text = word
@@ -1155,6 +1162,14 @@ func submit(raw: String) -> int:
 		Result.CORRECT:
 			grid.reveal(word)
 			_say("كلمة صحيحة")
+			if teaching and not _taught_crossing:
+				_taught_crossing = true
+				var left := level.words.size() - grid.found_count()
+				if left > 0:
+					_coach_say(
+						"بقيت %s كلمات.\nوالحرفُ المشتركُ يدلُّك على التالية."
+							% Arabic.eastern_digits(left)
+					)
 			if grid.is_solved():
 				_finish_level()
 				finished = true
@@ -1794,19 +1809,49 @@ func _refresh_light() -> void:
 	light_changed.emit(sky_light)
 
 
+## Starts the way in: the screen goes bare and the first line comes up.
+##
+## It is a call rather than a flag the shell sets, because the line belongs
+## with the stripping — a bare board and no word about why is not a lesson.
+func start_teaching() -> void:
+	teaching = true
+	_taught_moon = false
+	_taught_lantern = false
+	_taught_crossing = false
+	_refresh_chrome()
+	_coach_say(
+		"مرِّرْ إصبعَك على الحروف،\nفتتّصلُ الكلمةُ من تلقاءِ نفسها.", true
+	)
+
+
 ## A line of teaching, shown for as long as it takes to read. Broken by hand:
 ## a Label left to wrap itself claims the height it works out at no width.
-func _coach_say(text: String) -> void:
+func _coach_say(text: String, until_touched: bool = false) -> void:
 	if _coach == null:
 		return
 	_coach_label.text = text
 	_coach.visible = true
 	_coach.modulate.a = 0.0
+	_coach_waits = until_touched
 	_layout()
 	var tween := _coach.create_tween()
 	tween.tween_property(_coach, "modulate:a", 1.0, 0.25)
+	if until_touched:
+		# The first line is the one telling them what to do, so it stays until
+		# they do it rather than leaving on a timer they may not have beaten.
+		return
 	tween.tween_interval(COACH_SECONDS)
 	tween.tween_property(_coach, "modulate:a", 0.0, 0.3)
+	tween.tween_callback(func() -> void: _coach.visible = false)
+
+
+## Takes the line away the moment the finger lands on the wheel.
+func _coach_done() -> void:
+	if _coach == null or not _coach.visible:
+		return
+	_coach_waits = false
+	var tween := _coach.create_tween()
+	tween.tween_property(_coach, "modulate:a", 0.0, 0.25)
 	tween.tween_callback(func() -> void: _coach.visible = false)
 
 
