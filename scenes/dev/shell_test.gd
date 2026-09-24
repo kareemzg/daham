@@ -556,6 +556,15 @@ func _check_the_workbench() -> void:
 	_check_equal("...and the widest wheel in the build (%s)" % widest,
 		widest_level.letters.size() if widest_level != null else 0, 7)
 
+	# The way in, again, without an install: the button used to ask for one.
+	admin._restart_tour()
+	_check("the workbench plays the way in again", shell.cold_open.visible)
+	_check("...and the tour is open once more", not shell.settings.tour_done)
+	_check_equal("...from the first level", shell.game.level.id, "m01-01")
+	shell.cold_open.visible = false
+	shell.settings.tour_done = true
+	shell.title.visible = true
+
 	admin._wipe()
 	await _arrive()
 	_check_equal("it wipes back to the first level", shell.game.level.id, "m01-01")

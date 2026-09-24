@@ -274,12 +274,13 @@ func _open_qiran_night(open: bool) -> void:
 	_say("لا ليلة كهذه في أربعين ليلة")
 
 
+## The way in, again, right now. Telling someone to reinstall the app to see a
+## screen is not a button, it is an apology.
 func _restart_tour() -> void:
-	_shell.settings.tour_done = false
-	if not _shell.settings_path.is_empty():
-		_shell.settings.write(_shell.settings_path)
 	_wipe()
-	_say("امسح التطبيق وافتحه من جديد لترى السماء المنطفئة")
+	_shell.replay_tour()
+	_say("السماء المنطفئة، من أوّلها")
+	_sheet.visible = false
 
 
 func _wipe() -> void:

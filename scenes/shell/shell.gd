@@ -227,6 +227,21 @@ func _ready() -> void:
 		])
 
 
+
+## Shows the way in again, now, without the app being reinstalled. The admin
+## panel calls it; nothing in the game does.
+func replay_tour() -> void:
+	settings.tour_done = false
+	if not settings_path.is_empty():
+		settings.write(settings_path)
+	game.teaching = false
+	if showing != Screen.TITLE:
+		_screen(showing).visible = false
+		showing = Screen.TITLE
+	_layout()
+	_open_cold()
+
+
 ## A first run opens on the dark sky rather than on the title. Everything else
 ## is already built behind it, so skipping is instant and beginning is a fade.
 func _open_cold() -> void:

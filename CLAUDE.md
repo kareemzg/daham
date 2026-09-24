@@ -81,6 +81,7 @@ Targets iOS, Android, macOS, Windows, Linux, Steam. Desktop is a paid premium bu
 - The lantern shows at the first **wrong guess**, not at the first one lost. Five wrong guesses cost a lantern, so appearing after the loss would be a punishment; appearing before it is a lesson, and it is free.
 - A hidden counter takes no room. It held its slot open at first and left a visible gap where the player could see something was missing.
 - One level is the whole lesson. `_finish_level()` ends it, `tour_finished` tells the shell, and `GameSettings.tour_done` remembers — in the settings and not in the save, because it is about the player and not the journey. A save wiped, or m01-01 replayed on a conjunction night, must not teach anyone twice.
+- It shows **once**, and `GameSettings.tour_done` is what remembers. So the only ways back to it are clearing the app's data or `Shell.replay_tour()`, which the workbench's «أعد الجولة التعريفية» calls. That button used to reset the flag and ask for a reinstall — telling someone to reinstall the app to see a screen is not a button, it is an apology.
 - A save that already holds a journey is not a first run whatever the settings say. A settings file lost or cleared must not re-teach a player nineteen mansions in, so `_open_cold()` checks the level too.
 
 ## The tenth star, a line of verse
