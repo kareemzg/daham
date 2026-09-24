@@ -1153,12 +1153,24 @@ func _check_the_verse() -> void:
 	Progress.clear(save_path)
 	game.progress_path = was_path
 
-	# And a mansion whose line nobody has settled plays its crossword as usual.
-	var plain := Level.load_from("res://data/levels/m04-10.json")
-	if plain != null:
-		_check("الدبران has no settled line yet", not Mansions.has_verse(4))
-		game.show_level(plain)
-		_check("...so its tenth is an ordinary grid", not game.in_bayt)
+	# Every mansion this build ships now has a settled line, so every tenth
+	# star is a verse. The guard is still there for the ones that do not.
+	var without := 0
+	for mansion in range(1, Mansions.SHIPPED + 1):
+		if not Mansions.has_verse(mansion):
+			without += 1
+	_check_equal("every shipped mansion has a settled line", without, 0)
+	_check("...and a mansion nobody has written has none", not Mansions.has_verse(20))
+
+	var another := Level.load_from("res://data/levels/m04-10.json")
+	if another != null:
+		game.show_level(another)
+		_check("the tenth of الدبران is its verse too", game.in_bayt)
+		_check("...and its poet is the one Kareem named",
+			Mansions.verse_of(4).get("poet", "") == "الشريف الرضي")
+		# An ordinary level still puts the wheel back.
+		game.show_level(Level.load_from("res://data/levels/m04-11.json"))
+		_check("...and the eleventh is an ordinary grid", not game.in_bayt)
 		_check("...with its wheel back", game.wheel.visible)
 
 
