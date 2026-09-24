@@ -226,8 +226,11 @@ func _ready() -> void:
 		print("[screen] window %d x %d   canvas %.0f x %.0f   safe area %s" % [
 			window.x, window.y, size.x, size.y, DisplayServer.get_display_safe_area()
 		])
-		print("[screen] inset (top, right, bottom, left) = %s   board = %s" % [
-			safe_inset(), board()
+		# Both insets: what the system says, and what the board actually keeps
+		# clear after the gesture floor. Printing only the first read as though
+		# the floor had not been applied when it had.
+		print("[screen] system inset %s   with floor %s   board = %s" % [
+			safe_inset(), _floored_inset(), board()
 		])
 
 
