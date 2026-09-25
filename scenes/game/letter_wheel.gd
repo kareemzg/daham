@@ -37,6 +37,15 @@ var tile_radius: float = 80.0:
 ## How forgiving the hit test is; fingers are not precise.
 var hit_slack: float = 1.15
 
+## The disc's own brightness, driven by the lanterns like the sky's. Only the
+## disc: the tiles stay readable however dark the night gets, because a letter
+## the player cannot read is a different game.
+var light: float = 1.0:
+	set(value):
+		light = clampf(value, 0.0, 1.0)
+		if _disc != null:
+			_disc.modulate = Color(light, light, light)
+
 ## Share of the gap between two tile centres that a tile may fill. Below 1.0 the
 ## tiles keep clear of each other.
 const CROWDING := 0.92
@@ -64,6 +73,7 @@ func setup(letters: PackedStringArray) -> void:
 
 	_disc = GlossyPanel.new()
 	_disc.style = GlossyPanel.Style.DISC
+	_disc.modulate = Color(light, light, light)
 	add_child(_disc)
 
 	_trail = Control.new()

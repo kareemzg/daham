@@ -295,7 +295,8 @@ func _run() -> void:
 	_check_separators()
 	await _check_tools()
 	_check_leaving_a_finished_level()
-	_check_mansion_finale()
+	await _check_the_verse()
+	await _check_mansion_finale()
 
 	_finish()
 
@@ -800,7 +801,7 @@ func _check_windows() -> void:
 	print("=== running out of lanterns ===")
 	game.show_level(fixture)
 	game.lanterns = 1
-	game.coins = 500
+	game.coins = GameScreen.LANTERN_REFILL_COST + 300
 	for i in GameScreen.WRONG_STREAK_COST:
 		game.submit("باك")
 	_check_equal("the last lantern went out", game.lanterns, 0)
@@ -1059,6 +1060,120 @@ func _check_leaving_a_finished_level() -> void:
 
 
 ## The twentieth star of a mansion, which the game is arranged around.
+## Once in every mansion the grid stands aside for a line of verse.
+func _check_the_verse() -> void:
+	print("=== the tenth star is a line of verse ===")
+	var verse := Level.load_from("res://data/levels/m01-10.json")
+	_check("the tenth level of الشرطان loads", verse != null)
+	if verse == null:
+		return
+	_check_equal("it is the tenth", verse.index_in_mansion, GameScreen.BAYT_STAR)
+	_check("...and its mansion has a settled line", Mansions.has_verse(1))
+
+	var save_path := "user://progress_bayt_test.json"
+	Progress.clear(save_path)
+	var was_path: String = game.progress_path
+	game.progress_path = save_path
+	game.show_level(verse)
+	_check("the verse took the board", game.in_bayt)
+	_check("...the grid stood aside", not game.grid.visible)
+	_check("...and the wheel is not on screen at all", not game.wheel.visible)
+	_check("...nor a price tag for something not for sale", not game._hint_cost.visible)
+
+	# Every empty place is the same width, or the board itself gives the order
+	# away: a narrow gap can only be a short word.
+	game._layout()
+	var widths: Array = []
+	for slot in game.bayt._slots:
+		widths.append(snappedf(slot.size.x, 0.5))
+	var one_width := true
+	for w in widths:
+		if w != widths[0]:
+			one_width = false
+	_check("every empty place is one width (%s)" % [widths.slice(0, 3)], one_width)
+	_check("...and wide enough for the longest word", float(widths[0]) > 60.0)
+
+	# The word the player puts down is the word that shows. Putting the wanted
+	# word in the label instead made every tap look right and every line read
+	# wrong: the board answered itself while `_read_back()` judged the choice.
+	var pool_words: PackedStringArray = game.bayt._pool
+	var somewhere_wrong := -1
+	for i in pool_words.size():
+		if pool_words[i] != game.bayt._wanted(0):
+			somewhere_wrong = i
+			break
+	_check("the shuffle has a word that does not belong first", somewhere_wrong >= 0)
+	if somewhere_wrong >= 0:
+		game.bayt.place_word(somewhere_wrong)
+		_check_equal("a placed word shows itself, not the one that belongs there",
+			game.bayt._slot_labels[0].text, pool_words[somewhere_wrong])
+		_check("...and it is not the answer",
+			game.bayt._slot_labels[0].text != game.bayt._wanted(0))
+		game.bayt._take_back(0)
+		_check_equal("...and taking it back clears the place",
+			game.bayt._slot_labels[0].text, "")
+
+	# The scattered order, straight onto the board. It is shuffled from the
+	# level's id, so this is a real arrangement and almost never the right one.
+	var lamps_before_verse: int = game.lanterns
+	var places: int = game.bayt._filled.size()
+	for i in places:
+		game.bayt.place_word(i)
+	_check("a full board is read back", not game.bayt.solved)
+	# Counted, and nothing more: pressure a player can feel without a cost the
+	# mode does not charge.
+	_check_equal("the reading is counted", game.bayt.tries, 1)
+	_check_equal("...and the line says which one is next",
+		game.bayt._ask.text, "المحاولةُ الثانية")
+	_check_equal("...and still no lantern", game.lanterns, lamps_before_verse)
+	var kept := 0
+	for i in places:
+		if game.bayt._filled[i] >= 0:
+			kept += 1
+	_check("...the words in their right place stay (%d of %d)" % [kept, places], kept < places)
+	_check("...and a wrong order costs no lantern", game.lanterns > 0)
+
+	# The hint puts one word where it belongs, free.
+	var purse: int = game.coins
+	game._on_hint_pressed()
+	_check("a hint places a word", game.bayt._filled.find(-1) != 0)
+	_check_equal("...and takes nothing", game.coins, purse)
+	_check("...and opens no shelf", not game.hints_window.visible)
+
+	var guard := 0
+	while not game.bayt.solved and guard < 40:
+		game.bayt.reveal_next()
+		guard += 1
+	_check("the line goes back together", game.bayt.solved)
+	await get_tree().create_timer(GameScreen.ANWA_HOLD + 0.25).timeout
+	_check("...and the level is finished by it", game.complete_window.visible)
+	_check_equal("the save moves on like any other level",
+		Progress.read(save_path).level_id, "m01-11")
+	game.complete_window.visible = false
+	Progress.clear(save_path)
+	game.progress_path = was_path
+
+	# Every mansion this build ships now has a settled line, so every tenth
+	# star is a verse. The guard is still there for the ones that do not.
+	var without := 0
+	for mansion in range(1, Mansions.SHIPPED + 1):
+		if not Mansions.has_verse(mansion):
+			without += 1
+	_check_equal("every shipped mansion has a settled line", without, 0)
+	_check("...and a mansion nobody has written has none", not Mansions.has_verse(20))
+
+	var another := Level.load_from("res://data/levels/m04-10.json")
+	if another != null:
+		game.show_level(another)
+		_check("the tenth of الدبران is its verse too", game.in_bayt)
+		_check("...and its poet is the one Kareem named",
+			Mansions.verse_of(4).get("poet", "") == "الشريف الرضي")
+		# An ordinary level still puts the wheel back.
+		game.show_level(Level.load_from("res://data/levels/m04-11.json"))
+		_check("...and the eleventh is an ordinary grid", not game.in_bayt)
+		_check("...with its wheel back", game.wheel.visible)
+
+
 func _check_mansion_finale() -> void:
 	print("=== the twentieth star ===")
 	var last := Level.load_from("res://data/levels/m04-20.json")
@@ -1067,6 +1182,14 @@ func _check_mansion_finale() -> void:
 		return
 	_check_equal("it is the twentieth", last.index_in_mansion, GameScreen.STARS_PER_MANSION)
 
+	# The save is watched through this whole block: the ceremony sits after
+	# `_save_ahead()`, so a write from inside it would put the player back on
+	# the solved grid with nothing to press.
+	var ahead := "user://progress_anwa_test.json"
+	Progress.clear(ahead)
+	var was_path: String = game.progress_path
+	game.progress_path = ahead
+
 	game.show_level(last)
 	var purse: int = game.coins
 	var guard := 0
@@ -1074,14 +1197,52 @@ func _check_mansion_finale() -> void:
 		game.use_tool(Tools.Kind.WORD)
 		guard += 1
 	_check("it was solved", game.grid.is_solved())
-	# The moment replaces the usual window rather than coming after it: two
-	# windows in a row on the same screen would kill it.
-	_check("the finale runs", game.finale.visible)
-	_check("...and the usual window stays away", not game.complete_window.visible)
 	_check_equal(
 		"a finished mansion pays more than a level",
 		game.coins, purse + GameScreen.LEVEL_REWARD + GameScreen.MANSION_REWARD
 	)
+	_check("...and the usual window stays away", not game.complete_window.visible)
+
+	print("=== the rhyme comes before the sky draws ===")
+	_check("the ceremony opened instead", game.in_anwa)
+	_check("...with the rhyme showing", game.anwa.visible)
+	_check("...and the grid gone", not game.grid.visible)
+	_check("...and the finale waiting", not game.finale.visible)
+	var name := Arabic.normalise(Mansions.name_of(4))
+	_check_equal("the wheel carries the name, letter for letter",
+		game.wheel.letter_count(), name.length())
+	var on_wheel: Array = Array(game.wheel.letters())
+	on_wheel.sort()
+	var wanted: Array = []
+	for i in name.length():
+		wanted.append(name[i])
+	wanted.sort()
+	_check_equal("...the same letters, ألف twice over", on_wheel, wanted)
+	_check_equal("the save already points past the mansion",
+		Progress.read(ahead).level_id, "m05-01")
+
+	var lamps: int = game.lanterns
+	game.submit("الدبر")
+	_check_equal("a wrong name costs no lantern", game.lanterns, lamps)
+	_check("...and the ceremony stays up", game.in_anwa)
+	_check_equal("...and writes nothing over the save ahead",
+		Progress.read(ahead).level_id, "m05-01")
+
+	# The hint opens a letter here rather than selling one.
+	var coins_before: int = game.coins
+	game.anwa.reveal_next()
+	_check_equal("a hint opens the first letter", game.anwa.shown, 1)
+	_check_equal("...and costs nothing", game.coins, coins_before)
+
+	game.submit(Mansions.name_of(4))
+	_check("the name is written", game.anwa.locked)
+	await get_tree().create_timer(GameScreen.ANWA_HOLD + 0.2).timeout
+	# The moment replaces the usual window rather than coming after it: two
+	# windows in a row on the same screen would kill it.
+	_check("the finale runs after it", game.finale.visible)
+	_check("...and the rhyme is gone", not game.in_anwa)
+	Progress.clear(ahead)
+	game.progress_path = was_path
 
 	game.finale.settle(last.mansion)
 	game._show_mansion_card()

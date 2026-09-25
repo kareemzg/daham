@@ -30,6 +30,24 @@ var settings_window: SettingsWindow
 var mansion_window: SkyWindow
 var shop_window: ShelfWindow
 var daily_window: DailyWindow
+## Which mansion the moon is in tonight, and whether it is the player's.
+var qiran_window: QiranWindow
+## The way in, over everything, once in a player's life.
+var cold_open: ColdOpen
+## The workbench for reaching any moment without playing to it. Null in a
+## release build, where `AdminPanel.attach()` declines to make one.
+var admin: AdminPanel
+## Overrides what the system says the safe area is, as (top, right, bottom,
+## left) in canvas units. A negative first value means "ask the system". It is
+## here so a notch can be looked at on a desktop, where no system reports one.
+var safe_area_override: Vector4 = Vector4(-1.0, 0.0, 0.0, 0.0)
+## Whether the bottom is held clear of the gesture strip. True on a touch
+## screen, and settable so a desktop can be made to behave like one — which is
+## the only way to look at the result of a floor no desktop has.
+var keeps_gesture_floor: bool = OS.has_feature("mobile")
+## Asked once, the first time the lanterns run out. See `_ask_about_notice()`.
+var notify_window: SkyWindow
+var _owed_notice_question: bool = false
 ## The journey's state, held while the day's challenge is played over it.
 var _journey: Progress = null
 var _figure: FigureView
@@ -62,6 +80,7 @@ func _ready() -> void:
 	map.shop_requested.connect(open_shop)
 	map.cards_requested.connect(func() -> void: go_to(Screen.CARDS))
 	map.daily_requested.connect(open_daily)
+	map.qiran_requested.connect(open_qiran)
 
 	cards = StarCardsScreen.new()
 	cards.visible = false
@@ -77,7 +96,14 @@ func _ready() -> void:
 	game.menu_requested.connect(func() -> void: go_to(Screen.MAP))
 	game.settings_requested.connect(open_settings)
 	game.daily_finished.connect(_on_daily_finished)
+	game.qiran_finished.connect(_on_qiran_finished)
+	game.tour_finished.connect(_on_tour_finished)
 	game.cards_requested.connect(func() -> void: go_to(Screen.CARDS))
+	# The sky is the shell's, so the darkness the lanterns cause has to come
+	# across as a message. It follows the player between screens, because it
+	# belongs to the player and not to the screen they are on.
+	game.light_changed.connect(func(light: float) -> void: sky.light = light)
+	game.lanterns_emptied.connect(_on_lanterns_emptied)
 
 	settings_window = SettingsWindow.new()
 	settings_window.configure_settings(DISPLAY_FONT, UI_BOLD_FONT)
@@ -109,12 +135,39 @@ func _ready() -> void:
 	mansion_window.close_requested.connect(func() -> void: mansion_window.close())
 	mansion_window.add_close_cross()
 
+	# The question about the notification. It is built here with every other
+	# window, and opened only after the lanterns have run out for the first time.
+	notify_window = SkyWindow.new()
+	notify_window.configure(DISPLAY_FONT, UI_BOLD_FONT)
+	notify_window.set_crest(UiIcon.Kind.LANTERN)
+	notify_window.set_title("أُنبئك حين تعود؟")
+	# Broken by hand: a Label left to wrap itself claims a height it works out
+	# at zero width, which on a window's first layout is every word on a line.
+	notify_window.set_body("إشعارٌ واحد حين تمتلئ فوانيسك.\nلا شيء غيره.")
+	notify_window.visible = false
+	add_child(notify_window)
+	var yes := notify_window.add_button(
+		GlossyPanel.Style.BUTTON_EMBER, "نعم، أنبئني", UiIcon.Kind.LANTERN
+	)
+	(yes.get_meta("button") as Button).pressed.connect(
+		func() -> void: _answer_notice(true))
+	var later := notify_window.add_button(
+		GlossyPanel.Style.BUTTON_CREAM, "لاحقاً", -1, 92.0
+	)
+	(later.get_meta("button") as Button).pressed.connect(
+		func() -> void: _answer_notice(false))
+
 	shop_window = ShelfWindow.new()
 	shop_window.configure_shelf(
 		DISPLAY_FONT, UI_BOLD_FONT, UiIcon.Kind.SHOP, "المتجر",
 		"تُشترى بالعملات التي تكسبها من المستويات."
 	)
-	shop_window.add_item(UiIcon.Kind.LANTERN, "املأ الفوانيس", "الخمسة كاملة", 100)
+	# The one price, read from where it is spent. A shop that sells a refill
+	# for less than the screen charges is two prices for one thing.
+	shop_window.add_item(
+		UiIcon.Kind.LANTERN, "املأ الفوانيس", "الخمسة كاملة",
+		GameScreen.LANTERN_REFILL_COST
+	)
 	shop_window.add_item(UiIcon.Kind.SPYGLASS, "ثلاثة مناظير", "بدل ١٥٠، توفّر ٣٠", 120)
 	shop_window.add_item(UiIcon.Kind.ASTROLABE, "أسطرلابان", "بدل ٣٠٠، توفّر ٦٠", 240)
 	shop_window.add_purse()
@@ -135,6 +188,27 @@ func _ready() -> void:
 	daily_window.play_requested.connect(start_daily)
 	daily_window.close_requested.connect(func() -> void: daily_window.close())
 
+	qiran_window = QiranWindow.new()
+	qiran_window.configure_qiran(DISPLAY_FONT, UI_BOLD_FONT)
+	qiran_window.visible = false
+	qiran_window.dismiss_on_tap = true
+	add_child(qiran_window)
+	# On a night that is not the player's the same button reads «أكملِ الرحلة»
+	# and does that: a button the player can press and that does nothing is
+	# worse than one that is greyed.
+	qiran_window.play_requested.connect(func() -> void:
+		if not start_qiran():
+			qiran_window.close())
+	qiran_window.close_requested.connect(func() -> void: qiran_window.close())
+
+	# Built after the screens and before the wipe, so it covers the title and
+	# the meteor passes over it rather than under.
+	cold_open = ColdOpen.new()
+	cold_open.visible = false
+	add_child(cold_open)
+	cold_open.begin_requested.connect(_begin_tour)
+	cold_open.skip_requested.connect(_skip_tour)
+
 	wipe = MeteorWipe.new()
 	add_child(wipe)
 	wipe.swap.connect(_on_swap)
@@ -142,6 +216,89 @@ func _ready() -> void:
 	resized.connect(_layout)
 	_refresh_title()
 	_layout()
+	_open_cold()
+	# Debug builds only; it returns null in a release and nothing is built.
+	admin = AdminPanel.attach(self)
+	if OS.is_debug_build():
+		# Printed once, so a phone can be asked what it really is instead of
+		# guessed at from a screenshot.
+		var window := DisplayServer.window_get_size()
+		print("[screen] window %d x %d   canvas %.0f x %.0f   safe area %s" % [
+			window.x, window.y, size.x, size.y, DisplayServer.get_display_safe_area()
+		])
+		# Both insets: what the system says, and what the board actually keeps
+		# clear after the gesture floor. Printing only the first read as though
+		# the floor had not been applied when it had.
+		print("[screen] system inset %s   with floor %s   board = %s" % [
+			safe_inset(), _floored_inset(), board()
+		])
+
+
+
+## Shows the way in again, now, without the app being reinstalled. The admin
+## panel calls it; nothing in the game does.
+func replay_tour() -> void:
+	settings.tour_done = false
+	if not settings_path.is_empty():
+		settings.write(settings_path)
+	game.teaching = false
+	if showing != Screen.TITLE:
+		_screen(showing).visible = false
+		showing = Screen.TITLE
+	_layout()
+	_open_cold()
+
+
+## A first run opens on the dark sky rather than on the title. Everything else
+## is already built behind it, so skipping is instant and beginning is a fade.
+func _open_cold() -> void:
+	if settings.tour_done or settings_path.is_empty():
+		return
+	# A save that already has a journey in it is not a first run, whatever the
+	# settings say: a settings file lost or cleared must not re-teach a player
+	# who is nineteen mansions in.
+	if game.level != null and Mansions.parse(game.level.id) != Vector2i(1, 1):
+		settings.tour_done = true
+		settings.write(settings_path)
+		return
+	title.visible = false
+	cold_open.visible = true
+	sky.light = ColdOpen.SKY_LIGHT
+
+
+## «أَضِئْ أوّلَ نجم»: straight into the first level, with nothing on screen but
+## the board and the wheel.
+func _begin_tour() -> void:
+	game.start_teaching()
+	_leave_cold()
+	showing = Screen.TITLE
+	go_to(Screen.GAME)
+
+
+## «تخطِّ التعريف»: the title, and everything on from the start.
+func _skip_tour() -> void:
+	_on_tour_finished()
+	_leave_cold()
+	title.visible = true
+
+
+func _leave_cold() -> void:
+	var fade := cold_open.create_tween()
+	fade.tween_property(cold_open, "modulate:a", 0.0, 0.35)
+	fade.tween_callback(func() -> void:
+		cold_open.visible = false
+		cold_open.modulate.a = 1.0)
+	# The sky comes back to whatever the lanterns say it should be.
+	game._refresh_light()
+
+
+## The first level is done, or the tour was skipped. Either way it is over.
+func _on_tour_finished() -> void:
+	game.teaching = false
+	if settings.tour_done or settings_path.is_empty():
+		return
+	settings.tour_done = true
+	settings.write(settings_path)
 
 
 ## The screens are laid out against a 1080 by 1920 board. On a window of
@@ -150,10 +307,88 @@ func _ready() -> void:
 ## that read its own width came out three times too big on a desktop window with
 ## half of it off the edge.
 const BOARD := Vector2(1080.0, 1920.0)
+## What the board keeps clear at the bottom of a phone even when the system
+## reports nothing there, in canvas units at a 1080-wide board.
+##
+## Android's gesture navigation owns a strip across the bottom of the screen —
+## a swipe up there leaves the app. With `immersive_mode` on, the navigation
+## bar is hidden and the system reports no inset, so the board ran to the very
+## edge and the wheel's lowest tile ended two pixels above a strip that eats
+## the swipe. The strip is about 48 device pixels; this is that, rounded up,
+## and it is a floor rather than an addition: a phone that does report a
+## gesture inset already has it and nothing is added.
+const GESTURE_FLOOR := 56.0
+
+
+## What a notch, a status bar and a gesture bar take off the window, in canvas
+## units, as (top, right, bottom, left).
+##
+## The sky keeps the whole window — it is the room the game is played in, and a
+## night that stopped short of the notch would read as a picture of a night. It
+## is the board that moves in, because a lantern under a camera cutout is a
+## lantern the player cannot see or press.
+##
+## `DisplayServer` answers in device pixels and the board is measured in canvas
+## units, so the ratio between them is what converts. On a desktop, and on any
+## phone without a cutout, every side comes back zero.
+func safe_inset() -> Vector4:
+	if safe_area_override.x >= 0.0:
+		return safe_area_override
+	var window := DisplayServer.window_get_size()
+	if window.x <= 0 or window.y <= 0 or size.x <= 0.0:
+		return Vector4.ZERO
+	# The safe area is the DISPLAY's, in screen coordinates, and it only
+	# describes this window when this window is the whole screen. A window on a
+	# desktop has nothing over it: asking anyway handed back the Mac's menu bar
+	# as a 448-unit notch and pushed the board down the screen.
+	if window != DisplayServer.screen_get_size(DisplayServer.window_get_current_screen()):
+		return Vector4.ZERO
+	var safe := DisplayServer.get_display_safe_area()
+	if safe.size.x <= 0 or safe.size.y <= 0:
+		return Vector4.ZERO
+	var per_pixel := size.x / float(window.x)
+	return Vector4(
+		maxf(float(safe.position.y), 0.0) * per_pixel,
+		maxf(float(window.x - safe.position.x - safe.size.x), 0.0) * per_pixel,
+		maxf(float(window.y - safe.position.y - safe.size.y), 0.0) * per_pixel,
+		maxf(float(safe.position.x), 0.0) * per_pixel
+	)
+
+
+## The system's inset, with a floor under the bottom on a touch screen.
+##
+## It is separate from `safe_inset()` because that one answers what the system
+## says, which a test and the diagnostic line both want unvarnished.
+func _floored_inset() -> Vector4:
+	var inset := safe_inset()
+	if not keeps_gesture_floor:
+		return inset
+	inset.z = maxf(inset.z, GESTURE_FLOOR * _raw_scale())
+	return inset
+
+
+## The scale before the floor is applied, for turning the floor's reference
+## units into this window's. Working it out from the floored room would need
+## the floor it is being used to compute.
+func _raw_scale() -> float:
+	var inset := safe_inset()
+	var room := Vector2(
+		maxf(size.x - inset.w - inset.y, 1.0), maxf(size.y - inset.x - inset.z, 1.0)
+	)
+	return maxf(minf(room.x / BOARD.x, room.y / BOARD.y), 0.01)
+
+
+## What the board has to lay itself out inside, once the notch is taken off.
+func _safe_room() -> Vector2:
+	var inset := _floored_inset()
+	return Vector2(
+		maxf(size.x - inset.w - inset.y, 1.0), maxf(size.y - inset.x - inset.z, 1.0)
+	)
 
 
 func _scale() -> float:
-	return maxf(minf(size.x / BOARD.x, size.y / BOARD.y), 0.01)
+	var room := _safe_room()
+	return maxf(minf(room.x / BOARD.x, room.y / BOARD.y), 0.01)
 
 
 ## Where the board sits inside the window, and how big it is.
@@ -167,8 +402,14 @@ func _scale() -> float:
 ## laid out from `size.y` simply gets more; one anchored to the top is unmoved.
 func board() -> Rect2:
 	var scale := _scale()
-	var area := Vector2(BOARD.x * scale, maxf(BOARD.y * scale, size.y))
-	return Rect2(((size - area) * 0.5).floor(), area)
+	var inset := _floored_inset()
+	var room := _safe_room()
+	# `_scale()` already measured against the room, so the width fits by
+	# construction; clamping it again only moved the answer by a float's worth
+	# and broke a test that compares the rect exactly.
+	var area := Vector2(BOARD.x * scale, maxf(BOARD.y * scale, room.y))
+	var at := Vector2(inset.w, inset.x) + ((room - area) * 0.5).floor()
+	return Rect2(at, area)
 
 
 func _screen(which: int) -> Control:
@@ -235,6 +476,37 @@ func place() -> Vector2i:
 	return Mansions.parse(game.level.id)
 
 
+## The lanterns have gone out. The question waits for the window that tells
+## the player so to close: two windows at once would be one of them unread.
+func _on_lanterns_emptied() -> void:
+	if settings.notify_asked:
+		return
+	if _owed_notice_question:
+		return
+	_owed_notice_question = true
+	game.lanterns_window.closed.connect(_ask_about_notice, CONNECT_ONE_SHOT)
+
+
+func _ask_about_notice() -> void:
+	_owed_notice_question = false
+	if settings.notify_asked or showing != Screen.GAME:
+		return
+	notify_window.open()
+
+
+## Either answer settles it for good: the question is asked once.
+func _answer_notice(yes: bool) -> void:
+	settings.notify = yes
+	settings.notify_asked = true
+	# Nothing schedules anything yet — a local notification needs a platform
+	# plugin this project does not carry. What is stored is the promise, so the
+	# day the plugin lands it has an answer waiting and the player is not asked
+	# twice.
+	if not settings_path.is_empty():
+		settings.write(settings_path)
+	notify_window.close()
+
+
 func open_settings() -> void:
 	settings_window.show_values(settings)
 	_layout()
@@ -249,8 +521,15 @@ func _on_setting_changed(key: String, on: bool) -> void:
 			settings.music = on
 		"haptics":
 			settings.haptics = on
-	# Nothing plays yet: the game has no audio. Storing the answer is what makes
-	# the window real rather than a drawing of a window.
+		"notify":
+			settings.notify = on
+			# Turning it on from here settles the question too: a player who
+			# has said yes in the settings must not be asked again the first
+			# time their lanterns run out.
+			settings.notify_asked = true
+	# Nothing plays yet: the game has no audio, and no platform plugin schedules
+	# the notification. Storing the answer is what makes the window real rather
+	# than a drawing of a window.
 	if not settings_path.is_empty():
 		settings.write(settings_path)
 
@@ -292,6 +571,52 @@ func open_daily() -> void:
 	daily_window.open()
 
 
+## How many mansions the player has finished, which is what decides whether
+## tonight's conjunction is theirs to enter.
+func mansions_reached() -> int:
+	if game.level == null:
+		return 0
+	return maxi(Mansions.parse(game.level.id).x - 1, 0)
+
+
+## `day` is days since the epoch, as `Daily.today()` counts them. It is a
+## parameter so a test can stand on a night the sky is not on tonight; nothing
+## in the game passes it.
+func open_qiran(day: int = -1) -> void:
+	if day < 0:
+		day = Daily.today()
+	qiran_window.show_night(day, mansions_reached())
+	_layout()
+	qiran_window.open()
+
+
+## A night in the mansion the moon lodges in. The journey is kept aside exactly
+## as it is for the daily challenge; the difference is that nothing is paid and
+## nothing is owed, because the only thing on offer is that the mansion opens
+## at all when the lanterns are out.
+func start_qiran(day: int = -1) -> bool:
+	if day < 0:
+		day = Daily.today()
+	if not Qiran.open_tonight(day, mansions_reached()):
+		return false
+	var level := game.level_by_id(Qiran.level_for(day, Qiran.mansion_on(day)))
+	if level == null:
+		return false
+	qiran_window.close()
+	_journey = game.capture()
+	game.qiran = true
+	game.show_level(level)
+	go_to(Screen.GAME)
+	return true
+
+
+func _on_qiran_finished() -> void:
+	game.qiran = false
+	_put_journey_back()
+	go_to(Screen.MAP)
+	open_qiran()
+
+
 ## Starts the day's level over the journey, keeping the journey aside.
 func start_daily() -> bool:
 	var level := game.level_by_id(Daily.level_for(Daily.today()))
@@ -319,19 +644,26 @@ func _on_daily_finished() -> void:
 		game.lanterns = mini(game.lanterns + 1, GameScreen.LANTERNS_MAX)
 
 	game.daily = false
-	if _journey != null:
-		var back := game.level_by_id(_journey.level_id)
-		if back != null:
-			_journey.coins = game.coins
-			_journey.lanterns = game.lanterns
-			_journey.daily_streak = game.daily_streak
-			_journey.daily_day = game.daily_day
-			game.show_level(back)
-			game.restore(_journey)
-		_journey = null
-	game.save()
+	_put_journey_back()
 	go_to(Screen.MAP)
 	open_daily()
+
+
+## Puts the journey back exactly where it was. Coins, the lanterns and the run
+## carry over from whatever was played aside; nothing else does.
+func _put_journey_back() -> void:
+	if _journey == null:
+		return
+	var back := game.level_by_id(_journey.level_id)
+	if back != null:
+		_journey.coins = game.coins
+		_journey.lanterns = game.lanterns
+		_journey.daily_streak = game.daily_streak
+		_journey.daily_day = game.daily_day
+		game.show_level(back)
+		game.restore(_journey)
+	_journey = null
+	game.save()
 
 
 func open_shop() -> void:
@@ -385,12 +717,15 @@ func _layout() -> void:
 		node.position = Vector2.ZERO
 		node.size = size
 
-	for node: Control in [title, map, cards, game]:
+	for node: Control in [title, map, cards, game, cold_open]:
 		node.position = area.position
 		node.size = area.size
 
 	# Windows centre on the whole window, so they are never off to one side.
-	for node: Control in [settings_window, mansion_window, shop_window, daily_window]:
+	for node: Control in [
+		settings_window, mansion_window, shop_window, daily_window, notify_window,
+		qiran_window,
+	]:
 		node.position = Vector2.ZERO
 		node.size = size
 	settings_window.relayout(s)
@@ -398,3 +733,5 @@ func _layout() -> void:
 	_layout_star_line(s)
 	shop_window.relayout(s)
 	daily_window.relayout(s)
+	qiran_window.relayout(s)
+	notify_window.relayout(s)

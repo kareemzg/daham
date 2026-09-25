@@ -37,6 +37,11 @@ var _phase: PackedFloat32Array = PackedFloat32Array()
 var _speed: PackedFloat32Array = PackedFloat32Array()
 var _tint: PackedColorArray = PackedColorArray()
 var _since_redraw: float = 0.0
+## Scales every star's brightness. The backdrop drives it from the lanterns.
+var light: float = 1.0:
+	set(value):
+		light = clampf(value, 0.0, 1.0)
+		queue_redraw()
 
 
 func _ready() -> void:
@@ -99,7 +104,7 @@ func _draw() -> void:
 		var at := _at[i] * size
 		# Never fully out: a star that blinks to nothing reads as a dead pixel.
 		var wave := sin(now * _speed[i] + _phase[i])
-		var alpha := _base[i] * (0.58 + 0.42 * wave)
+		var alpha := _base[i] * (0.58 + 0.42 * wave) * light
 		# The size breathes with the brightness. Alpha alone reads as a fade;
 		# the two together read as a sparkle.
 		var radius := _radius[i] * scale * (0.85 + 0.15 * wave)

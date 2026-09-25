@@ -220,6 +220,11 @@ static func make_button(style_preset: int, text: String, font: Font, ink: Color)
 	var button := Button.new()
 	button.flat = true
 	button.focus_mode = Control.FOCUS_ALL
+	# Anchored rather than sized by the caller. Every caller that placed one of
+	# these sized it by hand, and the first one that forgot shipped a button
+	# with no hit area at all — on the first screen a player ever sees, which
+	# is the one nobody had tapped on a phone.
+	button.set_anchors_preset(Control.PRESET_FULL_RECT)
 	button.tooltip_text = text
 	button.button_down.connect(func() -> void: shell.set_pressed(true))
 	button.button_up.connect(func() -> void: shell.set_pressed(false))

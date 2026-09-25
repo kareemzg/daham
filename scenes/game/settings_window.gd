@@ -8,8 +8,12 @@ extends SkyWindow
 signal menu_requested
 signal changed(key: String, on: bool)
 
-const KEYS := ["sound", "music", "haptics"]
-const LABELS := ["المؤثرات الصوتية", "الموسيقى", "الاهتزاز"]
+## The notification sits with the sound switches because it is the same kind
+## of thing: something the game may do to the player when they are not looking.
+## It is asked about once, the first time the lanterns run out, and this row is
+## where that answer is changed afterwards.
+const KEYS := ["sound", "music", "haptics", "notify"]
+const LABELS := ["المؤثرات الصوتية", "الموسيقى", "الاهتزاز", "أنبئني حين تعود الفوانيس"]
 
 var rows: Array[SkyToggle] = []
 var _language: Control
@@ -66,7 +70,7 @@ func _build_language_row() -> Control:
 
 ## Puts the stored answers on the switches, for opening the window.
 func show_values(settings: GameSettings) -> void:
-	var values := [settings.sound, settings.music, settings.haptics]
+	var values := [settings.sound, settings.music, settings.haptics, settings.notify]
 	for i in rows.size():
 		rows[i].on = values[i]
 

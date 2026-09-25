@@ -23,8 +23,25 @@ signal settings_requested
 ## The day's challenge is over. The shell pays for it and puts the journey
 ## back, because none of it belongs to the journey's own progress.
 signal daily_finished
+
+## A conjunction night is over. The shell puts the journey back, exactly as it
+## does after the daily challenge.
+signal qiran_finished
+
+## The first level is over, so the way in is walked. The shell writes it down.
+signal tour_finished
 ## Asked for from the card a finished mansion opens.
 signal cards_requested
+
+## How much light the sky should have, 1.0 down to about half. The shell owns
+## the one backdrop the whole game draws on, so the screen cannot dim it
+## itself: it says how dark it should be and the shell does it.
+signal light_changed(light: float)
+
+## The last lantern has gone out. The shell uses it to ask, once in a player's
+## life, whether they want telling when the lanterns are full again: at a first
+## launch the question means nothing, and here it means everything.
+signal lanterns_emptied
 
 enum Result {
 	CORRECT,  ## a grid word, found for the first time
@@ -52,10 +69,36 @@ const MOON_REWARD := 30
 ## The twentieth star of a mansion. It happens once in twenty levels, so it
 ## has to be felt: about nine levels' worth.
 const MANSION_REWARD := 400
-const LANTERN_REFILL_COST := 100
-## How long one lantern takes to come back on its own.
-const LANTERN_REGEN_SECONDS := 1800
+## Nine levels' worth, near the mansion's own reward: filling the lanterns
+## has to be a real choice against buying tools, or it is not a price.
+const LANTERN_REFILL_COST := 900
+## How long one lantern takes to come back on its own. Ten minutes, not the
+## half hour it was: the darkness is the punishment now, and a wait long enough
+## to send the player away is a different one.
+const LANTERN_REGEN_SECONDS := 600
 const TOAST_SECONDS := 1.1
+## How much light is left in the sky at each lantern count, five down to none.
+##
+## There is no losing here, only light that lessens. A table rather than a
+## curve, because what matters is how each step feels and not that the steps
+## are even: five is the sky as designed, three is visibly less without a word
+## said, one is the darkest anyone plays in, and none is darker still behind
+## the window.
+const LANTERN_LIGHT := [0.55, 0.66, 0.76, 0.85, 0.93, 1.0]
+## The disc goes with it, but only at the bottom of the range: dimming it early
+## would make the letters hard to read for no reason.
+const WHEEL_LIGHT := [0.58, 0.74, 0.88, 1.0, 1.0, 1.0]
+## A wheel holds seven tiles at most, and the ceremony needs one per letter
+## because a finger cannot touch the same tile twice. Every spring mansion
+## fits; «سعد الذابح» and its kind do not, and are let through to the finale.
+const ANWA_MAX_LETTERS := 7
+## How long the finished name is left on screen before the sky takes over.
+const ANWA_HOLD := 0.9
+## How long a line of teaching stays up. Long enough to read twice.
+const COACH_SECONDS := 3.4
+## Which star of a mansion stands aside for its verse. The middle one, so a
+## mansion reads as nine crosswords, a breath, nine more, then the rhyme.
+const BAYT_STAR := 10
 
 ## Design metrics, in the 1080-wide reference space; scaled by `_scale`.
 const REF_WIDTH := 1080.0
@@ -121,6 +164,17 @@ var refill_button: GlossyPanel
 var restart_confirm_button: GlossyPanel
 var hints_window: ShelfWindow
 var finale: MansionFinale
+## The twentieth star's ceremony: the rhyme, and the name written by hand.
+var anwa: AnwaPanel
+## The tenth star: the mansion's own line of verse, taken apart.
+var bayt: BaytPanel
+## True while the verse stands in the grid's place. The wheel is not on screen
+## at all then: this mode is tapped, not dragged.
+var in_bayt: bool = false
+## True between the last grid of a mansion and its finale. While it is set
+## the wheel spells the mansion's name and nothing else, and `submit()`
+## measures a guess against that name instead of against the level.
+var in_anwa: bool = false
 var mansion_window: SkyWindow
 var next_mansion_button: GlossyPanel
 var _mansion_name: Label
@@ -138,11 +192,40 @@ var tools: Array[int] = [0, 0, 0, 0]
 ## journey. Nothing is written to the journey's save, no lantern is spent
 ## however badly it goes, and finishing reports rather than moving on.
 var daily: bool = false
+## True while the screen is playing a conjunction night: the mansion the moon
+## lodges in, opened without lanterns because the player already lit it.
+var qiran: bool = false
+
+## The way in. While it is set the screen carries nothing but the board and the
+## wheel, and each counter arrives at the moment it starts to mean something:
+## the moon on the first word that is not in the grid, the lanterns on the first
+## guess that is not a word — before anything is lost, not after.
+##
+## The shell turns it on for a first run only, and `tour_finished` turns it off
+## for good. Nothing derives it from the level, because a player revisiting
+## m01-01 on a conjunction night must not be taught it again.
+var teaching: bool = false
+var _taught_moon: bool = false
+var _taught_lantern: bool = false
+## Whether the line about the crossing letters has been said. It waits for the
+## first word to land, because until then there is no crossing to point at.
+var _taught_crossing: bool = false
+
+## Anything that is not the journey. Neither the daily challenge nor a
+## conjunction night spends a lantern, writes a save, lights a star or moves to
+## a next level — the shell keeps the journey aside and puts it back after.
+var aside: bool:
+	get:
+		return daily or qiran
 var daily_streak: int = 0
 var daily_day: int = 0
 var _complete_stars: StarDots
 var _complete_reward: Control
 var _clock_strip: Control
+var _coach: GlossyPanel
+var _coach_label: Label
+## Set while a line is waiting for the player to move rather than for a timer.
+var _coach_waits: bool = false
 
 ## Unix time when the next lantern comes back. Zero while they are full.
 var _lantern_clock: int = 0
@@ -264,6 +347,18 @@ func show_level(new_level: Level) -> void:
 	_refresh_jump_label.call_deferred()
 	# A chart left armed must not survive into a level it was not bought for.
 	grid.picking = false
+	in_anwa = false
+	in_bayt = false
+	if anwa != null:
+		anwa.visible = false
+	if bayt != null:
+		bayt.visible = false
+	grid.visible = true
+	wheel.visible = true
+	preview.visible = true
+	_preview_pill.visible = true
+	if shuffle_button != null:
+		shuffle_button.visible = true
 	if finale != null:
 		finale.visible = false
 	_hide_windows()
@@ -290,8 +385,37 @@ func show_level(new_level: Level) -> void:
 	]
 	preview.text = ""
 	toast.text = ""
+	_begin_bayt()
 	_layout()
 	_refresh_chrome()
+
+
+## Once in every mansion the grid stands aside for the line the tradition hangs
+## on that mansion. Only where somebody has settled that line: a mansion whose
+## verse is half-copied or unattributed plays its crossword as usual.
+func _begin_bayt() -> void:
+	if aside or level.index_in_mansion != BAYT_STAR:
+		return
+	var verse := Mansions.verse_of(level.mansion)
+	if verse.is_empty():
+		return
+	in_bayt = true
+	grid.visible = false
+	# The wheel is not merely idle here, it is absent: the mode is tapped, and
+	# a disc sitting under a board nobody drags on would be furniture.
+	wheel.visible = false
+	preview.visible = false
+	_preview_pill.visible = false
+	shuffle_button.visible = false
+	bayt.visible = true
+	bayt.setup(verse, hash(level.id))
+
+
+func _on_bayt_completed() -> void:
+	_say(Mansions.verse_of(level.mansion).get("poet", ""))
+	var tween := create_tween()
+	tween.tween_interval(ANWA_HOLD)
+	tween.tween_callback(_finish_level)
 
 
 func _build_chrome() -> void:
@@ -336,6 +460,27 @@ func _build_chrome() -> void:
 	settings_button = hud.add_utility(UiIcon.Kind.SETTINGS, _on_settings_pressed, "الإعدادات")
 	restart_button = hud.add_utility(UiIcon.Kind.RESTART, _on_restart_pressed, "إعادة المحاولة")
 
+	# The rhyme sits where the grid sits, so it is built beside it and under
+	# everything the windows cover.
+	anwa = AnwaPanel.new()
+	anwa.visible = false
+	add_child(anwa)
+
+	bayt = BaytPanel.new()
+	bayt.visible = false
+	add_child(bayt)
+
+	# One line at a time, over whatever is under it. It reserves no strip: it
+	# is there for a moment on a first run and never again.
+	_coach = GlossyPanel.new()
+	_coach.style = GlossyPanel.Style.PANEL_NIGHT
+	_coach.visible = false
+	add_child(_coach)
+	_coach_label = _make_label(UI_BOLD_FONT, Color("E7F4F6"))
+	_coach.add_child(_coach_label)
+	bayt.completed.connect(_on_bayt_completed)
+	bayt.missed.connect(func() -> void: _say("ليس هذا ترتيبَه"))
+
 	# The finale is a moment on the sky, above the board and under the windows:
 	# the card it ends with has to cover it.
 	finale = MansionFinale.new()
@@ -373,7 +518,11 @@ func _build_windows() -> void:
 	lanterns_window = _new_window()
 	lanterns_window.set_crest(UiIcon.Kind.LANTERN, 0.0)
 	lanterns_window.set_title("نفدت الفوانيس")
-	lanterns_window.set_body("انطفأ آخر فانوس.\nاملأها لتكمل، أو عد لاحقاً.")
+	# The wait is read off the constant rather than written into the prose:
+	# a window that says ten minutes while the code says thirty is a lie the
+	# player can time.
+	lanterns_window.set_body("انطفأ آخر فانوس.\nيعود الأول بعد %s دقائق، أو املأها الآن."
+		% Arabic.eastern_digits(LANTERN_REGEN_SECONDS / 60))
 	_clock_strip = _build_clock_row(lanterns_window)
 	refill_button = lanterns_window.add_button(
 		GlossyPanel.Style.BUTTON_EMBER,
@@ -616,6 +765,42 @@ func _layout() -> void:
 		band_top + maxf(0.0, (band_bottom - band_top - grid_extent.y) * 0.5)
 	)
 
+	# The rhyme takes the same band the grid does, centred in it, because it
+	# stands in the grid's place rather than beside it.
+	anwa.size = Vector2(size.x, anwa.wanted_height(s))
+	anwa.position = Vector2(
+		0.0, band_top + maxf(0.0, (band_bottom - band_top - anwa.size.y) * 0.5)
+	)
+	anwa.relayout(s)
+
+	# The verse has the board to itself, all the way down: the wheel is not on
+	# screen, so there is no reason to stop short of where it would have been.
+	var verse_bottom := size.y - WHEEL_MARGIN * s
+	bayt.size = Vector2(size.x, 0.0)
+	var verse_height := bayt.wanted_height(s, size.x)
+	bayt.size = Vector2(size.x, verse_height)
+	bayt.position = Vector2(
+		0.0, band_top + maxf(0.0, (verse_bottom - band_top - verse_height) * 0.5)
+	)
+	bayt.relayout(s)
+
+	# The coach line floats just above the wheel, over the board. It reserves
+	# nothing: on a first run it is there for three seconds and never again.
+	if _coach.visible:
+		var lines := float(_coach_label.text.count("\n") + 1)
+		var coach_h := (34.0 + lines * 46.0) * s
+		var coach_w := minf(size.x - 80.0 * s, 620.0 * s)
+		_coach.size = Vector2(coach_w, coach_h)
+		_coach.position = Vector2(
+			(size.x - coach_w) * 0.5, wheel.position.y - 26.0 * s - coach_h
+		)
+		_coach.radius_override = 26.0 * s
+		_coach_label.position = Vector2.ZERO
+		_coach_label.size = _coach.size
+		_coach_label.add_theme_font_size_override("font_size", int(30.0 * s))
+		_coach_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_coach_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+
 	# The toast never lands on the grid: a message over a cell hides the letter
 	# the player just earned.
 	toast.position = Vector2(0.0, grid.position.y - 12.0 * s - toast.size.y)
@@ -748,6 +933,10 @@ func _place_preview_pill() -> void:
 # --- rules -------------------------------------------------------------------
 
 func _on_word_previewed(word: String) -> void:
+	if _coach_waits and not word.is_empty():
+		_coach_done()
+	if in_anwa:
+		anwa.show_progress(word)
 	preview.text = word
 	preview.add_theme_color_override(
 		"font_color", Palette.CREAM if word.is_empty() else Color("FFF6E2")
@@ -767,6 +956,16 @@ func _on_shuffle_pressed() -> void:
 ## four tools now, and which one a player wants is their choice, not the
 ## cheapest by default.
 func _on_hint_pressed() -> void:
+	# Nothing is at stake on the rhyme screen, so there is nothing to sell: the
+	# button simply opens the next letter. The price tag is hidden with it.
+	if in_anwa:
+		anwa.reveal_next()
+		return
+	# Same on the verse: one word into its place, and nothing charged. The
+	# tools reveal grid letters, and there is no grid on this screen.
+	if in_bayt:
+		bayt.reveal_next()
+		return
 	for kind in Tools.COUNT:
 		hints_window.rows[kind].set_owned(tools[kind])
 	hints_window.show_purse(coins)
@@ -950,6 +1149,12 @@ func _refresh_jump_label() -> void:
 ## The one entry point for a spelled word. Returns what happened.
 func submit(raw: String) -> int:
 	var word := Arabic.normalise(raw)
+	# The ceremony is not the level. Nothing here is scored, nothing is lost,
+	# and nothing is saved: `_finish_mansion()` already wrote the save pointing
+	# at the next mansion, and writing over it here would put the player back on
+	# a solved grid with no way forward.
+	if in_anwa:
+		return _submit_anwa(word)
 	var result := _classify(word)
 	var finished := false
 	var spent_last := false
@@ -957,6 +1162,14 @@ func submit(raw: String) -> int:
 		Result.CORRECT:
 			grid.reveal(word)
 			_say("كلمة صحيحة")
+			if teaching and not _taught_crossing:
+				_taught_crossing = true
+				var left := level.words.size() - grid.found_count()
+				if left > 0:
+					_coach_say(
+						"بقيت %s كلمات.\nوالحرفُ المشتركُ يدلُّك على التالية."
+							% Arabic.eastern_digits(left)
+					)
 			if grid.is_solved():
 				_finish_level()
 				finished = true
@@ -964,6 +1177,11 @@ func submit(raw: String) -> int:
 			grid.nudge(word)
 			_say("وجدتها سابقاً")
 		Result.BONUS:
+			if teaching and not _taught_moon:
+				_taught_moon = true
+				_refresh_chrome()
+				hud.announce("moon")
+				_coach_say("كلمةٌ ليست في الرقعة، لكنّها عربيّة.\nالكلماتُ الزائدةُ تملأ القمر.")
 			_bonus_found[word] = true
 			moon = mini(moon + 1, MOON_PHASES)
 			# The payout is state, so it lands on the guess. Waiting for the
@@ -988,9 +1206,9 @@ func submit(raw: String) -> int:
 				wrong_streak = 0
 				# The daily challenge costs no lantern, which is a promise its
 				# window makes in so many words.
-				if not daily:
+				if not aside:
 					lanterns = maxi(lanterns - 1, 0)
-				_say("انطفأ فانوس" if not daily else "خمس محاولات خاطئة")
+				_say("انطفأ فانوس" if not aside else "خمس محاولات خاطئة")
 				# The clock starts on the first lantern lost, not on the last:
 				# a player who is down to four is already waiting for one back.
 				if _lantern_clock <= 0:
@@ -998,6 +1216,13 @@ func submit(raw: String) -> int:
 						int(Time.get_unix_time_from_system()) + LANTERN_REGEN_SECONDS
 					)
 				spent_last = lanterns <= 0
+			elif teaching and not _taught_lantern:
+				# The lantern shows at the first wrong guess, not at the first
+				# one lost: the player learns the price before paying it.
+				_taught_lantern = true
+				_refresh_chrome()
+				hud.announce("lanterns")
+				_coach_say("خمسُ محاولاتٍ خاطئةٍ تُطفئ فانوساً.\nلك خمسةٌ، وهذه أُولاها.")
 			else:
 				_say("ليست كلمة")
 		Result.TOO_SHORT:
@@ -1011,10 +1236,25 @@ func submit(raw: String) -> int:
 	# would reopen the game on a solved grid with no window and no way forward.
 	if result != Result.TOO_SHORT and not finished:
 		save()
-	if spent_last and not daily:
+	if spent_last and not aside:
 		show_out_of_lanterns()
 	word_resolved.emit(word, result)
 	return result
+
+
+## A guess while the rhyme is up. The only right answer is the mansion's name.
+func _submit_anwa(word: String) -> int:
+	if anwa.locked:
+		return Result.TOO_SHORT
+	if word == anwa.answer:
+		_end_anwa()
+		word_resolved.emit(word, Result.CORRECT)
+		return Result.CORRECT
+	anwa.show_progress("")
+	if word.length() >= 2:
+		_say("ليس بعد")
+	word_resolved.emit(word, Result.INVALID)
+	return Result.INVALID
 
 
 func _classify(word: String) -> int:
@@ -1222,7 +1462,7 @@ func _on_menu_pressed() -> void:
 ## leaving from. False at the end of the year, and on a level still being
 ## played, so calling it twice costs nothing.
 func move_on_if_finished() -> bool:
-	if daily or level == null or not grid.is_solved():
+	if aside or level == null or not grid.is_solved():
 		return false
 	var next := next_level_id()
 	if next.is_empty():
@@ -1243,6 +1483,7 @@ func show_out_of_lanterns() -> void:
 	_refresh_clock()
 	_open(lanterns_window)
 	set_process(true)
+	lanterns_emptied.emit()
 
 
 func _on_refill_pressed() -> void:
@@ -1287,7 +1528,9 @@ func _refresh_clock() -> void:
 	var seconds := Arabic.eastern_digits(left % 60)
 	if left % 60 < 10:
 		seconds = Arabic.eastern_digits(0) + seconds
-	label.text = "يعود فانوس بعد %s:%s" % [Arabic.eastern_digits(left / 60), seconds]
+	# Just the clock. The window's own prose already says what is being waited
+	# for; saying it twice in two lines is the window talking to itself.
+	label.text = "%s:%s" % [Arabic.eastern_digits(left / 60), seconds]
 
 
 # --- moving between levels ---------------------------------------------------
@@ -1297,7 +1540,7 @@ func _refresh_clock() -> void:
 func _content_nodes() -> Array[Control]:
 	return [
 		caption, stars, toast, grid, preview, _preview_pill, wheel,
-		hud, hint_button, shuffle_button, _hint_cost,
+		hud, hint_button, shuffle_button, _hint_cost, anwa, bayt,
 	]
 
 
@@ -1339,6 +1582,18 @@ func _finish_level() -> void:
 		# no next level. The shell settles the day and puts the journey back.
 		daily_finished.emit()
 		return
+	if qiran:
+		# A visit, not a level. The mansion was finished long ago, so there is
+		# no star to light and no coin to pay; what the night gives is that it
+		# can be played at all when the lanterns are out.
+		qiran_finished.emit()
+		return
+	if teaching:
+		# One level is the whole lesson. Everything is on screen from here.
+		teaching = false
+		_coach.visible = false
+		_refresh_chrome()
+		tour_finished.emit()
 	coins += LEVEL_REWARD
 	stars.light_next()
 	_refresh_chrome()
@@ -1384,10 +1639,58 @@ func _finish_mansion() -> void:
 	_refresh_chrome()
 	_save_ahead()
 	level_solved.emit()
+	if _begin_anwa():
+		return
+	_play_finale()
+
+
+## The rhyme, then the name. Returns false when this mansion cannot hold the
+## ceremony, and the finale runs straight away as it always did.
+##
+## Two things can rule it out: nobody has written the mansion's rhyme down yet,
+## or its name does not fit a wheel — «سعد الذابح» is nine letters and a space,
+## and no wheel spells a space. All seven spring mansions pass. The rest are a
+## problem for the season that ships them.
+func _begin_anwa() -> bool:
+	var saj := Mansions.saj_of(level.mansion)
+	var name := Arabic.normalise(Mansions.name_of(level.mansion))
+	if saj.is_empty() or name.contains(" ") or name.length() > ANWA_MAX_LETTERS:
+		return false
+
+	in_anwa = true
+	grid.visible = false
+	toast.text = ""
+	anwa.visible = true
+	anwa.setup(saj, name)
+	# The wheel carries the name and nothing else, shuffled so the answer is
+	# not simply read off the disc.
+	var letters := PackedStringArray()
+	for i in name.length():
+		letters.append(name[i])
+	wheel.setup(letters)
+	wheel.shuffle_letters()
+	preview.text = ""
+	_layout()
+	_refresh_chrome()
+	return true
+
+
+func _play_finale() -> void:
+	in_anwa = false
+	anwa.visible = false
 	_fade_content(0.0, 0.45)
 	finale.position = Vector2.ZERO
 	finale.size = size
 	finale.play(level.mansion)
+
+
+## The name is written. It goes gold, and the sky takes over.
+func _end_anwa() -> void:
+	anwa.lock()
+	_say(Mansions.name_of(level.mansion))
+	var tween := create_tween()
+	tween.tween_interval(ANWA_HOLD)
+	tween.tween_callback(_play_finale)
 
 
 func _show_mansion_card() -> void:
@@ -1454,7 +1757,7 @@ func restore(saved: Progress) -> void:
 
 
 func save() -> void:
-	if daily:
+	if aside:
 		return
 	if progress_path.is_empty() or level == null:
 		return
@@ -1484,6 +1787,72 @@ func _refresh_chrome() -> void:
 	hud.lanterns = lanterns
 	# `_moon_shown`, not `moon`: the chip waits for the flying star to land.
 	hud.moon = _moon_shown
+	# During the way in the counters arrive one at a time; after it they are
+	# simply all there.
+	hud.show_chips(not teaching or _taught_lantern, not teaching, not teaching or _taught_moon)
+	if hint_button != null:
+		hint_button.visible = not teaching
+		shuffle_button.visible = not teaching and not in_bayt
+		# Nothing is for sale on the rhyme, the verse, or the first level.
+		_hint_cost.visible = not (teaching or in_anwa or in_bayt)
+	_refresh_light()
+
+
+## The sky and the disc follow the lanterns. Nothing announces it.
+func _refresh_light() -> void:
+	var step := clampi(lanterns, 0, LANTERN_LIGHT.size() - 1)
+	var sky_light: float = LANTERN_LIGHT[step]
+	if _sky != null:
+		_sky.light = sky_light
+	if wheel != null:
+		wheel.light = WHEEL_LIGHT[step]
+	light_changed.emit(sky_light)
+
+
+## Starts the way in: the screen goes bare and the first line comes up.
+##
+## It is a call rather than a flag the shell sets, because the line belongs
+## with the stripping — a bare board and no word about why is not a lesson.
+func start_teaching() -> void:
+	teaching = true
+	_taught_moon = false
+	_taught_lantern = false
+	_taught_crossing = false
+	_refresh_chrome()
+	_coach_say(
+		"مرِّرْ إصبعَك على الحروف،\nفتتّصلُ الكلمةُ من تلقاءِ نفسها.", true
+	)
+
+
+## A line of teaching, shown for as long as it takes to read. Broken by hand:
+## a Label left to wrap itself claims the height it works out at no width.
+func _coach_say(text: String, until_touched: bool = false) -> void:
+	if _coach == null:
+		return
+	_coach_label.text = text
+	_coach.visible = true
+	_coach.modulate.a = 0.0
+	_coach_waits = until_touched
+	_layout()
+	var tween := _coach.create_tween()
+	tween.tween_property(_coach, "modulate:a", 1.0, 0.25)
+	if until_touched:
+		# The first line is the one telling them what to do, so it stays until
+		# they do it rather than leaving on a timer they may not have beaten.
+		return
+	tween.tween_interval(COACH_SECONDS)
+	tween.tween_property(_coach, "modulate:a", 0.0, 0.3)
+	tween.tween_callback(func() -> void: _coach.visible = false)
+
+
+## Takes the line away the moment the finger lands on the wheel.
+func _coach_done() -> void:
+	if _coach == null or not _coach.visible:
+		return
+	_coach_waits = false
+	var tween := _coach.create_tween()
+	tween.tween_property(_coach, "modulate:a", 0.0, 0.25)
+	tween.tween_callback(func() -> void: _coach.visible = false)
 
 
 func _say(message: String) -> void:

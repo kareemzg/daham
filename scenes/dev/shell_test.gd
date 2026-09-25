@@ -347,6 +347,55 @@ func _run() -> void:
 	)
 	_check_equal("the play screen sits on it", shell.game.size, area.size)
 
+	print("=== and it keeps clear of a notch ===")
+	# No system reports one on a desktop, so one is put there by hand: the
+	# numbers an iPhone with a Dynamic Island gives, in canvas units.
+	shell.safe_area_override = Vector4(120.0, 0.0, 68.0, 0.0)
+	shell._layout()
+	var notched := shell.board()
+	_check_equal("the board starts below the island", notched.position.y, 120.0)
+	_check_equal("...and ends above the home bar",
+		notched.position.y + notched.size.y, shell.size.y - 68.0)
+	_check("...so the screens lose exactly that much (%0.0f)"
+		% (area.size.y - notched.size.y), is_equal_approx(
+			area.size.y - notched.size.y, 188.0))
+	_check_equal("the play screen moved with it", shell.game.position.y, 120.0)
+	_check("...and the sky did not: it is the room, not the board",
+		shell.sky.position == Vector2.ZERO and shell.sky.size == shell.size)
+	_check("...nor did the meteor",
+		shell.wipe.position == Vector2.ZERO and shell.wipe.size == shell.size)
+
+	print("=== and clear of the strip a swipe-up owns ===")
+	# Android hides the navigation bar in immersive mode and then reports no
+	# inset at the bottom, while the gesture that leaves the app still lives
+	# there. The floor is what keeps the wheel's lowest tile off it.
+	shell.safe_area_override = Vector4(0.0, 0.0, 0.0, 0.0)
+	shell.keeps_gesture_floor = false
+	shell._layout()
+	var flat := shell.board()
+	shell.keeps_gesture_floor = true
+	shell._layout()
+	var floored := shell.board()
+	_check("the board stops short of the bottom (%0.0f)"
+		% (flat.position.y + flat.size.y - floored.position.y - floored.size.y),
+		floored.position.y + floored.size.y < flat.position.y + flat.size.y)
+	_check("...by the floor and no more",
+		is_equal_approx(
+			flat.size.y - floored.size.y, Shell.GESTURE_FLOOR * shell._raw_scale()))
+	_check("...and the sky still reaches it",
+		shell.sky.size.y == shell.size.y and shell.sky.position.y == 0.0)
+	# A system that does report a gesture inset is not given a second one.
+	shell.safe_area_override = Vector4(0.0, 0.0, Shell.GESTURE_FLOOR * 3.0, 0.0)
+	shell._layout()
+	var reported := shell.board()
+	_check_equal("a reported inset is kept, not added to",
+		reported.size.y, shell.size.y - Shell.GESTURE_FLOOR * 3.0)
+
+	shell.keeps_gesture_floor = OS.has_feature("mobile")
+	shell.safe_area_override = Vector4(-1.0, 0.0, 0.0, 0.0)
+	shell._layout()
+	_check_equal("and putting it back restores the board", shell.board(), area)
+
 	# The wheel places its disc and tiles from its own rect. They used to be
 	# placed from the rect it had a moment before, and on a wide window the
 	# whole wheel was drawn outside the board.
@@ -446,6 +495,14 @@ func _run() -> void:
 	_check_equal("...and returns a lantern", shell.game.lanterns, 3)
 	shell.daily_window.visible = false
 
+	await _check_darkness()
+
+	await _check_qiran()
+
+	await _check_the_way_in()
+
+	await _check_the_workbench()
+
 	_check_separators()
 
 	_finish()
@@ -454,6 +511,389 @@ func _run() -> void:
 ## Same rule as the slice test, over the screens this one builds: the title
 ## carries «المنزلة ٤ — الدبران · النجمة ١٢ من ٢٠», and the map its own lines.
 ## Every screen the shell made is still a child here, shown or hidden.
+## The workbench. It is a dev tool, but a dev tool whose buttons do nothing
+## wastes the time it exists to save — and a dead button has shipped here once.
+func _check_the_workbench() -> void:
+	print("=== the workbench reaches the moments ===")
+	_check("a debug build has one", shell.admin != null)
+	if shell.admin == null:
+		return
+	var admin := shell.admin
+
+	# Every button in it, pressed. Not to check what each one does — the checks
+	# below do that — but because one that errors takes the whole panel with it.
+	var buttons := 0
+	for node in _every_node(admin):
+		if node is Button:
+			buttons += 1
+	_check("...with buttons on it (%d)" % buttons, buttons >= 20)
+
+	admin._go("m01-10")
+	await _arrive()
+	_check_equal("it goes to a level by name", shell.game.level.id, "m01-10")
+	_check("...and that one is the verse", shell.game.in_bayt)
+
+	admin._go("m01-01")
+	_check_equal("...and back", shell.game.level.id, "m01-01")
+	admin._solve(1)
+	_check_equal("it solves a level but for one word",
+		shell.game.grid.found_count(), shell.game.level.words.size() - 1)
+
+	admin._set_lanterns(1)
+	_check_equal("it sets the lanterns", shell.game.lanterns, 1)
+	_check("...and the sky goes with them", shell.sky.light < 1.0)
+	admin._add_coins(1000)
+	_check("it fills the purse", shell.game.coins >= 1000)
+
+	admin._at_the_twentieth()
+	await _arrive()
+	_check_equal("it stands on the twentieth star",
+		shell.game.level.index_in_mansion, Mansions.LEVELS_PER_MANSION)
+	_check_equal("...with one word left to play",
+		shell.game.level.words.size() - shell.game.grid.found_count(), 1)
+
+	# A conjunction needs a finished mansion, so stand somewhere that has one.
+	admin._go("m04-05")
+	await _arrive()
+	_check_equal("three mansions are behind the player now", shell.mansions_reached(), 3)
+	admin._open_qiran_night(true)
+	_check("it finds a night the moon is in a lit mansion", shell.qiran_window.visible)
+	_check("...and that night is really open",
+		not shell.qiran_window._play_label.text.is_empty()
+			and shell.qiran_window.figure.visible)
+	shell.qiran_window.visible = false
+
+	admin._open_qiran_night(false)
+	_check("...and a night it is not", not shell.qiran_window.figure.visible)
+	shell.qiran_window.visible = false
+
+	# And with nothing finished it says why rather than looking broken.
+	admin._go("m01-02")
+	await _arrive()
+	admin._open_qiran_night(true)
+	_check("with no mansion finished it says so", not shell.qiran_window.visible)
+	_check("...naming the reason", admin._note.text.contains("لا منزلة"))
+
+	var gift := admin._first_level_with_gift()
+	var gift_level := shell.game.level_by_id(gift)
+	_check("it finds a level that opens a cell (%s)" % gift,
+		gift_level != null and gift_level.has_gift())
+	var widest := admin._widest_wheel()
+	var widest_level := shell.game.level_by_id(widest)
+	_check_equal("...and the widest wheel in the build (%s)" % widest,
+		widest_level.letters.size() if widest_level != null else 0, 7)
+
+	# The way in, again, without an install: the button used to ask for one.
+	admin._restart_tour()
+	_check("the workbench plays the way in again", shell.cold_open.visible)
+	_check("...and the tour is open once more", not shell.settings.tour_done)
+	_check_equal("...from the first level", shell.game.level.id, "m01-01")
+	shell.cold_open.visible = false
+	shell.settings.tour_done = true
+	shell.title.visible = true
+
+	admin._wipe()
+	await _arrive()
+	_check_equal("it wipes back to the first level", shell.game.level.id, "m01-01")
+	_check_equal("...with nothing in the purse", shell.game.coins, 0)
+	_check_equal("...and the lanterns full", shell.game.lanterns, GameScreen.LANTERNS_MAX)
+
+
+## A player opening the game for the first time: a dark sky, then a board with
+## nothing on it but the wheel, and the counters arriving one at a time.
+func _check_the_way_in() -> void:
+	print("=== the way in, once in a player's life ===")
+	var save := "user://tour_test_progress.json"
+	var kept := "user://tour_test_settings.json"
+	Progress.clear(save)
+	GameSettings.clear(kept)
+
+	var fresh := Shell.new()
+	fresh.progress_path = save
+	fresh.settings_path = kept
+	fresh.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(fresh)
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	_check("it opens on the dark sky, not the title", fresh.cold_open.visible)
+	_check("...and the title is behind it", not fresh.title.visible)
+	_check("...and the sky is darker than any lantern makes it",
+		fresh.sky.light < GameScreen.LANTERN_LIGHT[0])
+	_check_equal("...on the first level of the first mansion",
+		fresh.game.level.id, "m01-01")
+	# Tapped, not called: the first button a player ever presses shipped with
+	# no hit area, because `make_button` left sizing to the caller and this
+	# caller forgot. Checking the signal fires is not checking the button works.
+	var hit: Button = fresh.cold_open.begin_button.get_meta("button")
+	_check("the button that begins it has a hit area (%0.0f x %0.0f)"
+		% [hit.size.x, hit.size.y], hit.size.x > 100.0 and hit.size.y > 40.0)
+	_check("...and so does the one that skips it",
+		fresh.cold_open.skip_button.size.x > 100.0)
+
+	fresh.cold_open.begin_requested.emit()
+	await get_tree().create_timer(MeteorWipe.DURATION + 0.25).timeout
+	_check("it goes straight into the level", fresh.showing == Shell.Screen.GAME)
+	_check("...teaching", fresh.game.teaching)
+	_check("...with nothing on the board but the wheel",
+		not fresh.game.hud._chip_lanterns.visible
+			and not fresh.game.hud._chip_coins.visible
+			and not fresh.game.hud._chip_moon.visible)
+	_check("...no hint button", not fresh.game.hint_button.visible)
+	_check("...and no price tag", not fresh.game._hint_cost.visible)
+
+	# A bare board and no word about why is not a lesson. The first line is up
+	# and it waits for the finger rather than for a timer.
+	_check("...but a line saying what to do", fresh.game._coach.visible)
+	_check("...which mentions the letters",
+		fresh.game._coach_label.text.contains("الحروف"))
+	_check("...and waits to be obeyed", fresh.game._coach_waits)
+	fresh.game._on_word_previewed("ح")
+	_check("...then goes when the finger lands", not fresh.game._coach_waits)
+
+	# The first word down: the crossing letters are what open the next one.
+	fresh.game.submit("حسام")
+	_check("a second line follows the first word", fresh.game._coach.visible)
+	_check("...and it points at the shared letter",
+		fresh.game._coach_label.text.contains("المشترك"))
+	_check("...counting what is left",
+		fresh.game._coach_label.text.contains(Arabic.eastern_digits(3)))
+
+	# «حسم» is real Arabic and not in this grid, so it is the first bonus word.
+	fresh.game.submit("حسم")
+	_check("the moon arrives on the first word outside the grid",
+		fresh.game.hud._chip_moon.visible)
+	_check("...and says so", fresh.game._coach.visible)
+	_check("...but the lanterns are still nowhere",
+		not fresh.game.hud._chip_lanterns.visible)
+
+	# «محس» is the one three-letter run of ح س ا م that is not a word.
+	var lamps: int = fresh.game.lanterns
+	fresh.game.submit("محس")
+	_check("the lanterns arrive on the first wrong guess",
+		fresh.game.hud._chip_lanterns.visible)
+	_check_equal("...before any is lost", fresh.game.lanterns, lamps)
+	# A counter that is not on screen must not hold its place open either.
+	fresh.game._layout()
+	_check("...and the counters that are not there leave no gap (%0.0f)"
+		% fresh.game.hud._chip_lanterns.position.x,
+		fresh.game.hud._chip_lanterns.position.x
+			< fresh.game.hud._chip_moon.position.x + 300.0 * fresh.game._scale())
+
+	for word in ["حسام", "حماس", "امس", "اسم"]:
+		fresh.game.submit(word)
+	_check("the level is finished", fresh.game.grid.is_solved())
+	_check("...and the teaching is over", not fresh.game.teaching)
+	_check("...everything is on the board now",
+		fresh.game.hud._chip_lanterns.visible and fresh.game.hud._chip_coins.visible
+			and fresh.game.hud._chip_moon.visible and fresh.game.hint_button.visible)
+	_check("...and it is written down", GameSettings.read(kept).tour_done)
+
+	fresh.queue_free()
+	await get_tree().process_frame
+
+	# A second launch: the same save, the same settings, and no tour.
+	var again := Shell.new()
+	again.progress_path = save
+	again.settings_path = kept
+	again.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(again)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	_check("coming back opens on the title", not again.cold_open.visible)
+	_check("...and teaches nothing", not again.game.teaching)
+	again.queue_free()
+	await get_tree().process_frame
+	Progress.clear(save)
+	GameSettings.clear(kept)
+
+
+## The moon lodges in a new mansion every night, and the arithmetic says which.
+func _check_qiran() -> void:
+	print("=== the moon lodges in a mansion every night ===")
+	# Two nights worked out by hand against the same formulae, so a change to
+	# the constants cannot pass quietly.
+	var night_in_saad := _day_of(2026, 9, 23)
+	var night_in_sharatan := _day_of(2026, 9, 28)
+	_check_equal("23 Sep 2026 is سعد السعود", Qiran.mansion_on(night_in_saad), 24)
+	_check_equal("28 Sep 2026 is الشرطان", Qiran.mansion_on(night_in_sharatan), 1)
+	_check_equal("...and the moon is all but full then (%d%%)"
+		% int(round(Qiran.illumination(night_in_sharatan) * 100.0)),
+		int(round(Qiran.illumination(night_in_sharatan) * 100.0)), 97)
+	_check("...and emptying, not filling", not Qiran.waxing(night_in_sharatan))
+
+	# The whole reason they are called the moon's mansions. Not quite one a
+	# night: the moon runs from about 11.8° a day at its furthest to 15.4° at
+	# its nearest, against a mansion of 12.86°, so it now and then lingers a
+	# night or skips one. What must hold is that it works its way round.
+	var lingered := 0
+	var longest := 0
+	var run := 0
+	var visited := {}
+	for ahead in 28:
+		var here := Qiran.mansion_on(night_in_saad + ahead)
+		if ahead > 0 and here == Qiran.mansion_on(night_in_saad + ahead - 1):
+			lingered += 1
+			run += 1
+			longest = maxi(longest, run)
+		else:
+			run = 0
+		visited[here] = true
+	_check("it moves on nearly every night (%d lingered of 28)" % lingered, lingered <= 3)
+	_check("...and never for more than one night over (%d)" % longest, longest <= 1)
+	_check("...and works round the year (%d of 28)" % visited.size(), visited.size() >= 26)
+
+	print("=== but only a mansion you have lit opens ===")
+	# The save this test runs on sits at m04-12, so three mansions are finished.
+	_check_equal("three mansions are behind the player", shell.mansions_reached(), 3)
+	_check("سعد السعود is not one of them",
+		not Qiran.open_tonight(night_in_saad, 3))
+	_check("الشرطان is", Qiran.open_tonight(night_in_sharatan, 3))
+	var soon := Qiran.next_open(night_in_saad, 3)
+	_check_equal("...and it is the next one the player can take",
+		int(soon.get("mansion", 0)), 1)
+	_check_equal("...five nights off", int(soon.get("nights", -1)), 5)
+	_check("a player who has finished nothing is told so",
+		Qiran.next_open(night_in_saad, 0).is_empty())
+
+	# The night's level is never the verse or the rhyme: those belong to the
+	# night the mansion was first finished.
+	for ahead in 28:
+		var id := Qiran.level_for(night_in_saad + ahead, 1)
+		var index := Mansions.parse(id).y
+		if index == 10 or index == 20:
+			_check("the visit never opens on the verse or the rhyme (%s)" % id, false)
+			break
+
+	print("=== a night played aside changes nothing ===")
+	shell.open_qiran(night_in_saad)
+	_check("the window is up", shell.qiran_window.visible)
+	_check("...and offers no night, only the way out",
+		shell.qiran_window._play_label.text == "أكملِ الرحلة")
+	_check("...which is a button that works",
+		not shell.qiran_window._play_button.disabled)
+	_check("...and pressing it starts no night", not shell.start_qiran(night_in_saad))
+	_check("...and keeps the name back", shell.qiran_window._where.text == "منزلةٌ لم تبلغْها")
+	_check("...showing no figure either", not shell.qiran_window.figure.visible)
+	shell.qiran_window.visible = false
+
+	shell.open_qiran(night_in_sharatan)
+	_check("on its own night the mansion is named",
+		shell.qiran_window._where.text == Mansions.name_of(1))
+	_check("...and the figure is shown", shell.qiran_window.figure.visible)
+	_check("...and it can be entered", not shell.qiran_window._play_button.disabled)
+
+	var journey := shell.game.level.id
+	var purse: int = shell.game.coins
+	var lamps: int = shell.game.lanterns
+	_check("the night starts", shell.start_qiran(night_in_sharatan))
+	await _arrive()
+	_check("it is a conjunction night", shell.game.qiran)
+	_check("...in tonight's mansion (%s)" % shell.game.level.id,
+		Mansions.parse(shell.game.level.id).x == 1)
+
+	# Five wrong guesses, which on the journey would cost a lantern.
+	for i in GameScreen.WRONG_STREAK_COST:
+		shell.game.submit("ززز")
+	_check_equal("no lantern is spent, however badly it goes",
+		shell.game.lanterns, lamps)
+
+	shell.game.qiran_finished.emit()
+	await _arrive()
+	_check_equal("the journey comes back where it was", shell.game.level.id, journey)
+	_check_equal("...with its coins untouched", shell.game.coins, purse)
+	_check_equal("...and its lanterns", shell.game.lanterns, lamps)
+	_check("...and the night is over", not shell.game.qiran)
+	shell.qiran_window.visible = false
+	shell.go_to(Shell.Screen.MAP)
+	await _arrive()
+
+
+## Days since the epoch, the way `Daily.today()` counts them.
+func _day_of(year: int, month: int, day: int) -> int:
+	return int(Time.get_unix_time_from_datetime_dict({
+		"year": year, "month": month, "day": day,
+		"hour": 0, "minute": 0, "second": 0,
+	}) / 86400.0)
+
+
+## There is no losing in this game, only light that lessens.
+func _check_darkness() -> void:
+	print("=== the lanterns take the light with them ===")
+	shell.go_to(Shell.Screen.GAME)
+	await get_tree().create_timer(MeteorWipe.DURATION + 0.2).timeout
+
+	shell.game.lanterns = 5
+	shell.game._refresh_chrome()
+	var full: float = shell.sky.light
+	_check_equal("five lanterns is the sky as designed", full, 1.0)
+
+	shell.game.lanterns = 3
+	shell.game._refresh_chrome()
+	var middling: float = shell.sky.light
+	_check("three is darker (%0.2f < %0.2f)" % [middling, full], middling < full)
+	_check_equal("...and the disc is still full (%0.2f)" % shell.game.wheel.light,
+		shell.game.wheel.light, 1.0)
+
+	shell.game.lanterns = 1
+	shell.game._refresh_chrome()
+	_check("one is darker still (%0.2f < %0.2f)" % [shell.sky.light, middling],
+		shell.sky.light < middling)
+	_check("...and now the disc goes with it (%0.2f)" % shell.game.wheel.light,
+		shell.game.wheel.light < 1.0)
+	_check("the stars dim less than the sky does",
+		shell.sky.stars.light > shell.sky.light)
+
+	shell.game.lanterns = 0
+	shell.game._refresh_chrome()
+	_check("none is the darkest (%0.2f)" % shell.sky.light, shell.sky.light < 0.6)
+	_check("...but never black", shell.sky.light > 0.4)
+
+	print("=== the question comes after the first dark, not before ===")
+	_check("nothing was asked on the way in", not shell.notify_window.visible)
+	_check("...and the settings have not been written to", not shell.settings.notify_asked)
+
+	shell.game.lanterns = 0
+	shell.game.show_out_of_lanterns()
+	_check("the lanterns window is up", shell.game.lanterns_window.visible)
+	_check("...and the question waits behind it", not shell.notify_window.visible)
+
+	shell.game.lanterns_window.close()
+	await get_tree().create_timer(SkyPopup.CLOSE_SECONDS + 0.1).timeout
+	shell.notify_window.settle()
+	_check("it is asked once that window is gone", shell.notify_window.visible)
+
+	for panel in shell.notify_window.buttons():
+		if (panel.get_meta("label") as Label).text == "نعم، أنبئني":
+			(panel.get_meta("button") as Button).pressed.emit()
+	_check("the answer is kept", shell.settings.notify)
+	_check("...and the asking is over", shell.settings.notify_asked)
+
+	# And it is a switch afterwards, not a one-off question.
+	shell.open_settings()
+	shell.settings_window.settle()
+	var notify_row: SkyToggle = shell.settings_window.rows[
+		SettingsWindow.KEYS.find("notify")]
+	_check("the settings hold a row for it", notify_row != null)
+	_check("...showing the answer that was given", notify_row.on)
+	shell.settings_window.changed.emit("notify", false)
+	_check("...and turning it off is kept", not shell.settings.notify)
+	_check_equal("...through a reread", GameSettings.read(SETTINGS).notify, false)
+	shell.settings_window.changed.emit("notify", true)
+	_check("...and back on again", GameSettings.read(SETTINGS).notify)
+	shell.settings_window.visible = false
+	_check_equal("...and it survives a read", GameSettings.read(SETTINGS).notify, true)
+
+	await get_tree().create_timer(SkyPopup.CLOSE_SECONDS + 0.1).timeout
+	shell.game.lanterns = 0
+	shell.game.show_out_of_lanterns()
+	shell.game.lanterns_window.close()
+	await get_tree().create_timer(SkyPopup.CLOSE_SECONDS + 0.1).timeout
+	_check("and it is never asked again", not shell.notify_window.visible)
+	shell.game.lanterns = 5
+	shell.game._refresh_chrome()
+
+
 func _check_separators() -> void:
 	print("=== no dot beside a number ===")
 	var bad := PackedStringArray()

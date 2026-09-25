@@ -42,6 +42,8 @@ var _coin_label: Label
 var _moon_label: Label
 var _moon_icon: UiIcon
 var _lamps: Array[UiIcon] = []
+## Where the last lantern's breathing is in its cycle.
+var _pulse: float = 0.0
 var _utilities: Array[GlossyPanel] = []
 
 
@@ -143,6 +145,50 @@ func _label() -> Label:
 	return label
 
 
+## The one lantern left breathes, so the warning arrives before the window does.
+func _process(delta: float) -> void:
+	if _lamps.is_empty():
+		return
+	var alight := lanterns == 1
+	if not alight and is_equal_approx(_pulse, 0.0):
+		return
+	_pulse = fmod(_pulse + delta, TAU) if alight else 0.0
+	var lamp := _lamps[0]
+	var swell := 1.0 if not alight else 1.0 + 0.16 * (0.5 + 0.5 * sin(_pulse * 3.4))
+	lamp.pivot_offset = lamp.size * 0.5
+	lamp.scale = Vector2(swell, swell)
+	lamp.modulate = Color(1, 1, 1) if not alight else Color(
+		1.0, 1.0, 1.0, 0.78 + 0.22 * (0.5 + 0.5 * sin(_pulse * 3.4))
+	)
+
+
+## Which counters are on screen. Every one of them is on from the second level
+## onward; during a first run they arrive one at a time, each at the moment it
+## starts to mean something.
+func show_chips(lanterns_on: bool, coins_on: bool, moon_on: bool) -> void:
+	if _chip_lanterns == null:
+		return
+	_chip_lanterns.visible = lanterns_on
+	_chip_coins.visible = coins_on
+	_chip_moon.visible = moon_on
+
+
+## Draws attention to a counter the first time it appears, once.
+func announce(chip: String) -> void:
+	var node: GlossyPanel = {
+		"lanterns": _chip_lanterns, "coins": _chip_coins, "moon": _chip_moon,
+	}.get(chip, null)
+	if node == null or not node.visible:
+		return
+	node.pivot_offset = node.size * 0.5
+	node.scale = Vector2(0.6, 0.6)
+	node.modulate.a = 0.0
+	var tween := node.create_tween().set_parallel(true)
+	tween.tween_property(node, "scale", Vector2.ONE, 0.28).set_trans(Tween.TRANS_BACK) \
+		.set_ease(Tween.EASE_OUT)
+	tween.tween_property(node, "modulate:a", 1.0, 0.24)
+
+
 func _refresh() -> void:
 	if _coin_label == null:
 		return
@@ -177,7 +223,13 @@ func relayout(s: float) -> void:
 	var coin_width := 196.0 * s
 	var moon_width := 156.0 * s
 
-	var x := margin + moon_width + gap + coin_width + gap
+	# Only what is on screen takes room. During a first run the counters arrive
+	# one at a time, and a hidden one holding its slot open would leave a gap
+	# where the player can see something is missing.
+	var moon_slot := (moon_width + gap) if _chip_moon.visible else 0.0
+	var coin_slot := (coin_width + gap) if _chip_coins.visible else 0.0
+
+	var x := margin + moon_slot + coin_slot
 	_chip_lanterns.position = Vector2(x, 0.0)
 	_chip_lanterns.size = Vector2(lantern_width, height)
 	var face := _chip_lanterns.face_height()
@@ -191,7 +243,7 @@ func relayout(s: float) -> void:
 			(face - icon) * 0.5
 		)
 
-	_place_chip(_chip_coins, margin + moon_width + gap, coin_width, height, icon, font_size,
+	_place_chip(_chip_coins, margin + moon_slot, coin_width, height, icon, font_size,
 		_coin_label, _chip_coins.get_meta("icon"))
 	_place_chip(_chip_moon, margin, moon_width, height, icon, font_size,
 		_moon_label, _moon_icon)
