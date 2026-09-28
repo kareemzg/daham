@@ -22,6 +22,7 @@ largest thing in the repo after the fonts.
 from __future__ import annotations
 
 import math
+import random
 import struct
 import wave
 from pathlib import Path
@@ -196,29 +197,90 @@ def moon() -> list[float]:
     return render(1.0, voice)
 
 
+## How long the loop runs, and how far past its end it is rendered so a
+## string still ringing at the seam comes back in at the beginning.
+MUSIC_LENGTH = 24.0
+MUSIC_OVERHANG = 4.0
+
+D2_L, D3_L = 73.416, 146.832
+A3_L, BB3_L, D4_L, EB4_L, FS4_L = 220.0, 233.082, 293.665, 311.127, 369.994
+
+
+def _blank() -> list[float]:
+    return [0.0] * int((MUSIC_LENGTH + MUSIC_OVERHANG) * PAD_RATE)
+
+
+def _wrap(buf: list[float]) -> list[float]:
+    """Fold the overhang onto the start. A tail that runs off the end of the
+    loop is exactly the tail that should already be sounding when it begins
+    again, so the seam has a string still ringing over it rather than silence
+    meeting an attack."""
+    keep = int(MUSIC_LENGTH * PAD_RATE)
+    out = buf[:keep]
+    for i in range(keep, len(buf)):
+        out[i - keep] += buf[i]
+    return out
+
+
+def _drone(buf: list[float], freq: float, gain: float) -> None:
+    f = snap(freq, MUSIC_LENGTH)
+    for i in range(len(buf)):
+        buf[i] += gain * math.sin(2 * math.pi * f * (i / PAD_RATE))
+
+
+def _breathe(buf: list[float], period: float, depth: float) -> None:
+    f = snap(1.0 / period, MUSIC_LENGTH)
+    for i in range(len(buf)):
+        wave = 0.5 * (1.0 - math.cos(2 * math.pi * f * (i / PAD_RATE)))
+        buf[i] *= 1.0 - depth + depth * wave
+
+
+def _pluck(buf: list[float], at: float, freq: float, gain: float, seed: int) -> None:
+    """Karplus-Strong: a burst of noise in a delay line, averaged as it goes
+    round. Two lines of arithmetic, and it sounds like a string being plucked,
+    which no stack of sine waves ever does."""
+    start_at = int(at * PAD_RATE)
+    n = max(int(PAD_RATE / freq), 2)
+    rng = random.Random(seed)
+    line = [rng.uniform(-1.0, 1.0) for _ in range(n)]
+    # Low-pass the excitation twice, or the attack is a click and not a pluck.
+    for _ in range(2):
+        line = [(line[i] + line[i - 1]) * 0.5 for i in range(n)]
+    for i in range(int(PAD_RATE * 3.2)):
+        here = start_at + i
+        if here >= len(buf):
+            break
+        value = line[i % n]
+        buf[here] += value * gain
+        line[i % n] = (value + line[(i + 1) % n]) * 0.5 * 0.9965
+
+
 def music() -> list[float]:
-    """One quiet layer, twelve seconds, seamless.
+    """One quiet layer: an oud heard from a long way off.
 
-    Every frequency is snapped so it completes whole cycles in the loop, and
-    the two slow movements are snapped the same way, so the end meets the
-    beginning with nothing to hear at the seam.
+    Kareem chose it from four — a drone, this, wind over sand, and a turning
+    figure — and the reason it wins is the silence. A phrase, then nothing for
+    seconds. Background music for a word game is played for an hour at a time,
+    and anything with a tune to follow becomes a thing to resent; what carries
+    an hour is something that speaks now and then and is otherwise quiet.
+
+    Maqam Hijaz on D, the same as every chime, so the two agree.
     """
-    length = 12.0
-    drone = [snap(f, length) for f in (D2, D3, A4)]
-    upper = [snap(f, length) for f in (EB4, FS4, D5)]
-    slow = snap(1.0 / 6.0, length)
-    slower = snap(1.0 / 12.0, length)
-
-    def voice(t: float) -> float:
-        base = sum(g * math.sin(2 * math.pi * f * t)
-                   for f, g in zip(drone, (1.0, 0.55, 0.16)))
-        breath = 0.5 + 0.5 * math.sin(2 * math.pi * slow * t)
-        turn = 0.5 + 0.5 * math.sin(2 * math.pi * slower * t)
-        colour = (0.13 * breath * math.sin(2 * math.pi * upper[0] * t)
-                  + 0.11 * turn * math.sin(2 * math.pi * upper[1] * t)
-                  + 0.07 * (1.0 - turn) * math.sin(2 * math.pi * upper[2] * t))
-        return (base + colour) * (0.8 + 0.2 * breath)
-    return render(length, voice, PAD_RATE)
+    buf = _blank()
+    _drone(buf, D2_L, 0.24)
+    _drone(buf, D3_L, 0.09)
+    # Nothing starts at zero. A pluck is a step out of silence, and every other
+    # one is masked by what is already sounding — at the seam it is not, so the
+    # loop ticked once a bar until the phrase was nudged off the line.
+    phrase = [
+        (0.4, D4_L), (1.5, EB4_L), (3.0, FS4_L), (5.8, D4_L),
+        (9.0, A3_L), (10.2, BB3_L), (11.6, A3_L), (15.0, D4_L),
+        (18.4, FS4_L), (19.6, EB4_L), (21.0, D4_L),
+    ]
+    for i, (at, freq) in enumerate(phrase):
+        _pluck(buf, at, freq, 0.34, 1000 + i)
+    _breathe(buf, MUSIC_LENGTH, 0.12)
+    return _wrap(buf)
 
 
 def tap() -> list[float]:
