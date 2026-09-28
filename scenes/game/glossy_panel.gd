@@ -46,6 +46,18 @@ const SHADOW_SHADER := preload("res://assets/ui/panel_shadow.gdshader")
 		edge_override = value
 		_apply()
 
+## Recolours a preset's face without adding a preset for every colour.
+##
+## The geometry — radius, hard edge, highlight, shadow — belongs to the role and
+## stays; only the colour changes, and it is derived from one hue so the four
+## shades can never drift apart. This is for colour that is *data*: a tab, a
+## season, a mansion. Transparent leaves the preset alone, which is every
+## caller that had no opinion.
+@export var hue: Color = Color(0, 0, 0, 0):
+	set(value):
+		hue = value
+		_apply()
+
 ## Corner radius in pixels. -1 keeps the preset's own value; pass half the width
 ## for a disc.
 @export var radius_override: float = -1.0:
@@ -156,12 +168,14 @@ static func preset(for_style: int) -> Dictionary:
 				"shadow_color": Color(0, 0, 0, 0.4),
 			}
 		Style.PANEL_NIGHT:
+			# Indigo rather than slate, so a window sits in the sky it is drawn
+			# on rather than on a grey card in front of it.
 			return {
-				"face_top": Color("12384D"), "face_bottom": Color("0A2230"),
-				"border_color": Color("2C5E73"), "border_width": 5.0,
-				"edge_color": Color("081B26"), "bottom_edge": 11.0,
+				"face_top": Color("223566"), "face_bottom": Color("101B3C"),
+				"border_color": Color("5E7FA8"), "border_width": 5.0,
+				"edge_color": Color("0B1230"), "bottom_edge": 11.0,
 				"highlight": 0.0, "highlight_height": 0.0, "inner_shadow": 0.0,
-				"inner_top": 3.0, "inner_top_color": Color(Color("7FD0DA"), 0.35),
+				"inner_top": 3.0, "inner_top_color": Color(Color("A98BD6"), 0.4),
 				"radius": 0.22,
 				"shadow_offset": 14.0, "shadow_blur": 26.0,
 				"shadow_color": Color(0, 0, 0, 0.45),
@@ -218,6 +232,7 @@ static func make_button(style_preset: int, text: String, font: Font, ink: Color)
 	shell.set_meta("label", label)
 
 	var button := Button.new()
+	Sound.taps(button)
 	button.flat = true
 	button.focus_mode = Control.FOCUS_ALL
 	# Anchored rather than sized by the caller. Every caller that placed one of
@@ -235,9 +250,15 @@ static func make_button(style_preset: int, text: String, font: Font, ink: Color)
 
 ## The same, with an icon in place of words. `label_text` names it for a screen
 ## reader, since there is nothing to read.
-static func make_round(icon_kind: int, label_text: String) -> GlossyPanel:
+## A round icon button. `tint` recolours it for a screen whose furniture is
+## night rather than cream — the hub's, where a cream disc is the last thing
+## left over from the old palette.
+static func make_round(
+	icon_kind: int, label_text: String, tint: Color = Color(0, 0, 0, 0)
+) -> GlossyPanel:
 	var shell := GlossyPanel.new()
-	shell.style = Style.BUTTON_CREAM
+	shell.style = Style.BUTTON_RIVER if tint.a > 0.0 else Style.BUTTON_CREAM
+	shell.hue = tint
 
 	var icon := UiIcon.new()
 	icon.kind = icon_kind
@@ -245,6 +266,7 @@ static func make_round(icon_kind: int, label_text: String) -> GlossyPanel:
 	shell.set_meta("icon", icon)
 
 	var button := Button.new()
+	Sound.taps(button)
 	button.flat = true
 	button.focus_mode = Control.FOCUS_ALL
 	button.tooltip_text = label_text
@@ -313,6 +335,12 @@ func _apply() -> void:
 	_face.size = size
 	var top: Color = data["face_top"]
 	var bottom: Color = data["face_bottom"]
+	if hue.a > 0.0:
+		top = hue.lightened(0.18)
+		bottom = hue.darkened(0.28)
+		data = data.duplicate()
+		data["border_color"] = hue.darkened(0.48)
+		data["edge_color"] = hue.darkened(0.62)
 	_face_material.set_shader_parameter("rect_size", size)
 	_face_material.set_shader_parameter("corner_radius", radius)
 	_face_material.set_shader_parameter("face_top", top)

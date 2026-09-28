@@ -11,6 +11,7 @@ enum Screen { TITLE, MAP, GAME, CARDS }
 
 const GAME_SCENE := preload("res://scenes/game/game.tscn")
 const DISPLAY_FONT := preload("res://assets/fonts/arabic_display.tres")
+const TITLE_FONT := preload("res://assets/fonts/arabic_title.tres")
 const UI_BOLD_FONT := preload("res://assets/fonts/arabic_ui_bold.tres")
 
 ## Empty turns saving off, which is what the test scene does so that one run
@@ -51,6 +52,7 @@ var _owed_notice_question: bool = false
 ## The journey's state, held while the day's challenge is played over it.
 var _journey: Progress = null
 var _figure: FigureView
+var dock: SkyDock
 var _star_line: StarLine
 var settings: GameSettings = GameSettings.new()
 
@@ -61,6 +63,10 @@ var _pending: int = -1
 func _ready() -> void:
 	if not settings_path.is_empty():
 		settings = GameSettings.read(settings_path)
+
+	# The one place the sound lives, as the sky is. Built before any screen, so
+	# nothing can ask for a sound before there is anything to play it.
+	Sound.attach(self, settings)
 
 	sky = SkyBackdrop.new()
 	add_child(sky)
@@ -105,8 +111,20 @@ func _ready() -> void:
 	game.light_changed.connect(func(light: float) -> void: sky.light = light)
 	game.lanterns_emptied.connect(_on_lanterns_emptied)
 
+	# The bar along the bottom of the hub screens: the map's four doors plus the
+	# sky itself. Built after the screens and before the windows, so a window
+	# covers it rather than sitting under it and staying tappable.
+	dock = SkyDock.new()
+	dock.configure(TITLE_FONT, UI_BOLD_FONT)
+	dock.visible = false
+	add_child(dock)
+	dock.chosen.connect(_on_tab)
+	dock.play_requested.connect(func() -> void: go_to(Screen.GAME))
+	# The map's own card and row are in the dock now. One piece, not three.
+	map.chrome_hidden = true
+
 	settings_window = SettingsWindow.new()
-	settings_window.configure_settings(DISPLAY_FONT, UI_BOLD_FONT)
+	settings_window.configure_settings(TITLE_FONT, UI_BOLD_FONT)
 	settings_window.visible = false
 	# Opened by the player and closed the same way: a tap on the dark outside.
 	settings_window.dismiss_on_tap = true
@@ -119,8 +137,9 @@ func _ready() -> void:
 	)
 
 	mansion_window = SkyWindow.new()
-	mansion_window.configure(DISPLAY_FONT, UI_BOLD_FONT)
+	mansion_window.configure(TITLE_FONT, UI_BOLD_FONT)
 	mansion_window.set_crest(UiIcon.Kind.STAR)
+	mansion_window.set_tone(Palette.GOLD)
 	mansion_window.visible = false
 	mansion_window.dismiss_on_tap = true
 	add_child(mansion_window)
@@ -138,8 +157,9 @@ func _ready() -> void:
 	# The question about the notification. It is built here with every other
 	# window, and opened only after the lanterns have run out for the first time.
 	notify_window = SkyWindow.new()
-	notify_window.configure(DISPLAY_FONT, UI_BOLD_FONT)
+	notify_window.configure(TITLE_FONT, UI_BOLD_FONT)
 	notify_window.set_crest(UiIcon.Kind.LANTERN)
+	notify_window.set_tone(Palette.MILKY_VIOLET)
 	notify_window.set_title("أُنبئك حين تعود؟")
 	# Broken by hand: a Label left to wrap itself claims a height it works out
 	# at zero width, which on a window's first layout is every word on a line.
@@ -159,7 +179,7 @@ func _ready() -> void:
 
 	shop_window = ShelfWindow.new()
 	shop_window.configure_shelf(
-		DISPLAY_FONT, UI_BOLD_FONT, UiIcon.Kind.SHOP, "المتجر",
+		TITLE_FONT, UI_BOLD_FONT, UiIcon.Kind.SHOP, "المتجر",
 		"تُشترى بالعملات التي تكسبها من المستويات."
 	)
 	# The one price, read from where it is spent. A shop that sells a refill
@@ -181,7 +201,7 @@ func _ready() -> void:
 	shop_window.close_requested.connect(func() -> void: shop_window.close())
 
 	daily_window = DailyWindow.new()
-	daily_window.configure_daily(DISPLAY_FONT, UI_BOLD_FONT)
+	daily_window.configure_daily(TITLE_FONT, UI_BOLD_FONT)
 	daily_window.visible = false
 	daily_window.dismiss_on_tap = true
 	add_child(daily_window)
@@ -189,7 +209,7 @@ func _ready() -> void:
 	daily_window.close_requested.connect(func() -> void: daily_window.close())
 
 	qiran_window = QiranWindow.new()
-	qiran_window.configure_qiran(DISPLAY_FONT, UI_BOLD_FONT)
+	qiran_window.configure_qiran(TITLE_FONT, UI_BOLD_FONT)
 	qiran_window.visible = false
 	qiran_window.dismiss_on_tap = true
 	add_child(qiran_window)
@@ -449,7 +469,39 @@ func _on_swap() -> void:
 	fade.tween_property(arriving, "modulate:a", 1.0, MeteorWipe.DURATION * 0.45)
 
 
+## The dock belongs to the hub, not to the board: a screen the player is *in*
+## has no dock, which is what keeps the grid a place rather than a tab.
+func _show_dock(which: int) -> void:
+	if dock == null:
+		return
+	var wanted := which == Screen.MAP or which == Screen.CARDS
+	if cold_open != null and cold_open.visible:
+		wanted = false
+	dock.visible = wanted
+	# The collection has no mansion in hand, so there the dock is the bar alone
+	# and the pane shrinks to match rather than leaving a hole where the card was.
+	dock.shows_card = which == Screen.MAP
+	if wanted:
+		# On the map nothing is marked: the map IS where the doors open off, and
+		# a lit tab there would mean "you are here" about the room itself.
+		dock.mark(SkyDock.Tab.CARDS if which == Screen.CARDS else -1)
+	_layout()
+
+
+func _on_tab(tab: int) -> void:
+	match tab:
+		SkyDock.Tab.DAILY:
+			open_daily()
+		SkyDock.Tab.QIRAN:
+			open_qiran()
+		SkyDock.Tab.CARDS:
+			go_to(Screen.CARDS)
+		SkyDock.Tab.SHOP:
+			open_shop()
+
+
 func _refresh(which: int) -> void:
+	_show_dock(which)
 	match which:
 		Screen.TITLE:
 			_refresh_title()
@@ -458,6 +510,8 @@ func _refresh(which: int) -> void:
 			game.move_on_if_finished()
 			var saved := game.capture()
 			map.show_progress(saved.level_id, saved.coins, saved.lanterns, saved.moon)
+			var at := Mansions.parse(saved.level_id)
+			dock.show_progress(at.x, at.y, Mansions.LEVELS_PER_MANSION)
 		Screen.CARDS:
 			var here := place()
 			cards.show_progress(here.x, here.y)
@@ -527,9 +581,10 @@ func _on_setting_changed(key: String, on: bool) -> void:
 			# has said yes in the settings must not be asked again the first
 			# time their lanterns run out.
 			settings.notify_asked = true
-	# Nothing plays yet: the game has no audio, and no platform plugin schedules
-	# the notification. Storing the answer is what makes the window real rather
-	# than a drawing of a window.
+	# The two audio switches act at once; `notify` is still only stored, because
+	# scheduling the notification needs a platform plugin the project does not
+	# carry, and storing the answer is what makes that window real.
+	Sound.refresh()
 	if not settings_path.is_empty():
 		settings.write(settings_path)
 
@@ -717,9 +772,21 @@ func _layout() -> void:
 		node.position = Vector2.ZERO
 		node.size = size
 
-	for node: Control in [title, map, cards, game, cold_open]:
+	for node: Control in [title, game, cold_open]:
 		node.position = area.position
 		node.size = area.size
+
+	# The two screens that carry the dock are shorter by exactly its height, so
+	# nothing of theirs is laid out underneath it. The collection's dock is the
+	# bar alone, so the height is asked for rather than assumed.
+	var dock_height := dock.wanted_height(s) if dock != null else 0.0
+	for node: Control in [map, cards]:
+		node.position = area.position
+		node.size = Vector2(area.size.x, area.size.y - dock_height)
+	if dock != null:
+		dock.position = Vector2(area.position.x, area.position.y + area.size.y - dock_height)
+		dock.size = Vector2(area.size.x, dock_height)
+		dock.relayout(s)
 
 	# Windows centre on the whole window, so they are never off to one side.
 	for node: Control in [

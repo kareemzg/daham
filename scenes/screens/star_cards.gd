@@ -13,6 +13,7 @@ signal mansion_opened(mansion: int)
 
 const REF_WIDTH := 1080.0
 const DISPLAY_FONT := preload("res://assets/fonts/arabic_display.tres")
+const TITLE_FONT := preload("res://assets/fonts/arabic_title.tres")
 const DISPLAY_BOLD_FONT := preload("res://assets/fonts/arabic_display_bold.tres")
 const UI_BOLD_FONT := preload("res://assets/fonts/arabic_ui_bold.tres")
 
@@ -42,12 +43,12 @@ func _build() -> void:
 	rows.clear()
 	_heads.clear()
 
-	back_button = GlossyPanel.make_round(UiIcon.Kind.HOME, "عودة إلى الخريطة")
+	back_button = GlossyPanel.make_round(UiIcon.Kind.HOME, "عودة إلى الخريطة", Palette.SLATE)
 	add_child(back_button)
 	(back_button.get_meta("button") as Button).pressed.connect(
 		func() -> void: back_requested.emit())
 
-	_title = _label(DISPLAY_BOLD_FONT, Palette.CREAM)
+	_title = _label(TITLE_FONT, Palette.CREAM)
 	_title.text = "بطاقات النجوم"
 	_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	add_child(_title)
@@ -69,6 +70,9 @@ func _build() -> void:
 
 	_scroll = ScrollContainer.new()
 	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	# Scrolls, but shows no bar. A grey rail down the edge of the sky is the
+	# one piece of desktop furniture on a screen that is otherwise a night.
+	_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_SHOW_NEVER
 	add_child(_scroll)
 	_column = VBoxContainer.new()
 	_column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -91,7 +95,9 @@ func _build() -> void:
 func _season_head(season: int) -> Control:
 	var head := HBoxContainer.new()
 	head.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var name_label := _label(DISPLAY_BOLD_FONT, Palette.CREAM)
+	# Each season in its own colour. Twenty-eight mansions are four sevens, and
+	# a collection that says so in one glance beats one that spells it out.
+	var name_label := _label(TITLE_FONT, Palette.SEASON_COLOURS[season])
 	name_label.text = Mansions.season_name(season)
 	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	head.add_child(name_label)

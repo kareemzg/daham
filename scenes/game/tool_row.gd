@@ -41,7 +41,7 @@ func configure(kind: int, title: String, what: String, cost: int) -> void:
 	_tray = Panel.new()
 	_tray.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_tray.add_theme_stylebox_override(
-		"panel", Palette.card(Color(Palette.TILE_BORDER, 0.22), Color(0, 0, 0, 0), 38, 0)
+		"panel", Palette.card(Palette.TRAY, Color(0, 0, 0, 0), 38, 0)
 	)
 	add_child(_tray)
 
@@ -68,6 +68,7 @@ func configure(kind: int, title: String, what: String, cost: int) -> void:
 	price.add_child(_coin)
 
 	var button := Button.new()
+	Sound.taps(button)
 	button.flat = true
 	button.focus_mode = Control.FOCUS_ALL
 	button.tooltip_text = "%s — %s" % [title, Arabic.eastern_digits(cost)]

@@ -69,6 +69,7 @@ func _ready() -> void:
 	skip_shell.add_child(skip_label)
 	skip_shell.set_meta("label", skip_label)
 	skip_button = Button.new()
+	Sound.taps(skip_button)
 	skip_button.flat = true
 	skip_button.set_anchors_preset(Control.PRESET_FULL_RECT)
 	skip_shell.add_child(skip_button)

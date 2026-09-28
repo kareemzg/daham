@@ -22,6 +22,8 @@ var _language: Control
 func configure_settings(display_font: Font, ui_font: Font) -> void:
 	configure(display_font, ui_font)
 	set_crest(UiIcon.Kind.SETTINGS)
+	# Violet: the window that reports nothing.
+	set_tone(Palette.MILKY_VIOLET)
 	set_title("الإعدادات")
 
 	for i in KEYS.size():
@@ -48,7 +50,7 @@ func _build_language_row() -> Control:
 	var tray := Panel.new()
 	tray.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	tray.add_theme_stylebox_override(
-		"panel", Palette.card(Color(Palette.TILE_BORDER, 0.2), Color(0, 0, 0, 0), 26, 0)
+		"panel", Palette.card(Palette.TRAY, Color(0, 0, 0, 0), 26, 0)
 	)
 	row.add_child(tray)
 	row.set_meta("tray", tray)

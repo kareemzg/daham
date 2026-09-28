@@ -20,7 +20,7 @@ func configure() -> void:
 	_tray = Panel.new()
 	_tray.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_tray.add_theme_stylebox_override(
-		"panel", Palette.card(Color(Palette.TILE_BORDER, 0.22), Color(0, 0, 0, 0), 30, 0)
+		"panel", Palette.card(Palette.TRAY, Color(0, 0, 0, 0), 30, 0)
 	)
 	add_child(_tray)
 

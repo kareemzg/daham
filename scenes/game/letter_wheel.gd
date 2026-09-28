@@ -245,6 +245,9 @@ func extend_to(local_position: Vector2) -> void:
 	if _selection.has(hit):
 		return
 	_selection.append(hit)
+	# Here and not on `word_previewed`: that fires on every move of the finger
+	# inside the wheel, and a tick per pixel is a buzz.
+	Sound.letter(_selection.size())
 	_refresh_selection()
 	word_previewed.emit(current_word())
 

@@ -28,6 +28,7 @@ var button := Button.new()
 
 
 func _init() -> void:
+	Sound.taps(button)
 	_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	# RTL: LEFT is the start of the line, which puts the words at the far right
@@ -73,7 +74,7 @@ func _draw() -> void:
 
 	# The row's own tray, so a switch reads as a setting and not as loose art.
 	draw_style_box(
-		_rounded(Color(Palette.TILE_BORDER, 0.2), Color(Palette.TILE_BORDER, 0.0), 26.0 * s),
+		_rounded(Palette.TRAY, Color(Palette.TILE_BORDER, 0.0), 26.0 * s),
 		Rect2(Vector2.ZERO, size)
 	)
 

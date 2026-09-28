@@ -2,9 +2,11 @@ class_name GameSettings
 extends RefCounted
 ## What the player chose in the settings window, kept between runs.
 ##
-## Nothing reads these yet: the game has no audio and no haptics. They are
-## stored anyway so the window does something real instead of drawing switches
-## that forget, and so the day sound arrives it has somewhere to look.
+## `sound`, `music` and `haptics` act: `Sound` reads them on every effect, on
+## every `refresh()`, and before every buzz. `notify` is still only stored,
+## because scheduling a notification needs a platform plugin the project does
+## not carry — and storing the answer is what makes that window real rather
+## than a drawing of a window.
 
 const DEFAULT_PATH := "user://settings.json"
 const VERSION := 3

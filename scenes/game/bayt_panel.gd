@@ -189,6 +189,7 @@ func _label(font: Variant, colour: Color) -> Label:
 
 func _button(on: Control) -> Button:
 	var button := Button.new()
+	Sound.taps(button)
 	button.flat = true
 	button.set_anchors_preset(Control.PRESET_FULL_RECT)
 	on.add_child(button)
