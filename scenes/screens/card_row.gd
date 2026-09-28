@@ -13,6 +13,7 @@ signal pressed
 enum State { DONE, NOW, LOCKED }
 
 const DISPLAY_FONT := preload("res://assets/fonts/arabic_display.tres")
+const TITLE_FONT := preload("res://assets/fonts/arabic_title.tres")
 const UI_BOLD_FONT := preload("res://assets/fonts/arabic_ui_bold.tres")
 ## Reference units, in the 1080-wide space.
 const HEIGHT := 180.0
@@ -51,7 +52,11 @@ func configure() -> void:
 	_mark.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	add_child(_mark)
 
-	_name = _label(DISPLAY_FONT, Palette.CREAM)
+	# The display face, not the manuscript one. Amiri keeps the mansion names
+	# where they sit on the sky — the map, the finale — because there they are
+	# the night writing itself. On a cream card in a list they are a heading,
+	# and a heading belongs to the same voice as every other heading.
+	_name = _label(TITLE_FONT, Palette.CREAM)
 	add_child(_name)
 	_under = _label(UI_BOLD_FONT, Color("7A96A8"))
 	add_child(_under)
@@ -61,6 +66,7 @@ func configure() -> void:
 	add_child(_trail)
 
 	_button = Button.new()
+	Sound.taps(_button)
 	_button.flat = true
 	_button.focus_mode = Control.FOCUS_ALL
 	_button.pressed.connect(func() -> void: pressed.emit())
@@ -94,7 +100,19 @@ func show_mansion(number: int, lit: int, total: int) -> void:
 	)
 	_shell.modulate = Color(1.18, 1.18, 1.18) if state == State.NOW else Color(1, 1, 1)
 	_figure.figure = Mansions.figure_of(number) if state != State.LOCKED else {}
-	_figure.modulate = Color(1, 1, 1) if state == State.DONE else Color(0.45, 0.58, 0.66)
+	# Not reached yet is not colourless: the figure keeps its season's hue at a
+	# quarter strength, so a row the player has not got to still says which part
+	# of the year it belongs to. A flat grey said only "not yet".
+	var hue := Palette.season_colour(number)
+	match state:
+		State.DONE:
+			_figure.modulate = Color(1, 1, 1)
+		State.NOW:
+			# The one being played reads brightest of the unfinished: its
+			# season's colour as it is, not dimmed.
+			_figure.modulate = hue
+		_:
+			_figure.modulate = hue.darkened(0.42)
 	_figure.visible = state != State.LOCKED
 	_mark.visible = state == State.LOCKED
 

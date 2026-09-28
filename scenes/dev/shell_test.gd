@@ -503,7 +503,11 @@ func _run() -> void:
 
 	await _check_the_workbench()
 
+	await _check_sound()
+
 	_check_separators()
+
+	_check_silent_buttons()
 
 	_finish()
 
@@ -959,3 +963,121 @@ func _process(_delta: float) -> void:
 	print("=== CUT SHORT after %d checks and %d frames ===" % [_checks, _frames])
 	print("    the run never reached its end: raise FRAME_BUDGET or find the hang")
 	get_tree().quit(2)
+
+
+
+## The sound is checked by listening to the players, never by watching that
+## `Sound.play()` was called. A call is not a sound — the same trap as emitting
+## a button's signal and believing the button works.
+func _check_sound() -> void:
+	print("=== the game is not silent ===")
+	shell.go_to(Shell.Screen.GAME)
+	await get_tree().create_timer(MeteorWipe.DURATION + 0.2).timeout
+	var level := Level.load_from("res://data/levels/m01-02.json")
+	shell.game.show_level(level)
+	await get_tree().process_frame
+
+	# Two other Shells were built and freed above, and each bound the switches
+	# to its own settings. The live one takes them back, exactly as the only
+	# Shell in a real run does when it starts.
+	Sound.attach(shell, shell.settings)
+	shell.settings.sound = true
+	shell.settings.music = true
+	Sound.refresh()
+	_check("the pad plays while the music switch is on", Sound.music_playing())
+	_check_equal("...and the extra Shells did not double the players",
+		Sound._players.size(), Sound.VOICES)
+
+	var word: String = level.word_texts()[0]
+	shell.game.submit(word)
+	await get_tree().process_frame
+	_check("a correct word is heard (%d voices)" % Sound.voices_playing(),
+		Sound.voices_playing() > 0)
+
+	shell.game.submit("زززز")
+	await get_tree().process_frame
+	_check("...and so is a wrong one", Sound.voices_playing() > 0)
+
+	# The switch, on the thing itself rather than on a flag.
+	shell.settings.sound = false
+	for player in Sound._players:
+		player.stop()
+	shell.game.submit(level.word_texts()[1])
+	await get_tree().process_frame
+	_check_equal("the sound switch silences the effects", Sound.voices_playing(), 0)
+
+	shell.settings.music = false
+	Sound.refresh()
+	_check("...and the music switch stops the pad", not Sound.music_playing())
+	_check("the two switches are separate: the pad stopped, nothing else did",
+		not Sound.music_playing() and Sound.voices_playing() == 0)
+
+	shell.settings.sound = true
+	shell.settings.music = true
+	Sound.refresh()
+
+	# A window opening is heard, and so is the button that opens one.
+	for player in Sound._players:
+		player.stop()
+	shell.open_settings()
+	await get_tree().process_frame
+	_check("a window opening is heard", Sound.voices_playing() > 0)
+	shell.settings_window.visible = false
+
+	for player in Sound._players:
+		player.stop()
+	shell.settings_window.rows[1].button.pressed.emit()
+	await get_tree().process_frame
+	_check("...and so is a button pressed", Sound.voices_playing() > 0)
+	shell.settings.music = true
+	Sound.refresh()
+
+	# The pad loops. A stream that does not is twelve seconds of music and then
+	# a silent game, which no one would notice in a test that only plays it.
+	var pad := Sound.PAD as AudioStreamWAV
+	_check_equal("the pad is set to loop", pad.loop_mode, AudioStreamWAV.LOOP_FORWARD)
+
+	# Every name the game asks for has a file behind it.
+	var missing := 0
+	for key: StringName in [Sound.LETTER, Sound.WORD_OK, Sound.WORD_BONUS,
+			Sound.WORD_NO, Sound.LEVEL_DONE, Sound.STAR, Sound.MANSION, Sound.MOON]:
+		if not Sound.BANK.has(key) or Sound.BANK[key] == null:
+			missing += 1
+	_check_equal("every sound the game names has a file", missing, 0)
+
+
+## Every button in the game must make a sound when it is pressed. `make_button()`
+## looked like the one place a button is born and there were ten others, so the
+## rule is walked rather than remembered — the same reason the middle-dot rule
+## is a tree walk and not a sentence.
+func _check_silent_buttons() -> void:
+	print("=== no button presses in silence ===")
+	var silent := PackedStringArray()
+	for node in _every_node(self):
+		if not (node is BaseButton):
+			continue
+		# The workbench is a debug tool and not part of the game.
+		if _under_workbench(node):
+			continue
+		var heard := false
+		for link in (node as BaseButton).pressed.get_connections():
+			var callable: Callable = link["callable"]
+			if callable.get_method() == "_tap":
+				heard = true
+				break
+		if not heard:
+			silent.append("%s (%s)" % [node.name, node.get_parent().name])
+	_check(
+		"every button taps (%s)" % ("none silent" if silent.is_empty()
+			else "%d silent: %s" % [silent.size(), ", ".join(silent)]),
+		silent.is_empty()
+	)
+
+
+func _under_workbench(node: Node) -> bool:
+	var walk := node
+	while walk != null:
+		if walk is AdminPanel:
+			return true
+		walk = walk.get_parent()
+	return false

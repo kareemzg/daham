@@ -123,12 +123,31 @@ func _build() -> void:
 	_button(start, "أعد الجولة التعريفية", _restart_tour)
 	_button(start, "امسح الحفظ", _wipe)
 
+	_heading(column, "منحنى الصعوبة")
+	var curve := _row(column)
+	_button(curve, "‹ المرحلة السابقة", func() -> void: _hop(-1))
+	_button(curve, "التالية ›", func() -> void: _hop(1))
+
 	_heading(column, "شاشات")
 	var screens := _row(column)
 	_button(screens, "الخريطة", func() -> void: _shell.go_to(Shell.Screen.MAP))
 	_button(screens, "اللعب", func() -> void: _shell.go_to(Shell.Screen.GAME))
 	_button(screens, "البطاقات", func() -> void: _shell.go_to(Shell.Screen.CARDS))
 	_button(screens, "العنوان", func() -> void: _shell.go_to(Shell.Screen.TITLE))
+
+
+## Where the difficulty next changes. This drew its own bar across the top of
+## the play screen until Kareem pointed out what it looked like: a debug tool
+## sitting on the game it exists to look at, reading as part of the design.
+func _hop(direction: int) -> void:
+	_shell.game.jump_step(direction)
+	if _shell.showing != Shell.Screen.GAME:
+		_shell.go_to(Shell.Screen.GAME)
+	var level := _shell.game.level
+	if level != null:
+		_say("%s — عجلة %d، كلمات %d" % [
+			level.id, level.letters.size(), level.words.size()
+		])
 
 
 func _heading(into: VBoxContainer, text: String) -> void:

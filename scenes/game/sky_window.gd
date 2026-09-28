@@ -18,7 +18,11 @@ const CREST_ICON := 92.0
 const TITLE_SIZE := 58.0
 const TITLE_LINE := 78.0
 const BODY_SIZE := 30.0
-const BODY_LINE := 44.0
+## The line a window's prose is planned against. Not the point size: this is
+## what the next row has to clear, and it changes with the face. Omnes sets a
+## taller line than Plex did, and the slice test caught the overflow the hour
+## the face was swapped — 50 against a planned 46.
+const BODY_LINE := 54.0
 const BUTTON_HEIGHT := 108.0
 const GHOST_HEIGHT := 76.0
 const GAP := 24.0
@@ -44,7 +48,10 @@ var _body_lines: int = 0
 func configure(display_font: Font, ui_font: Font) -> void:
 	_display_font = display_font
 	_ui_font = ui_font
-	panel.style = GlossyPanel.Style.CHIP
+	# Indigo, not cream: a window sits IN the sky it is drawn on rather than on
+	# a card in front of it. The rows and the buttons stay cream, and that
+	# contrast — warm strips on a night face — is the whole of the look.
+	panel.style = GlossyPanel.Style.PANEL_NIGHT
 
 	crest = GlossyPanel.new()
 	crest.style = GlossyPanel.Style.BUTTON_CREAM
@@ -52,10 +59,10 @@ func configure(display_font: Font, ui_font: Font) -> void:
 	crest_icon = UiIcon.new()
 	crest.add_child(crest_icon)
 
-	title_label = _label(_display_font, Palette.TILE_INK)
+	title_label = _label(_display_font, Palette.CREAM)
 	panel.add_child(title_label)
 
-	body_label = _label(_ui_font, Color("6B5942"))
+	body_label = _label(_ui_font, Color("C4B6DC"))
 	body_label.visible = false
 	panel.add_child(body_label)
 
@@ -78,6 +85,15 @@ func _label(font: Font, colour: Color) -> Label:
 func set_crest(kind: int, level: float = 1.0) -> void:
 	crest_icon.kind = kind
 	crest_icon.level = level
+
+
+## The badge takes the colour of what the window is about: gold for a star
+## lit, ember for a price paid, violet for a window that reports nothing. It is
+## the one piece of a window that differs, so it is the one piece that carries
+## the meaning — the rest is the same four numbers for every window.
+func set_tone(hue: Color) -> void:
+	crest.hue = hue
+	crest_icon.modulate = Color(0.16, 0.13, 0.06) if hue.get_luminance() > 0.52 else Color(1, 1, 1)
 
 
 func set_title(text: String) -> void:
@@ -114,7 +130,9 @@ func add_button(
 	panel.add_child(shell)
 
 	var ink := Color("FFF4E8") if style == GlossyPanel.Style.BUTTON_EMBER else Color("5A431A")
-	var label := _label(_ui_font, ink)
+	# A button is display register, like the title over it. The prose between
+	# them is not, and stays on the UI face.
+	var label := _label(_display_font, ink)
 	label.text = text
 	shell.add_child(label)
 	shell.set_meta("label", label)
@@ -126,6 +144,7 @@ func add_button(
 		shell.set_meta("icon", icon)
 
 	var button := Button.new()
+	Sound.taps(button)
 	button.flat = true
 	button.focus_mode = Control.FOCUS_ALL
 	button.tooltip_text = text
@@ -150,6 +169,7 @@ func add_close_cross() -> GlossyPanel:
 	close_button.add_child(cross)
 	close_button.set_meta("label", cross)
 	var button := Button.new()
+	Sound.taps(button)
 	button.flat = true
 	button.focus_mode = Control.FOCUS_ALL
 	button.tooltip_text = "إغلاق"

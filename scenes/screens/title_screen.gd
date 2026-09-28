@@ -14,6 +14,7 @@ signal shop_requested
 
 const REF_WIDTH := 1080.0
 const DISPLAY_FONT := preload("res://assets/fonts/arabic_display.tres")
+const TITLE_FONT := preload("res://assets/fonts/arabic_title.tres")
 const UI_BOLD_FONT := preload("res://assets/fonts/arabic_ui_bold.tres")
 
 var play_button: GlossyPanel
@@ -39,7 +40,7 @@ func _build() -> void:
 			child.queue_free()
 	_round.clear()
 
-	_title = _label(DISPLAY_FONT, Palette.GOLD_LIGHT)
+	_title = _label(TITLE_FONT, Palette.GOLD_LIGHT)
 	_title.text = "سماء العرب"
 	add_child(_title)
 

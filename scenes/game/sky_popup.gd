@@ -106,6 +106,7 @@ func _gui_input(event: InputEvent) -> void:
 
 
 func open() -> void:
+	Sound.play(Sound.WINDOW)
 	_place()
 	visible = true
 	_dim.modulate.a = 0.0

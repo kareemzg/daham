@@ -25,6 +25,7 @@ signal shop_requested
 
 const REF_WIDTH := 1080.0
 const DISPLAY_FONT := preload("res://assets/fonts/arabic_display.tres")
+const TITLE_FONT := preload("res://assets/fonts/arabic_title.tres")
 const DISPLAY_BOLD_FONT := preload("res://assets/fonts/arabic_display_bold.tres")
 ## Amiri Bold is a naskh and reads light beside Plex Bold. This one is
 ## emboldened on top of it, for the two names that have to carry a card.
@@ -55,6 +56,12 @@ var settings_button: GlossyPanel
 var play_button: GlossyPanel
 
 ## Which mansion the player is on, and how far into it.
+## One breath every three and a half seconds, which is about a resting one.
+const PULSE_SECONDS := 3.5
+const PULSE_FPS := 12.0
+## How much of the brightness the breath takes at its lowest.
+const PULSE_DEPTH := 0.3
+
 var current_mansion: int = 1
 var current_index: int = 1
 ## Which season the map is showing, which need not be the one being played.
@@ -69,15 +76,51 @@ var _card_name: Label
 var _card_progress: Label
 var _card_stars: StarDots
 var _names: Array[Label] = []
+## True when the shell's dock carries the card and the doors instead. The map
+## is then the sky and its season heading, and nothing else — which is what it
+## was always trying to be.
+var chrome_hidden: bool = false:
+	set(value):
+		if chrome_hidden == value:
+			return
+		chrome_hidden = value
+		entries_hidden = value
+		if _card != null:
+			_card.visible = not value
+		_layout()
+
+## True when the shell's bar carries these doors instead.
+var entries_hidden: bool = false:
+	set(value):
+		if entries_hidden == value:
+			return
+		entries_hidden = value
+		_layout()
+
 var _entries: Array[GlossyPanel] = []
 var _dots: Array[Control] = []
 var _field := Rect2()
+## The current mansion breathes: its stars are the ones still being earned, and
+## a map where exactly one thing moves says where to look without a word.
+var _pulse: float = 0.0
+var _since_pulse: float = 0.0
 
 
 func _ready() -> void:
 	_build()
 	resized.connect(_layout)
 	_layout()
+	set_process(not Engine.is_editor_hint())
+
+
+func _process(delta: float) -> void:
+	if not visible:
+		return
+	_pulse += delta
+	_since_pulse += delta
+	if _since_pulse >= 1.0 / PULSE_FPS:
+		_since_pulse = 0.0
+		queue_redraw()
 
 
 func _build() -> void:
@@ -90,6 +133,9 @@ func _build() -> void:
 
 	hud = HudBar.new()
 	hud.configure(UI_BOLD_FONT)
+	# The hub's top is one surface, like its bottom. The play screen's is not:
+	# the tour brings those counters in one at a time.
+	hud.frosted = true
 	add_child(hud)
 	settings_button = hud.add_utility(
 		UiIcon.Kind.SETTINGS, func() -> void: settings_requested.emit(), "الإعدادات"
@@ -98,7 +144,7 @@ func _build() -> void:
 	_back_button = _arrow(false, "الفصل السابق")
 	_forward_button = _arrow(true, "الفصل التالي")
 
-	_season_name = _label(DISPLAY_HEAVY_FONT, Palette.CREAM)
+	_season_name = _label(TITLE_FONT, Palette.CREAM)
 	add_child(_season_name)
 	_season_count = _label(UI_BOLD_FONT, Color("8FAEBF"))
 	add_child(_season_count)
@@ -110,9 +156,10 @@ func _build() -> void:
 		_dots.append(dot)
 
 	for i in Mansions.PER_SEASON:
-		var name_label := _label(DISPLAY_FONT, Palette.GOLD)
+		var name_label := _label(TITLE_FONT, Palette.GOLD)
 		# A mansion's name is a target: tapping it opens its card.
 		var press := Button.new()
+		Sound.taps(press)
 		press.flat = true
 		press.focus_mode = Control.FOCUS_ALL
 		var slot := i
@@ -154,7 +201,8 @@ func _build() -> void:
 ## Arabic label each one renders as its opposite and both arrows point inward.
 func _arrow(forward: bool, label_text: String) -> GlossyPanel:
 	var panel := GlossyPanel.make_round(
-		UiIcon.Kind.CHEVRON_NEXT if forward else UiIcon.Kind.CHEVRON_PREV, label_text
+		UiIcon.Kind.CHEVRON_NEXT if forward else UiIcon.Kind.CHEVRON_PREV,
+		label_text, Palette.SLATE
 	)
 	add_child(panel)
 	(panel.get_meta("button") as Button).pressed.connect(
@@ -298,8 +346,11 @@ func _layout() -> void:
 	# The box is taller than the point size: Amiri's descenders run past it, and
 	# a box sized by the number put the count inside the season's name.
 	_season_name.position = Vector2(0.0, header_top - 22.0 * s)
-	_season_name.size = Vector2(size.x, 116.0 * s)
-	_season_name.add_theme_font_size_override("font_size", int(80.0 * s))
+	# The display face hangs further below the baseline than Amiri did, so the
+	# box grew with it. Sizing a label by its point size is the mistake this
+	# project keeps re-learning; a face swap is when it bites again.
+	_season_name.size = Vector2(size.x, 132.0 * s)
+	_season_name.add_theme_font_size_override("font_size", int(76.0 * s))
 	_season_count.position = Vector2(0.0, header_top + 124.0 * s)
 	_season_count.size = Vector2(size.x, 40.0 * s)
 	_season_count.add_theme_font_size_override("font_size", int(32.0 * s))
@@ -315,8 +366,12 @@ func _layout() -> void:
 
 	# Bottom-up, so nothing is pinned to one phone's height.
 	var floor_y := size.y - 60.0 * s
-	var entry_height := 236.0 * s
-	var entry_gap := 25.0 * s
+	# The bar along the bottom of the shell carries these same four doors. Two
+	# rows of the same four buttons, one directly above the other, is the
+	# duplication this project refuses everywhere else — so when the bar is up
+	# the row is not merely hidden, it gives its room back to the card.
+	var entry_height := 0.0 if entries_hidden else 236.0 * s
+	var entry_gap := 0.0 if entries_hidden else 25.0 * s
 	# Divided by however many there are. It was three for as long as there were
 	# three, and adding a fourth put it off the edge.
 	var count := maxf(float(_entries.size()), 1.0)
@@ -325,13 +380,17 @@ func _layout() -> void:
 	) / count
 	var entry_top := floor_y - entry_height
 	for i in _entries.size():
+		_entries[i].visible = not entries_hidden
+		if entries_hidden:
+			continue
 		_place_entry(_entries[i],
 			Vector2(size.x - margin - entry_width * float(i + 1) - entry_gap * float(i), entry_top),
 			entry_width, entry_height, s)
 
-	var card_height := 330.0 * s
-	var card_top := entry_top - 40.0 * s - card_height
-	_layout_card(Vector2(margin, card_top), size.x - margin * 2.0, card_height, s)
+	var card_height := 0.0 if chrome_hidden else 330.0 * s
+	var card_top := entry_top - (0.0 if chrome_hidden else 40.0 * s) - card_height
+	if not chrome_hidden:
+		_layout_card(Vector2(margin, card_top), size.x - margin * 2.0, card_height, s)
 
 	_field = Rect2(
 		Vector2(margin, dot_row + 56.0 * s),
@@ -438,6 +497,10 @@ func _draw() -> void:
 		return
 	var s := size.x / REF_WIDTH
 	var numbers := Mansions.of_season(season_shown)
+	# Between 1 - PULSE_DEPTH and 1, never past either: a star that breathes
+	# out to nothing reads as a fault, and one that breathes past full reads as
+	# a flash.
+	var breath := 1.0 - PULSE_DEPTH * 0.5 * (1.0 - cos(_pulse * TAU / PULSE_SECONDS))
 
 	# The thread that runs through the season, right to left.
 	var thread := PackedVector2Array()
@@ -459,7 +522,7 @@ func _draw() -> void:
 			# A finished mansion has its figure drawn; the current one shows
 			# only as much of it as its stars have earned.
 			var share := 1.0 if done else float(lit) / float(Mansions.LEVELS_PER_MANSION)
-			var alpha := 0.75 if done else 0.28 + 0.4 * share
+			var alpha := 0.75 if done else (0.28 + 0.4 * share) * breath
 			draw_polyline(points, Color(Palette.GOLD_LIGHT, alpha), 2.6 * s, true)
 
 		for j in points.size():
@@ -468,13 +531,23 @@ func _draw() -> void:
 					* float(lit) / float(Mansions.LEVELS_PER_MANSION)))
 			)
 			if shown:
-				draw_circle(points[j], 16.0 * s, Color(Palette.GOLD_LIGHT, 0.22), true, -1.0, true)
-				draw_circle(points[j], 5.6 * s, Palette.GOLD_LIGHT, true, -1.0, true)
+				# Only the current mansion's stars breathe. A finished one is
+				# finished: making it move too would say there is still
+				# something to do there.
+				var halo := 0.22 * (breath if current else 1.0)
+				var core := 1.0 if done else breath
+				draw_circle(points[j], 16.0 * s, Color(Palette.GOLD_LIGHT, halo), true, -1.0, true)
+				draw_circle(
+					points[j], 5.6 * s, Color(Palette.GOLD_LIGHT, core), true, -1.0, true
+				)
 			else:
 				draw_circle(points[j], 5.2 * s, Color(Palette.DIM_STAR, 0.95), true, -1.0, true)
 
 		if current:
-			draw_arc(centre, 66.0 * s, 0.0, TAU, 48, Color(Palette.GOLD, 0.85), 3.4 * s, true)
+			draw_arc(
+				centre, 66.0 * s, 0.0, TAU, 48,
+				Color(Palette.GOLD, 0.85 * breath), 3.4 * s, true
+			)
 
 
 func _dotted(from: Vector2, to: Vector2, colour: Color, width: float) -> void:

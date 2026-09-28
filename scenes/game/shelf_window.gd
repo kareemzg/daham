@@ -71,7 +71,7 @@ func add_note(text: String, lines: int = 2) -> Control:
 	var tray := Panel.new()
 	tray.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	tray.add_theme_stylebox_override(
-		"panel", Palette.card(Color(Palette.GOLD_DEEP, 0.14), Color(0, 0, 0, 0), 30, 0)
+		"panel", Palette.card(Palette.TRAY_WARM, Color(0, 0, 0, 0), 30, 0)
 	)
 	strip.add_child(tray)
 	strip.set_meta("tray", tray)

@@ -293,6 +293,8 @@ func _run() -> void:
 	await _check_windows()
 	_check_smooth_edges()
 	_check_separators()
+
+	_check_silent_buttons()
 	await _check_tools()
 	_check_leaving_a_finished_level()
 	await _check_the_verse()
@@ -1487,3 +1489,40 @@ func _process(_delta: float) -> void:
 	print("=== CUT SHORT after %d checks and %d frames ===" % [_checks, _frames])
 	print("    the run never reached its end: raise FRAME_BUDGET or find the hang")
 	get_tree().quit(2)
+
+
+## Every button in the game must make a sound when it is pressed. `make_button()`
+## looked like the one place a button is born and there were ten others, so the
+## rule is walked rather than remembered — the same reason the middle-dot rule
+## is a tree walk and not a sentence.
+func _check_silent_buttons() -> void:
+	print("=== no button presses in silence ===")
+	var silent := PackedStringArray()
+	for node in _every_node(self):
+		if not (node is BaseButton):
+			continue
+		# The workbench is a debug tool and not part of the game.
+		if _under_workbench(node):
+			continue
+		var heard := false
+		for link in (node as BaseButton).pressed.get_connections():
+			var callable: Callable = link["callable"]
+			if callable.get_method() == "_tap":
+				heard = true
+				break
+		if not heard:
+			silent.append("%s (%s)" % [node.name, node.get_parent().name])
+	_check(
+		"every button taps (%s)" % ("none silent" if silent.is_empty()
+			else "%d silent: %s" % [silent.size(), ", ".join(silent)]),
+		silent.is_empty()
+	)
+
+
+func _under_workbench(node: Node) -> bool:
+	var walk := node
+	while walk != null:
+		if walk is AdminPanel:
+			return true
+		walk = walk.get_parent()
+	return false

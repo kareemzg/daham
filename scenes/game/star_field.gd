@@ -78,10 +78,18 @@ func _scatter() -> void:
 		_phase.append(rng.randf_range(0.0, TAU))
 		# Slow, and all different, so the field never pulses in step.
 		_speed.append(rng.randf_range(0.5, 1.9))
+		# Stars are not one colour, and the tradition says which: الدبران is
+		# «كوكب أحمر منير» and القلب «كوكب أحمر», the bright pairs are white,
+		# and البطين والغفر are «كواكب خفية». Kept sparse on purpose — a field
+		# where every star has a hue is confetti, not a sky.
 		var pick := rng.randf()
-		if pick < 0.12:
+		if pick < 0.06:
+			_tint.append(Palette.STAR_RED)
+		elif pick < 0.16:
+			_tint.append(Palette.STAR_BLUE)
+		elif pick < 0.28:
 			_tint.append(Palette.GOLD_LIGHT)
-		elif pick < 0.24:
+		elif pick < 0.36:
 			_tint.append(Palette.TRAIL)
 		else:
 			_tint.append(Palette.CREAM)

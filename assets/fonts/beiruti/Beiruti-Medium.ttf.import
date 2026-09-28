@@ -2,13 +2,13 @@
 
 importer="font_data_dynamic"
 type="FontFile"
-uid="uid://fyqlmsr8semh"
-path="res://.godot/imported/IBMPlexSansArabic-SemiBold.ttf-6992c7cbd2be49fa8cbfb0e92e2cffad.fontdata"
+uid="uid://db3emy5wugcd7"
+path="res://.godot/imported/Beiruti-Medium.ttf-503b20e4130d2148eff0dfe70bd6d821.fontdata"
 
 [deps]
 
-source_file="res://assets/fonts/plex_sans_arabic/IBMPlexSansArabic-SemiBold.ttf"
-dest_files=["res://.godot/imported/IBMPlexSansArabic-SemiBold.ttf-6992c7cbd2be49fa8cbfb0e92e2cffad.fontdata"]
+source_file="res://assets/fonts/beiruti/Beiruti-Medium.ttf"
+dest_files=["res://.godot/imported/Beiruti-Medium.ttf-503b20e4130d2148eff0dfe70bd6d821.fontdata"]
 
 [params]
 

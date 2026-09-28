@@ -20,6 +20,7 @@ var _play_button: Button
 func configure_daily(display_font: Font, ui_font: Font) -> void:
 	configure(display_font, ui_font)
 	set_crest(UiIcon.Kind.DIPPER)
+	set_tone(Palette.SEASON_AUTUMN)
 	set_title("التحدي اليومي")
 	set_body("نجمة كل يوم.\nالسبع تُتمّ بنات نعش.")
 	add_close_cross()
@@ -50,7 +51,7 @@ func _build_reward(ui_font: Font) -> Control:
 	var tray := Panel.new()
 	tray.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	tray.add_theme_stylebox_override(
-		"panel", Palette.card(Color(Palette.TILE_BORDER, 0.22), Color(0, 0, 0, 0), 30, 0)
+		"panel", Palette.card(Palette.TRAY, Color(0, 0, 0, 0), 30, 0)
 	)
 	strip.add_child(tray)
 	strip.set_meta("tray", tray)
@@ -71,7 +72,7 @@ func add_note_row(ui_font: Font) -> void:
 	var tray := Panel.new()
 	tray.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	tray.add_theme_stylebox_override(
-		"panel", Palette.card(Color(Palette.GOLD_DEEP, 0.14), Color(0, 0, 0, 0), 30, 0)
+		"panel", Palette.card(Palette.TRAY_WARM, Color(0, 0, 0, 0), 30, 0)
 	)
 	strip.add_child(tray)
 	strip.set_meta("tray", tray)

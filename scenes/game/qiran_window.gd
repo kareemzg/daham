@@ -29,6 +29,7 @@ var _unknown: Label
 func configure_qiran(display_font: Font, ui_font: Font) -> void:
 	configure(display_font, ui_font)
 	set_crest(UiIcon.Kind.MOON)
+	set_tone(Palette.MILKY_ROSE)
 	set_title("القِران")
 	add_close_cross()
 
@@ -67,7 +68,7 @@ func _build_nights(ui_font: Font) -> Control:
 	var tray := Panel.new()
 	tray.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	tray.add_theme_stylebox_override(
-		"panel", Palette.card(Color(Palette.TILE_BORDER, 0.22), Color(0, 0, 0, 0), 30, 0)
+		"panel", Palette.card(Palette.TRAY, Color(0, 0, 0, 0), 30, 0)
 	)
 	strip.add_child(tray)
 	strip.set_meta("tray", tray)

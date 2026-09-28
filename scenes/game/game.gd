@@ -93,6 +93,9 @@ const WHEEL_LIGHT := [0.58, 0.74, 0.88, 1.0, 1.0, 1.0]
 ## fits; «سعد الذابح» and its kind do not, and are let through to the finale.
 const ANWA_MAX_LETTERS := 7
 ## How long the finished name is left on screen before the sky takes over.
+## How long the star's sound waits behind the level's. Short enough that the
+## two still belong to one moment, long enough not to be a chord.
+const STAR_SOUND_DELAY := 0.34
 const ANWA_HOLD := 0.9
 ## How long a line of teaching stays up. Long enough to read twice.
 const COACH_SECONDS := 3.4
@@ -123,6 +126,7 @@ const STARS_PER_MANSION := 20
 const BUTTON_SIZE := 161.0
 
 const DISPLAY_FONT := preload("res://assets/fonts/arabic_display.tres")
+const TITLE_FONT := preload("res://assets/fonts/arabic_title.tres")
 const UI_BOLD_FONT := preload("res://assets/fonts/arabic_ui_bold.tres")
 
 ## Which level to play. Exported so the test scene can point at its own
@@ -179,7 +183,6 @@ var mansion_window: SkyWindow
 var next_mansion_button: GlossyPanel
 var _mansion_name: Label
 var _mansion_figure: FigureView
-var _jump_label: Label = null
 ## Level ids where the wheel's width or the grid's word count changes, read off
 ## the levels themselves rather than kept in a table beside the one the pipeline
 ## already has.
@@ -260,7 +263,6 @@ func _ready() -> void:
 	wheel.word_submitted.connect(_on_word_submitted)
 	grid.cell_picked.connect(_on_cell_picked)
 	resized.connect(_layout)
-	_build_jump_bar()
 
 	# Pick up where the player left off, in the middle of a level if that is
 	# where they were.
@@ -344,7 +346,6 @@ func show_level(new_level: Level) -> void:
 
 	_bonus_found.clear()
 	wrong_streak = 0
-	_refresh_jump_label.call_deferred()
 	# A chart left armed must not survive into a level it was not bought for.
 	grid.picking = false
 	in_anwa = false
@@ -506,6 +507,7 @@ func _build_chrome() -> void:
 func _build_windows() -> void:
 	complete_window = _new_window()
 	complete_window.set_crest(UiIcon.Kind.STAR)
+	complete_window.set_tone(Palette.GOLD)
 	complete_window.set_title("اكتمل المستوى")
 	complete_window.set_body("")
 	_complete_stars = StarDots.new()
@@ -517,6 +519,7 @@ func _build_windows() -> void:
 
 	lanterns_window = _new_window()
 	lanterns_window.set_crest(UiIcon.Kind.LANTERN, 0.0)
+	lanterns_window.set_tone(Palette.EMBER)
 	lanterns_window.set_title("نفدت الفوانيس")
 	# The wait is read off the constant rather than written into the prose:
 	# a window that says ten minutes while the code says thirty is a lie the
@@ -534,6 +537,7 @@ func _build_windows() -> void:
 
 	restart_window = _new_window()
 	restart_window.set_crest(UiIcon.Kind.RESTART)
+	restart_window.set_tone(Palette.RIVER)
 	restart_window.set_title("تبدأ المستوى من جديد؟")
 	restart_window.set_body(
 		"تعود الرقعة فارغة وتفقد\nالكلمات التي وجدتها.\nالفوانيس والعملات لا تُمسّ."
@@ -550,7 +554,7 @@ func _build_windows() -> void:
 
 	hints_window = ShelfWindow.new()
 	hints_window.configure_shelf(
-		DISPLAY_FONT, UI_BOLD_FONT, UiIcon.Kind.SPYGLASS, "التلميحات",
+		TITLE_FONT, UI_BOLD_FONT, UiIcon.Kind.SPYGLASS, "التلميحات",
 		"أدوات الراصد. كلٌّ منها يكشف قدراً مختلفاً."
 	)
 	for kind in Tools.COUNT:
@@ -566,9 +570,10 @@ func _build_windows() -> void:
 
 	mansion_window = _new_window()
 	mansion_window.set_crest(UiIcon.Kind.STAR)
+	mansion_window.set_tone(Palette.GOLD)
 	mansion_window.set_title("اكتملت المنزلة")
 	mansion_window.set_body("")
-	_mansion_name = _make_label(DISPLAY_FONT, Palette.GOLD_DEEP)
+	_mansion_name = _make_label(TITLE_FONT, Palette.GOLD_DEEP)
 	mansion_window.add_row(_mansion_name, 74.0, 6.0)
 	_mansion_figure = FigureView.new()
 	mansion_window.add_row(_mansion_figure, 190.0, 12.0)
@@ -598,7 +603,7 @@ func _build_windows() -> void:
 
 func _new_window() -> SkyWindow:
 	var window := SkyWindow.new()
-	window.configure(DISPLAY_FONT, UI_BOLD_FONT)
+	window.configure(TITLE_FONT, UI_BOLD_FONT)
 	window.visible = false
 	add_child(window)
 	return window
@@ -621,11 +626,11 @@ func _build_reward_row(window: SkyWindow) -> Control:
 	var tray := Panel.new()
 	tray.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	tray.add_theme_stylebox_override(
-		"panel", Palette.card(Color(Palette.TILE_BORDER, 0.22), Color(0, 0, 0, 0), 24, 0)
+		"panel", Palette.card(Palette.TRAY_WARM, Color(0, 0, 0, 0), 22, 0)
 	)
 	row.add_child(tray)
 	row.set_meta("tray", tray)
-	var label := _make_label(UI_BOLD_FONT, Color("4A3A08"))
+	var label := _make_label(UI_BOLD_FONT, Palette.TILE_INK)
 	label.text = "+%s" % Arabic.eastern_digits(LEVEL_REWARD)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	row.add_child(label)
@@ -644,7 +649,7 @@ func _build_clock_row(window: SkyWindow) -> Control:
 	var tray := Panel.new()
 	tray.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	tray.add_theme_stylebox_override(
-		"panel", Palette.card(Color(Palette.TILE_BORDER, 0.22), Color(0, 0, 0, 0), 22, 0)
+		"panel", Palette.card(Palette.TRAY, Color(0, 0, 0, 0), 22, 0)
 	)
 	row.add_child(tray)
 	row.set_meta("tray", tray)
@@ -683,6 +688,7 @@ func _make_button(icon_kind: int, handler: Callable, label_text: String) -> Glos
 	panel.set_meta("icon", icon)
 
 	var button := Button.new()
+	Sound.taps(button)
 	button.flat = true
 	button.focus_mode = Control.FOCUS_ALL
 	button.tooltip_text = label_text
@@ -1046,56 +1052,6 @@ func _on_cell_picked(cell: Vector2i) -> void:
 
 # --- jumping about, for looking at the curve ---------------------------------
 
-## A bar for hopping straight to where the difficulty changes.
-##
-## Only in a debug build, so a release cannot show it whatever anyone forgets.
-## It lives on its own `CanvasLayer` and never enters `_layout()`: a tool for
-## looking at the game must not be able to move the game it is looking at.
-##
-## It is deliberately plain. Nothing here is a `GlossyPanel` and nothing is
-## measured against the 1080 reference, because it is not part of the design and
-## should never be mistaken for it.
-func _build_jump_bar() -> void:
-	if not OS.is_debug_build():
-		return
-	var layer := CanvasLayer.new()
-	layer.layer = 128
-	add_child(layer)
-
-	var bar := PanelContainer.new()
-	bar.set_anchors_preset(Control.PRESET_TOP_WIDE)
-	bar.mouse_filter = Control.MOUSE_FILTER_PASS
-	var skin := StyleBoxFlat.new()
-	skin.bg_color = Color(0, 0, 0, 0.55)
-	skin.content_margin_left = 10.0
-	skin.content_margin_right = 10.0
-	skin.content_margin_top = 4.0
-	skin.content_margin_bottom = 4.0
-	bar.add_theme_stylebox_override("panel", skin)
-	layer.add_child(bar)
-
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 8)
-	bar.add_child(row)
-
-	var back := Button.new()
-	back.text = "السابقة"
-	back.pressed.connect(func() -> void: _jump(-1))
-	row.add_child(back)
-
-	_jump_label = Label.new()
-	_jump_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_jump_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_jump_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	row.add_child(_jump_label)
-
-	var forward := Button.new()
-	forward.text = "التالية"
-	forward.pressed.connect(func() -> void: _jump(1))
-	row.add_child(forward)
-	_refresh_jump_label()
-
-
 ## Where the shape of a level changes, in order. Worked out once, by reading
 ## every shipped level: the ramp lives in the pipeline, and a copy of it here
 ## would be a second truth to keep in step.
@@ -1116,7 +1072,14 @@ func _difficulty_steps() -> PackedStringArray:
 	return _jump_steps
 
 
-func _jump(direction: int) -> void:
+## Hop to where the difficulty next changes, forward or back.
+##
+## This used to draw its own bar across the top of the play screen. It was a
+## debug tool sitting on the game it was there to look at, and it read as part
+## of the design to anyone who did not know better. The capability is worth
+## keeping and the bar was not, so it lives on the workbench now — which is
+## where every other "reach a moment without playing to it" already lived.
+func jump_step(direction: int) -> void:
 	var steps := _difficulty_steps()
 	if steps.is_empty() or level == null:
 		return
@@ -1135,15 +1098,6 @@ func _jump(direction: int) -> void:
 	_hide_windows()
 	show_level(upcoming)
 	save()
-	_refresh_jump_label()
-
-
-func _refresh_jump_label() -> void:
-	if _jump_label == null or level == null:
-		return
-	_jump_label.text = "%s — عجلة %d، كلمات %d" % [
-		level.id, level.letters.size(), level.words.size()
-	]
 
 
 ## The one entry point for a spelled word. Returns what happened.
@@ -1161,6 +1115,7 @@ func submit(raw: String) -> int:
 	match result:
 		Result.CORRECT:
 			grid.reveal(word)
+			Sound.play(Sound.WORD_OK)
 			_say("كلمة صحيحة")
 			if teaching and not _taught_crossing:
 				_taught_crossing = true
@@ -1182,6 +1137,7 @@ func submit(raw: String) -> int:
 				_refresh_chrome()
 				hud.announce("moon")
 				_coach_say("كلمةٌ ليست في الرقعة، لكنّها عربيّة.\nالكلماتُ الزائدةُ تملأ القمر.")
+			Sound.play(Sound.WORD_BONUS)
 			_bonus_found[word] = true
 			moon = mini(moon + 1, MOON_PHASES)
 			# The payout is state, so it lands on the guess. Waiting for the
@@ -1201,6 +1157,7 @@ func submit(raw: String) -> int:
 			# «نسر» would be the game being wrong rather than being hard.
 			_say("كلمة صحيحة، ليست من هذه المرحلة")
 		Result.INVALID:
+			Sound.play(Sound.WORD_NO)
 			wrong_streak += 1
 			if wrong_streak >= WRONG_STREAK_COST:
 				wrong_streak = 0
@@ -1208,6 +1165,10 @@ func submit(raw: String) -> int:
 				# window makes in so many words.
 				if not aside:
 					lanterns = maxi(lanterns - 1, 0)
+				# The buzz is for the lantern, not for the wrong guess: a shake
+				# on every miss would be the game scolding, and this one does
+				# not scold.
+				Sound.buzz(34)
 				_say("انطفأ فانوس" if not aside else "خمس محاولات خاطئة")
 				# The clock starts on the first lantern lost, not on the last:
 				# a player who is down to four is already waiting for one back.
@@ -1350,6 +1311,8 @@ func _land_star(at: Vector2) -> void:
 	_float_gain(at, "+%s" % Arabic.eastern_digits(1))
 	if _full_moon_pending:
 		_full_moon_pending = false
+		Sound.play(Sound.MOON)
+		Sound.buzz(20)
 		_show_full_moon(at)
 
 
@@ -1577,6 +1540,8 @@ func _onwipe_swap() -> void:
 
 
 func _finish_level() -> void:
+	# The grid is full, whoever is playing and whatever it is worth.
+	Sound.play(Sound.LEVEL_DONE)
 	if daily:
 		# Nothing here belongs to the journey: no reward, no star, no save, and
 		# no next level. The shell settles the day and puts the journey back.
@@ -1596,6 +1561,10 @@ func _finish_level() -> void:
 		tour_finished.emit()
 	coins += LEVEL_REWARD
 	stars.light_next()
+	# Behind the grid's own sound rather than on top of it: together they are a
+	# chord, apart they are one thing causing another.
+	get_tree().create_timer(STAR_SOUND_DELAY).timeout.connect(
+		func() -> void: Sound.play(Sound.STAR))
 	_refresh_chrome()
 	if level.index_in_mansion >= STARS_PER_MANSION:
 		_finish_mansion()
@@ -1676,6 +1645,8 @@ func _begin_anwa() -> bool:
 
 
 func _play_finale() -> void:
+	Sound.play(Sound.MANSION)
+	Sound.buzz(44)
 	in_anwa = false
 	anwa.visible = false
 	_fade_content(0.0, 0.45)
