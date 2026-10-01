@@ -1,0 +1,30 @@
+<!--
+  Android adaptive icon, the back layer: the sky alone. The launcher masks it
+  to whatever shape the phone uses and parallaxes it against the front layer,
+  so nothing that must be read may live here.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="432" height="432" viewBox="0 0 432 432">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0A0B26"/>
+      <stop offset="0.36" stop-color="#0E2440"/>
+      <stop offset="0.70" stop-color="#13445C"/>
+      <stop offset="1" stop-color="#1A6470"/>
+    </linearGradient>
+    <linearGradient id="band" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0.16" stop-color="#7B5CA8" stop-opacity="0"/>
+      <stop offset="0.40" stop-color="#7B5CA8" stop-opacity="0.42"/>
+      <stop offset="0.52" stop-color="#C98BA0" stop-opacity="0.36"/>
+      <stop offset="0.64" stop-color="#7B5CA8" stop-opacity="0.30"/>
+      <stop offset="0.86" stop-color="#7B5CA8" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="432" height="432" fill="url(#sky)"/>
+  <rect width="432" height="432" fill="url(#band)"/>
+  <circle cx="65" cy="79" r="4.1" fill="#BFE3F5"/>
+  <circle cx="367" cy="105" r="5.1" fill="#E2624A"/>
+  <circle cx="345" cy="360" r="3.6" fill="#FFE38A"/>
+  <circle cx="74" cy="345" r="3.1" fill="#6E8BA6"/>
+  <circle cx="380" cy="262" r="2.9" fill="#BFE3F5"/>
+  <circle cx="51" cy="219" r="2.7" fill="#6E8BA6"/>
+</svg>

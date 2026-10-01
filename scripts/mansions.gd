@@ -145,6 +145,11 @@ static var _saj: Dictionary = {}
 ## The mansion's verse, split into a poet and two hemistichs. Only the
 ## mansions whose line is whole and attributed have one.
 static var _verses: Dictionary = {}
+## The three the card shows beside them: what the tradition says the mansion's
+## rain is, when it rises, and the other names it goes by.
+static var _naw: Dictionary = {}
+static var _time: Dictionary = {}
+static var _alt: Dictionary = {}
 static var _lore_read: bool = false
 
 
@@ -205,6 +210,10 @@ static func _read_lore() -> void:
 		var saj := str((entry as Dictionary).get("saj", "")).strip_edges()
 		if not saj.is_empty():
 			_saj[number] = saj
+		for field: Array in [["naw", _naw], ["time", _time], ["alt", _alt]]:
+			var text := str((entry as Dictionary).get(field[0] as String, "")).strip_edges()
+			if not text.is_empty():
+				(field[1] as Dictionary)[number] = text
 		var verse: Variant = (entry as Dictionary).get("verse", null)
 		if typeof(verse) == TYPE_DICTIONARY:
 			var built := _build_verse(verse as Dictionary)
@@ -235,6 +244,28 @@ static func _build_figure(raw: Variant) -> Dictionary:
 		if pair is Array and (pair as Array).size() == 2:
 			figure["join"].append(Vector2i(int(pair[0]), int(pair[1])))
 	return figure if not figure["points"].is_empty() else {}
+
+
+## What the tradition says of the mansion's rain, or "" where the file is silent.
+##
+## Hand-written in `data/mansion-lore.json` like the rhyme and the verse. Three
+## of a kind, so they read the same way: the card shows a row only when there is
+## something in it, and a mansion nobody has written up simply shows fewer rows.
+static func naw_of(mansion: int) -> String:
+	_read_lore()
+	return str(_naw.get(mansion, ""))
+
+
+## When the mansion rises, in the tradition's own reckoning of nights.
+static func time_of(mansion: int) -> String:
+	_read_lore()
+	return str(_time.get(mansion, ""))
+
+
+## The other names the mansion goes by.
+static func alt_of(mansion: int) -> String:
+	_read_lore()
+	return str(_alt.get(mansion, ""))
 
 
 ## The mansion's rhyme, or "" where nobody has written one down yet.

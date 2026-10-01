@@ -824,6 +824,13 @@ func _check_windows() -> void:
 	_check("a refill you cannot afford is refused", not game.refill_lanterns())
 	_check_equal("...and takes nothing", game.coins, GameScreen.LANTERN_REFILL_COST - 1)
 
+	# Nine hundred coins for a lantern it cannot add: the five are already lit.
+	game.coins = GameScreen.LANTERN_REFILL_COST + 500
+	game.lanterns = GameScreen.LANTERNS_MAX
+	var full_purse: int = game.coins
+	_check("a refill with the five already lit is refused", not game.refill_lanterns())
+	_check_equal("...and takes nothing", game.coins, full_purse)
+
 	# The gear does not open a window here. The shell owns the one settings
 	# window, so two of them can never disagree about what is stored.
 	# A window you opened yourself closes when you tap the dark outside it. One

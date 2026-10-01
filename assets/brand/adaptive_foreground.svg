@@ -1,0 +1,27 @@
+<!--
+  Android adaptive icon, the front layer: the mark alone on nothing.
+  It is scaled to 1.45 so every gold point sits inside the Ø285 safe circle —
+  the bowl's widest point lands at radius 132 and the star's tip at 108, both
+  short of 142.5. A launcher may crop anything outside that circle.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="432" height="432" viewBox="0 0 432 432">
+  <defs>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFE38A"/>
+      <stop offset="1" stop-color="#E9B92C"/>
+    </linearGradient>
+    <radialGradient id="halo" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#FFE38A" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#FFE38A" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <g transform="translate(71 88) scale(1.45)">
+    <path d="M32 96 C32 182 168 182 168 96" fill="none" stroke="#9A7A15" stroke-width="30"
+          stroke-linecap="round" opacity="0.5"/>
+    <path d="M32 90 C32 176 168 176 168 90" fill="none" stroke="url(#gold)" stroke-width="30"
+          stroke-linecap="round"/>
+    <circle cx="100" cy="52" r="38" fill="url(#halo)"/>
+    <path d="M100 16 C100 44 104 48 132 52 C104 56 100 60 100 88 C100 60 96 56 68 52 C96 48 100 44 100 16 Z"
+          fill="#FFF6DF"/>
+  </g>
+</svg>

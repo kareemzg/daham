@@ -1450,11 +1450,18 @@ func show_out_of_lanterns() -> void:
 
 
 func _on_refill_pressed() -> void:
-	if not refill_lanterns():
+	if lanterns >= LANTERNS_MAX:
+		_say("الفوانيس ممتلئة")
+	elif not refill_lanterns():
 		_say("العملات لا تكفي")
 
 
+## Buys the five back. Refuses — and charges nothing — when there is nothing to
+## buy: a full set paid for again is nine hundred coins for no lantern, and the
+## window that sells it is not the only door in (the shop sells the same thing).
 func refill_lanterns() -> bool:
+	if lanterns >= LANTERNS_MAX:
+		return false
 	if coins < LANTERN_REFILL_COST:
 		return false
 	coins -= LANTERN_REFILL_COST

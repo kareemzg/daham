@@ -13,6 +13,7 @@ const GAME_SCENE := preload("res://scenes/game/game.tscn")
 const DISPLAY_FONT := preload("res://assets/fonts/arabic_display.tres")
 const TITLE_FONT := preload("res://assets/fonts/arabic_title.tres")
 const UI_BOLD_FONT := preload("res://assets/fonts/arabic_ui_bold.tres")
+const UI_MEDIUM_FONT := preload("res://assets/fonts/arabic_ui_medium.tres")
 
 ## Empty turns saving off, which is what the test scene does so that one run
 ## cannot change what the next one loads.
@@ -28,7 +29,7 @@ var game: GameScreen
 ## One settings window for the whole game. Two would be two places for the
 ## switches to disagree about what is actually stored.
 var settings_window: SettingsWindow
-var mansion_window: SkyWindow
+var mansion_card: MansionCard
 var shop_window: ShelfWindow
 var daily_window: DailyWindow
 ## Which mansion the moon is in tonight, and whether it is the player's.
@@ -51,9 +52,7 @@ var notify_window: SkyWindow
 var _owed_notice_question: bool = false
 ## The journey's state, held while the day's challenge is played over it.
 var _journey: Progress = null
-var _figure: FigureView
 var dock: SkyDock
-var _star_line: StarLine
 var settings: GameSettings = GameSettings.new()
 
 var showing: int = Screen.TITLE
@@ -136,23 +135,14 @@ func _ready() -> void:
 		go_to(Screen.MAP)
 	)
 
-	mansion_window = SkyWindow.new()
-	mansion_window.configure(TITLE_FONT, UI_BOLD_FONT)
-	mansion_window.set_crest(UiIcon.Kind.STAR)
-	mansion_window.set_tone(Palette.GOLD)
-	mansion_window.visible = false
-	mansion_window.dismiss_on_tap = true
-	add_child(mansion_window)
-	_figure = FigureView.new()
-	mansion_window.add_row(_figure, 210.0, 18.0)
-	_star_line = _build_star_line()
-	var back := mansion_window.add_button(
-		GlossyPanel.Style.BUTTON_CREAM, "عودة إلى الخريطة", UiIcon.Kind.HOME, 92.0
-	)
-	(back.get_meta("button") as Button).pressed.connect(
-		func() -> void: mansion_window.close())
-	mansion_window.close_requested.connect(func() -> void: mansion_window.close())
-	mansion_window.add_close_cross()
+	# Not a `SkyWindow`: the card is a column of capsules and has no crest, no
+	# title band and no way-out button — the cross in its corner is the whole of
+	# its chrome, because it is a thing you opened and can simply close.
+	mansion_card = MansionCard.new()
+	mansion_card.configure(TITLE_FONT, UI_BOLD_FONT, UI_MEDIUM_FONT, DISPLAY_FONT)
+	mansion_card.visible = false
+	add_child(mansion_card)
+	mansion_card.close_requested.connect(func() -> void: mansion_card.close())
 
 	# The question about the notification. It is built here with every other
 	# window, and opened only after the lanterns have run out for the first time.
@@ -599,17 +589,9 @@ func open_mansion(mansion: int) -> void:
 	var lit := Mansions.LEVELS_PER_MANSION if mansion < here.x else (
 		here.y - 1 if mansion == here.x else 0
 	)
-	mansion_window.set_title(Mansions.name_of(mansion))
-	mansion_window.set_body("%s · %s\nالنجمة %s من %s" % [
-		Mansions.season_name(Mansions.season_of(mansion)),
-		"المنزلة %s" % Arabic.eastern_digits(mansion),
-		Arabic.eastern_digits(lit),
-		Arabic.eastern_digits(Mansions.LEVELS_PER_MANSION),
-	])
-	_figure.figure = Mansions.figure_of(mansion)
-	_star_line.show_mansion(mansion)
+	mansion_card.show_mansion(mansion, _scale())
 	_layout()
-	mansion_window.open()
+	mansion_card.open()
 
 
 ## The daily challenge. A run only stands if the last one played was today or
@@ -722,6 +704,9 @@ func _put_journey_back() -> void:
 
 
 func open_shop() -> void:
+	# Nothing to sell when the five are already lit, so the line greys rather
+	# than taking the money for a lantern it cannot add.
+	shop_window.set_row_enabled(0, game.lanterns < GameScreen.LANTERNS_MAX)
 	shop_window.show_purse(game.coins)
 	_layout()
 	shop_window.open()
@@ -729,10 +714,14 @@ func open_shop() -> void:
 
 ## Index follows the order the lines were added: lanterns, spyglasses, astrolabes.
 func _on_shop_chosen(index: int) -> void:
-	var costs := [100, 120, 240]
-	if index < 0 or index >= costs.size() or game.coins < int(costs[index]):
+	# The price comes from the line that printed it. A second list beside this
+	# one is how the refill came to advertise nine hundred and charge a hundred.
+	var cost := shop_window.cost_of(index)
+	if index < 0 or index >= shop_window.rows.size():
 		return
-	game.coins -= int(costs[index])
+	if not shop_window.row_enabled(index) or game.coins < cost:
+		return
+	game.coins -= cost
 	match index:
 		0:
 			game.lanterns = GameScreen.LANTERNS_MAX
@@ -741,20 +730,9 @@ func _on_shop_chosen(index: int) -> void:
 		2:
 			game.tools[Tools.Kind.ASTROLABE] += 2
 	game.save()
+	shop_window.set_row_enabled(0, game.lanterns < GameScreen.LANTERNS_MAX)
 	shop_window.show_purse(game.coins)
 	map.show_progress(game.level.id, game.coins, game.lanterns, game.moon)
-
-
-func _build_star_line() -> StarLine:
-	var line := StarLine.new()
-	line.configure()
-	mansion_window.add_row(line, StarLine.HEIGHT, 14.0)
-	return line
-
-
-func _layout_star_line(s: float) -> void:
-	if _star_line != null:
-		_star_line.relayout(s)
 
 
 func _layout() -> void:
@@ -790,14 +768,13 @@ func _layout() -> void:
 
 	# Windows centre on the whole window, so they are never off to one side.
 	for node: Control in [
-		settings_window, mansion_window, shop_window, daily_window, notify_window,
+		settings_window, mansion_card, shop_window, daily_window, notify_window,
 		qiran_window,
 	]:
 		node.position = Vector2.ZERO
 		node.size = size
 	settings_window.relayout(s)
-	mansion_window.relayout(s)
-	_layout_star_line(s)
+	mansion_card.relayout(s)
 	shop_window.relayout(s)
 	daily_window.relayout(s)
 	qiran_window.relayout(s)

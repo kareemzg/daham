@@ -86,9 +86,9 @@ func _shoot() -> void:
 	shell.map.show_season(0)
 
 	shell.open_mansion(3)
-	shell.mansion_window.settle()
+	shell.mansion_card.settle()
 	await _save("screen_mansion")
-	shell.mansion_window.visible = false
+	shell.mansion_card.visible = false
 
 	shell.open_settings()
 	shell.settings_window.settle()

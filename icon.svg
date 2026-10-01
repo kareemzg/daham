@@ -1,31 +1,53 @@
+<!--
+  نجمتك — the app icon. Square and full-bleed: every store rounds it itself,
+  and iOS refuses an icon with alpha. The ground is the game's own sky, the
+  same four stops as `Palette.SKY_*`, with المجرّة across it.
+
+  Generated rasters come out of `scenes/dev/brand_assets.tscn`; edit this file,
+  never the PNGs beside it.
+-->
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
   <defs>
     <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#071729"/>
-      <stop offset="0.45" stop-color="#0C2A40"/>
-      <stop offset="0.8" stop-color="#12384D"/>
-      <stop offset="1" stop-color="#16455A"/>
+      <stop offset="0" stop-color="#0A0B26"/>
+      <stop offset="0.36" stop-color="#0E2440"/>
+      <stop offset="0.70" stop-color="#13445C"/>
+      <stop offset="1" stop-color="#1A6470"/>
+    </linearGradient>
+    <linearGradient id="band" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0.16" stop-color="#7B5CA8" stop-opacity="0"/>
+      <stop offset="0.40" stop-color="#7B5CA8" stop-opacity="0.42"/>
+      <stop offset="0.52" stop-color="#C98BA0" stop-opacity="0.36"/>
+      <stop offset="0.64" stop-color="#7B5CA8" stop-opacity="0.30"/>
+      <stop offset="0.86" stop-color="#7B5CA8" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFE38A"/>
+      <stop offset="1" stop-color="#E9B92C"/>
     </linearGradient>
     <radialGradient id="halo" cx="0.5" cy="0.5" r="0.5">
-      <stop offset="0" stop-color="#FFE38A" stop-opacity="0.55"/>
+      <stop offset="0" stop-color="#FFE38A" stop-opacity="0.9"/>
       <stop offset="1" stop-color="#FFE38A" stop-opacity="0"/>
     </radialGradient>
   </defs>
-  <rect width="1024" height="1024" rx="224" fill="url(#sky)"/>
-  <g fill="#FFFFFF">
-    <circle cx="150" cy="180" r="7" opacity="0.5"/>
-    <circle cx="880" cy="230" r="9" opacity="0.45"/>
-    <circle cx="820" cy="820" r="7" opacity="0.4"/>
-    <circle cx="190" cy="800" r="8" opacity="0.35"/>
-    <circle cx="512" cy="140" r="6" opacity="0.4"/>
-  </g>
-  <polyline points="792,600 640,452 484,564 328,452 512,712"
-            fill="none" stroke="#FFE38A" stroke-width="26" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
-  <g>
-    <circle cx="792" cy="600" r="96" fill="url(#halo)"/><circle cx="792" cy="600" r="40" fill="#FFE38A"/>
-    <circle cx="640" cy="452" r="110" fill="url(#halo)"/><circle cx="640" cy="452" r="46" fill="#FFF6D6"/>
-    <circle cx="484" cy="564" r="96" fill="url(#halo)"/><circle cx="484" cy="564" r="40" fill="#FFE38A"/>
-    <circle cx="328" cy="452" r="96" fill="url(#halo)"/><circle cx="328" cy="452" r="40" fill="#FFE38A"/>
-    <circle cx="512" cy="712" r="96" fill="url(#halo)"/><circle cx="512" cy="712" r="40" fill="#FFE38A"/>
+
+  <rect width="1024" height="1024" fill="url(#sky)"/>
+  <rect width="1024" height="1024" fill="url(#band)"/>
+
+  <circle cx="154" cy="188" r="9.7" fill="#BFE3F5"/>
+  <circle cx="870" cy="250" r="12" fill="#E2624A"/>
+  <circle cx="819" cy="853" r="8.5" fill="#FFE38A"/>
+  <circle cx="176" cy="819" r="7.4" fill="#6E8BA6"/>
+  <circle cx="900" cy="620" r="6.8" fill="#BFE3F5"/>
+  <circle cx="120" cy="520" r="6.3" fill="#6E8BA6"/>
+
+  <g transform="translate(132 168) scale(3.8)">
+    <path d="M32 96 C32 182 168 182 168 96" fill="none" stroke="#9A7A15" stroke-width="30"
+          stroke-linecap="round" opacity="0.5"/>
+    <path d="M32 90 C32 176 168 176 168 90" fill="none" stroke="url(#gold)" stroke-width="30"
+          stroke-linecap="round"/>
+    <circle cx="100" cy="52" r="38" fill="url(#halo)"/>
+    <path d="M100 16 C100 44 104 48 132 52 C104 56 100 60 100 88 C100 60 96 56 68 52 C96 48 100 44 100 16 Z"
+          fill="#FFF6DF"/>
   </g>
 </svg>
