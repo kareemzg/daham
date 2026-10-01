@@ -12,6 +12,7 @@ var rows: Array[ToolRow] = []
 
 var _purse: Control
 var _costs: Array[int] = []
+var _enabled: Array[bool] = []
 var _notes: Array[Control] = []
 
 
@@ -32,6 +33,7 @@ func add_item(kind: int, title: String, what: String, cost: int) -> ToolRow:
 	add_row(row, ToolRow.HEIGHT, 12.0)
 	rows.append(row)
 	_costs.append(cost)
+	_enabled.append(true)
 	return row
 
 
@@ -39,11 +41,30 @@ func _index_of(row: ToolRow) -> int:
 	return rows.find(row)
 
 
+## What a line costs, asked of the line that printed the price. The shop used
+## to charge from a second array written beside this one, and the two drifted:
+## the refill advertised nine hundred and took a hundred.
+func cost_of(index: int) -> int:
+	return _costs[index] if index >= 0 and index < _costs.size() else 0
+
+
+## Whether a line can be bought at all right now, for something the purse has no
+## opinion about — a refill when the lanterns are already lit. A line that cannot
+## be bought is greyed exactly as one you cannot afford is, never hidden.
+func set_row_enabled(index: int, enabled: bool) -> void:
+	if index >= 0 and index < _enabled.size():
+		_enabled[index] = enabled
+
+
+func row_enabled(index: int) -> bool:
+	return _enabled[index] if index >= 0 and index < _enabled.size() else false
+
+
 ## The purse, and which lines it can reach. Called every time the window opens,
 ## because coins change between openings.
 func show_purse(coins: int) -> void:
 	for i in rows.size():
-		rows[i].affordable = coins >= _costs[i]
+		rows[i].affordable = _enabled[i] and coins >= _costs[i]
 	if _purse != null:
 		(_purse.get_meta("label") as Label).text = "معك %s" % Arabic.eastern_digits(coins)
 

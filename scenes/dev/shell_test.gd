@@ -170,18 +170,21 @@ func _run() -> void:
 
 	print("=== a finished mansion opens its card ===")
 	shell.map.mansion_opened.emit(3)
-	shell.mansion_window.settle()
-	_check("the card is up", shell.mansion_window.visible)
-	_check_equal("it is the third mansion", shell.mansion_window.title_label.text, "الثريا")
-	_check("it names the season", shell.mansion_window.body_label.text.contains("الربيع"))
+	shell.mansion_card.settle()
+	_check("the card is up", shell.mansion_card.visible)
+	_check_equal("it is the third mansion", shell.mansion_card._name.text, "الثريا")
+	_check("it names the season", shell.mansion_card._season.text.contains("الربيع"))
+	# Every capsule is broken to its own column before the panel is sized, so
+	# the last one has to land inside the panel and not off the bottom of it.
+	var last: Dictionary = shell.mansion_card._cells[shell.mansion_card._cells.size() - 1]
 	var bottom: float = (
-		shell.mansion_window.body_label.position.y + shell.mansion_window.body_label.size.y
+		(last["panel"] as Control).position.y + (last["panel"] as Control).size.y
 	)
 	_check(
-		"its prose fits the panel (%0.0f <= %0.0f)" % [bottom, shell.mansion_window.panel.size.y],
-		bottom <= shell.mansion_window.panel.size.y
+		"its capsules fit the panel (%0.0f <= %0.0f)" % [bottom, shell.mansion_card.panel.size.y],
+		bottom <= shell.mansion_card.panel.size.y
 	)
-	shell.mansion_window.visible = false
+	shell.mansion_card.visible = false
 
 	print("=== the one settings window ===")
 	_press(shell.map.settings_button)
@@ -203,24 +206,27 @@ func _run() -> void:
 	shell.settings_window.visible = false
 
 	# Both of these are windows the player opened and can simply leave.
-	print("=== the mansion card says what the name means ===")
+	print("=== the mansion card carries everything the mansion has ===")
 	shell.open_mansion(3)
-	shell.mansion_window.settle()
-	_check_equal("it is الثريا", shell.mansion_window.title_label.text, "الثريا")
-	_check_equal(
-		"...with what the name means",
-		shell._star_line.meaning_text(), Mansions.meaning_of(3)
-	)
-	_check_equal(
-		"...and the modern name of its brightest star",
-		shell._star_line.latin_label().text, "Pleiades"
-	)
-	_check_equal("...and its figure", shell._figure.shape.size(), Mansions.shape_of(3).size())
+	shell.mansion_card.settle()
+	_check_equal("it is الثريا", shell.mansion_card._name.text, "الثريا")
+	_check_equal("...and its figure", shell.mansion_card._figure.shape.size(),
+		Mansions.shape_of(3).size())
+	var heads := _card_heads(shell.mansion_card)
+	for head: String in ["ما يعنيه", "متى يطلع", "نوءُه", "السجع", "البيت"]:
+		_check("...a capsule for %s" % head, heads.has(head))
+	_check_equal("the rain capsule says what the file says",
+		_card_value(shell.mansion_card, "نوءُه").replace("\n", " "),
+		MansionCard.wrap_to(Mansions.naw_of(3),
+			shell.mansion_card._cells[0]["body"].get_theme_font("font"),
+			30, 9999.0).replace("\n", " "))
 	# البلدة is named for being empty of bright stars, so it has no Latin name
-	# and the line must disappear rather than sit there blank.
+	# and that capsule must be absent rather than sit there blank.
 	shell.open_mansion(21)
-	_check("البلدة hides the Latin line", not shell._star_line.latin_label().visible)
-	shell.mansion_window.visible = false
+	_check("البلدة has no Latin capsule", not _card_heads(shell.mansion_card).has("في الأطالس"))
+	_check("...and no star row or way-out button on any card",
+		shell.mansion_card.get_node_or_null("StarLine") == null)
+	shell.mansion_card.visible = false
 
 	print("=== the collection ===")
 	shell.go_to(Shell.Screen.CARDS)
@@ -242,10 +248,10 @@ func _run() -> void:
 	_check("...and an earned one can", not shell.cards.rows[2]._button.disabled)
 
 	shell.cards.rows[2].pressed.emit()
-	shell.mansion_window.settle()
-	_check("tapping a card opens it", shell.mansion_window.visible)
-	_check_equal("...on that mansion", shell.mansion_window.title_label.text, Mansions.name_of(3))
-	shell.mansion_window.visible = false
+	shell.mansion_card.settle()
+	_check("tapping a card opens it", shell.mansion_card.visible)
+	_check_equal("...on that mansion", shell.mansion_card._name.text, Mansions.name_of(3))
+	shell.mansion_card.visible = false
 
 	_press(shell.cards.back_button)
 	await _arrive()
@@ -261,10 +267,25 @@ func _run() -> void:
 	_check_equal("three spyglasses arrive", shell.game.tools[Tools.Kind.SPYGLASS], 3)
 	_check_equal("...and cost their price", shell.game.coins, 380)
 
+	# The price is asked of the line that printed it, never written twice. The
+	# refill used to advertise nine hundred here and charge a hundred, and this
+	# test pinned the hundred — so it agreed with the behaviour and not with the
+	# rule, and the two prices lived on.
+	var refill: int = shell.shop_window.cost_of(0)
+	_check_equal("the refill is priced at what the screen spends",
+		refill, GameScreen.LANTERN_REFILL_COST)
+	shell.game.coins = refill + 200
 	shell.game.lanterns = 1
+	shell.shop_window.show_purse(shell.game.coins)
 	shell.shop_window.rows[0].pressed.emit()
 	_check_equal("the refill fills them", shell.game.lanterns, GameScreen.LANTERNS_MAX)
-	_check_equal("...and costs its price", shell.game.coins, 280)
+	_check_equal("...and costs exactly that", shell.game.coins, 200)
+
+	# Nothing left to sell: the line greys, and a tap on it takes nothing.
+	shell.open_shop()
+	_check("a refill nobody needs is greyed", not shell.shop_window.rows[0].affordable)
+	shell.shop_window.rows[0].pressed.emit()
+	_check_equal("...and takes nothing when tapped anyway", shell.game.coins, 200)
 
 	shell.game.coins = 10
 	shell.shop_window.show_purse(shell.game.coins)
@@ -278,11 +299,11 @@ func _run() -> void:
 
 	print("=== tapping outside a window closes it ===")
 	shell.map.mansion_opened.emit(3)
-	shell.mansion_window.settle()
-	_check("the mansion card is up", shell.mansion_window.visible)
-	_tap_outside(shell.mansion_window)
+	shell.mansion_card.settle()
+	_check("the mansion card is up", shell.mansion_card.visible)
+	_tap_outside(shell.mansion_card)
 	await get_tree().create_timer(SkyPopup.CLOSE_SECONDS + 0.08).timeout
-	_check("a tap outside closes it", not shell.mansion_window.visible)
+	_check("a tap outside closes it", not shell.mansion_card.visible)
 
 	_press(shell.map.settings_button)
 	shell.settings_window.settle()
@@ -1081,3 +1102,18 @@ func _under_workbench(node: Node) -> bool:
 			return true
 		walk = walk.get_parent()
 	return false
+
+
+## The headings of a card's capsules, in the order they were built.
+func _card_heads(card: MansionCard) -> PackedStringArray:
+	var out := PackedStringArray()
+	for cell: Dictionary in card._cells:
+		out.append((cell["head"] as Label).text)
+	return out
+
+
+func _card_value(card: MansionCard, head: String) -> String:
+	for cell: Dictionary in card._cells:
+		if (cell["head"] as Label).text == head:
+			return (cell["body"] as Label).text
+	return ""

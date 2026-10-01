@@ -69,6 +69,16 @@ func configure() -> void:
 	Sound.taps(_button)
 	_button.flat = true
 	_button.focus_mode = Control.FOCUS_ALL
+	# PASS and not the default STOP, because this button covers its whole row
+	# inside a `ScrollContainer` and a finger that means to scroll starts on it.
+	#
+	# Honest about what is known: the mouse WHEEL reaches the container over a
+	# row with STOP as well — that was measured, and the first explanation of
+	# the collection's scrolling («a STOP control ends the event's climb») is
+	# wrong. What has not been reproduced off the device is the touch drag, and
+	# PASS is the remedy Godot documents for it. It costs nothing and the button
+	# still takes its own press, so it stays until a finger says otherwise.
+	_button.mouse_filter = Control.MOUSE_FILTER_PASS
 	_button.pressed.connect(func() -> void: pressed.emit())
 	add_child(_button)
 

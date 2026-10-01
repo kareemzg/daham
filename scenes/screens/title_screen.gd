@@ -22,6 +22,7 @@ var map_button: GlossyPanel
 var settings_button: GlossyPanel
 
 var _title: Label
+var _world: Label
 var _subtitle: Label
 var _where: Label
 var _version: Label
@@ -40,9 +41,17 @@ func _build() -> void:
 			child.queue_free()
 	_round.clear()
 
+	# Three lines, and each one says a different kind of thing: the game's name,
+	# the world it is set in, and what you do there. The hierarchy is carried by
+	# the gold going dim between the first two and leaving it altogether for the
+	# third, so nothing has to be read twice to know which is which.
 	_title = _label(TITLE_FONT, Palette.GOLD_LIGHT)
-	_title.text = "سماء العرب"
+	_title.text = "نجمتك"
 	add_child(_title)
+
+	_world = _label(UI_BOLD_FONT, Palette.GOLD)
+	_world.text = "سماء العرب"
+	add_child(_world)
 
 	_subtitle = _label(UI_BOLD_FONT, Palette.MUTED)
 	_subtitle.text = "سمِّ النجوم، تُضئ السماء"
@@ -70,7 +79,7 @@ func _build() -> void:
 	_round_button(UiIcon.Kind.COIN, "المتجر", shop_requested)
 
 	_version = _label(UI_BOLD_FONT, Color("5E7A8C"))
-	_version.text = "نسخة ٠٫١ — عنوان مؤقّت"
+	_version.text = "نسخة ٠٫١"
 	add_child(_version)
 
 
@@ -122,7 +131,11 @@ func _layout() -> void:
 	_title.size = Vector2(size.x, 232.0 * s)
 	_title.add_theme_font_size_override("font_size", int(150.0 * s))
 
-	_subtitle.position = Vector2(0.0, size.y * 0.2 + 250.0 * s)
+	_world.position = Vector2(0.0, size.y * 0.2 + 250.0 * s)
+	_world.size = Vector2(size.x, 76.0 * s)
+	_world.add_theme_font_size_override("font_size", int(54.0 * s))
+
+	_subtitle.position = Vector2(0.0, size.y * 0.2 + 336.0 * s)
 	_subtitle.size = Vector2(size.x, 56.0 * s)
 	_subtitle.add_theme_font_size_override("font_size", int(42.0 * s))
 

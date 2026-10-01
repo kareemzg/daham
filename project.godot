@@ -10,9 +10,9 @@ config_version=5
 
 [application]
 
-config/name="Sama al-Arab"
+config/name="Najmatak"
 config/name_localized={
-"ar": "سماء العرب"
+"ar": "نجمتك"
 }
 config/description="Arabic word game. A letter wheel and a crossword grid under a night sky:
 every word found lights a star, and a finished mansion writes its name in gold."
@@ -21,6 +21,10 @@ run/main_scene="res://scenes/shell/shell.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
 run/low_processor_mode=true
 config/icon="res://icon.svg"
+boot_splash/bg_color=Color(0.039216, 0.043137, 0.14902, 1)
+boot_splash/image="res://assets/brand/splash.png"
+boot_splash/fullsize=false
+boot_splash/use_filter=true
 
 [display]
 

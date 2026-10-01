@@ -1,4 +1,4 @@
-# رحلة الشاوي (working title)
+# نجمتك — Najmatak
 
 Arabic word-puzzle game: a letter wheel plus a crossword grid. Story: «سماء العرب». Most bright stars
 carry Arabic names; every word lights a star, and each finished chapter draws a lunar mansion and

@@ -1,18 +1,30 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 48" width="32" height="48">
+<!--
+  فانوس مشتعل. The same five pieces the icon has always had — a ring handle, a
+  slanted cap, a round-cornered glass, a gleam inside it, a base — in a box of
+  twice the resolution at the same 2 : 3 the HUD lays out.
+
+  The glass lights from the INSIDE: a radial from a cream core out to gold at
+  the rim, not a top-to-bottom ramp. That is the one change that carries the
+  small sizes — at 24px what reads is a bright point inside a gold box, where a
+  ramp read as one gold smudge. The edge is dark bronze and not olive, because
+  the lantern chip's face is copper and an olive edge dissolves into it.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 96" width="64" height="96">
   <defs>
-    <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#FFE38A"/>
-      <stop offset="1" stop-color="#E9B92C"/>
-    </linearGradient>
+    <radialGradient id="glass" cx="0.5" cy="0.46" r="0.62">
+      <stop offset="0" stop-color="#FFF8E4"/>
+      <stop offset="0.42" stop-color="#FFD96B"/>
+      <stop offset="1" stop-color="#DFA212"/>
+    </radialGradient>
     <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
-      <stop offset="0" stop-color="#FFD35C" stop-opacity="0.42"/>
+      <stop offset="0" stop-color="#FFD35C" stop-opacity="0.5"/>
       <stop offset="1" stop-color="#FFD35C" stop-opacity="0"/>
     </radialGradient>
   </defs>
-  <circle cx="16" cy="26" r="16" fill="url(#glow)"/>
-  <path d="M12 6 a4 4 0 0 1 8 0" fill="none" stroke="#8A6A10" stroke-width="3"/>
-  <path d="M8 10 h16 l-2 6 h-12 Z" fill="#8A6A10"/>
-  <rect x="7" y="16" width="18" height="20" rx="4" fill="url(#glass)" stroke="#8A6A10" stroke-width="2.4"/>
-  <rect x="11" y="20" width="4" height="10" rx="2" fill="#FFF4E8" fill-opacity="0.75"/>
-  <rect x="8" y="37" width="16" height="5" rx="2" fill="#8A6A10"/>
+  <circle cx="32" cy="55" r="30" fill="url(#glow)"/>
+  <path d="M24 15 C24 4 40 4 40 15" fill="none" stroke="#4A3208" stroke-width="5" stroke-linecap="round"/>
+  <path d="M14 19 h36 l-4 13 h-28 Z" fill="#4A3208"/>
+  <rect x="11" y="32" width="42" height="46" rx="10" fill="url(#glass)" stroke="#4A3208" stroke-width="4"/>
+  <rect x="18" y="41" width="8" height="20" rx="4" fill="#FFF8E4" fill-opacity="0.72"/>
+  <rect x="14" y="77" width="36" height="11" rx="5" fill="#4A3208"/>
 </svg>
